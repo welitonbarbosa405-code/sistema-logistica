@@ -1,0 +1,333 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="bg-white rounded-lg shadow-sm border border-gray-200">
+  <div class="p-6 border-b border-gray-200">
+    <h1 class="text-2xl font-semibold text-gray-800">Dashboard de Rastreamento</h1>
+    <p class="text-gray-600 mt-1">Consulte o status de múltiplas notas fiscais</p>
+  </div>
+
+  <div class="p-6">
+    <!-- Formulário de consulta -->
+    <div class="mb-6">
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-1">Ver Histórico por Transportadora</label>
+          <select id="historicoTransportadora" 
+                  class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+            <option value="">Selecione uma transportadora</option>
+            {% for transp in transportadoras %}
+              <option value="{{ transp }}">{{ transp }}</option>
+            {% endfor %}
+          </select>
+        </div>
+        
+        <div class="flex items-end">
+          <button type="button" id="btnVerHistorico"
+                  class="w-full px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500">
+            Ver Histórico
+          </button>
+        </div>
+        
+        <div class="flex items-end">
+          <button type="button" id="btnLimparHistorico"
+                  class="w-full px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500">
+            Limpar Tela
+          </button>
+        </div>
+      </div>
+      
+      <div class="border-t pt-4">
+        <form id="dashboardForm" class="space-y-4">
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-1">Ou consulte notas específicas:</label>
+              <textarea id="notasFiscais" name="notas" rows="3" 
+                       placeholder="Digite as notas fiscais, uma por linha:&#10;207032&#10;210107"
+                       class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"></textarea>
+            </div>
+            
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-1">Transportadora (Opcional)</label>
+              <select id="transportadoraFiltro" name="transportadora" 
+                      class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                <option value="">Todas as transportadoras</option>
+                {% for transp in transportadoras %}
+                  <option value="{{ transp }}">{{ transp }}</option>
+                {% endfor %}
+              </select>
+            </div>
+          </div>
+          
+          <div class="flex justify-end">
+            <button type="submit" 
+                    class="px-6 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500">
+              Consultar Notas
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <!-- Loading -->
+    <div id="loading" class="hidden text-center py-8">
+      <div class="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+      <p class="text-gray-600 mt-2">Consultando notas fiscais...</p>
+      <p class="text-sm text-gray-500 mt-1">Verificando todas as transportadoras</p>
+    </div>
+
+    <!-- Resumo -->
+    <div id="resumo" class="hidden mb-6">
+      <div class="bg-blue-50 rounded-lg p-4">
+        <h3 class="font-semibold text-blue-800 mb-2">Resumo da Consulta</h3>
+        <div class="grid grid-cols-3 gap-4 text-sm">
+          <div>
+            <span class="text-blue-600 font-medium">Total Consultadas:</span>
+            <span id="totalConsultadas" class="ml-2 font-bold">0</span>
+          </div>
+          <div>
+            <span class="text-green-600 font-medium">Encontradas:</span>
+            <span id="totalEncontradas" class="ml-2 font-bold">0</span>
+          </div>
+          <div>
+            <span class="text-red-600 font-medium">Não Encontradas:</span>
+            <span id="totalNaoEncontradas" class="ml-2 font-bold">0</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Tabela de Resultados -->
+    <div id="resultados" class="hidden">
+      <div class="overflow-x-auto">
+        <table class="min-w-full divide-y divide-gray-200">
+          <thead class="bg-gray-50">
+            <tr>
+              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Nota Fiscal</th>
+              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Transportadora</th>
+              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Cidade Destino</th>
+              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">UF</th>
+              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Previsão</th>
+              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Descrição</th>
+            </tr>
+          </thead>
+          <tbody id="tabelaBody" class="bg-white divide-y divide-gray-200">
+            <!-- Resultados serão inseridos aqui via JavaScript -->
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Mensagem de erro -->
+    <div id="erro" class="hidden bg-red-50 border border-red-200 rounded-md p-4">
+      <div class="flex">
+        <div class="flex-shrink-0">
+          <svg class="h-5 w-5 text-red-400" viewBox="0 0 20 20" fill="currentColor">
+            <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd" />
+          </svg>
+        </div>
+        <div class="ml-3">
+          <p class="text-sm text-red-800" id="mensagemErro"></p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+document.getElementById('dashboardForm').addEventListener('submit', async function(e) {
+    e.preventDefault();
+    
+    const notasText = document.getElementById('notasFiscais').value.trim();
+    const transportadoraFiltro = document.getElementById('transportadoraFiltro').value;
+    
+    if (!notasText) {
+        alert('Digite pelo menos uma nota fiscal');
+        return;
+    }
+    
+    // Converter texto em array de notas fiscais
+    const notasFiscais = notasText.split('\n')
+        .map(nota => nota.trim())
+        .filter(nota => nota.length > 0);
+    
+    // Mostrar loading
+    document.getElementById('loading').classList.remove('hidden');
+    document.getElementById('resultados').classList.add('hidden');
+    document.getElementById('resumo').classList.add('hidden');
+    document.getElementById('erro').classList.add('hidden');
+    
+    try {
+        // Timeout de 30 segundos para múltiplas consultas
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 30000);
+        
+        const response = await fetch('/rastreamento/api/dashboard/consultar', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                notas: notasFiscais,
+                transportadora: transportadoraFiltro
+            }),
+            signal: controller.signal
+        });
+        
+        clearTimeout(timeoutId);
+        
+        const data = await response.json();
+        
+        if (response.ok) {
+            // Mostrar resumo
+            document.getElementById('totalConsultadas').textContent = data.total_consultadas;
+            document.getElementById('totalEncontradas').textContent = data.total_encontradas;
+            document.getElementById('totalNaoEncontradas').textContent = data.total_consultadas - data.total_encontradas;
+            document.getElementById('resumo').classList.remove('hidden');
+            
+            // Preencher tabela
+            const tbody = document.getElementById('tabelaBody');
+            tbody.innerHTML = '';
+            
+            data.resultados.forEach(resultado => {
+                const row = document.createElement('tr');
+                row.className = resultado.consulta_realizada ? '' : 'bg-red-50';
+                
+                const statusClass = resultado.consulta_realizada ? 
+                    (resultado.status.includes('Entreg') ? 'text-green-600' : 
+                     resultado.status.includes('Trânsito') ? 'text-blue-600' : 
+                     resultado.status.includes('Colet') ? 'text-yellow-600' : 'text-gray-600') :
+                    'text-red-600';
+                
+                row.innerHTML = `
+                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                        ${resultado.nota_fiscal}
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                        ${resultado.transportadora}
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm ${statusClass} font-medium">
+                        ${resultado.status}
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                        ${resultado.cidade_destino || '-'}
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                        ${resultado.uf_destino || '-'}
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                        ${resultado.previsao || '-'}
+                    </td>
+                    <td class="px-6 py-4 text-sm text-gray-500 max-w-xs truncate" title="${resultado.descricao}">
+                        ${resultado.descricao || '-'}
+                    </td>
+                `;
+                tbody.appendChild(row);
+            });
+            
+            document.getElementById('resultados').classList.remove('hidden');
+        } else {
+            // Mostrar erro
+            document.getElementById('mensagemErro').textContent = data.error || 'Erro ao consultar notas fiscais';
+            document.getElementById('erro').classList.remove('hidden');
+        }
+    } catch (error) {
+        if (error.name === 'AbortError') {
+            document.getElementById('mensagemErro').textContent = 'Consulta demorou muito tempo. Tente com menos notas fiscais.';
+        } else {
+            document.getElementById('mensagemErro').textContent = 'Erro de conexão. Verifique sua internet.';
+        }
+        document.getElementById('erro').classList.remove('hidden');
+    }
+    
+    document.getElementById('loading').classList.add('hidden');
+});
+
+// Função para ver histórico
+document.getElementById('btnVerHistorico').addEventListener('click', async function() {
+    const transportadora = document.getElementById('historicoTransportadora').value;
+    
+    if (!transportadora) {
+        alert('Selecione uma transportadora para ver o histórico');
+        return;
+    }
+    
+    // Mostrar loading
+    document.getElementById('loading').classList.remove('hidden');
+    document.getElementById('resultados').classList.add('hidden');
+    document.getElementById('resumo').classList.add('hidden');
+    document.getElementById('erro').classList.add('hidden');
+    
+    try {
+        const response = await fetch(`/rastreamento/api/dashboard/historico?transportadora=${encodeURIComponent(transportadora)}`);
+        const data = await response.json();
+        
+        if (response.ok) {
+            // Mostrar resumo
+            document.getElementById('totalConsultadas').textContent = data.total;
+            document.getElementById('totalEncontradas').textContent = data.total;
+            document.getElementById('totalNaoEncontradas').textContent = '0';
+            document.getElementById('resumo').classList.remove('hidden');
+            
+            // Preencher tabela
+            const tbody = document.getElementById('tabelaBody');
+            tbody.innerHTML = '';
+            
+            data.resultados.forEach(resultado => {
+                const row = document.createElement('tr');
+                
+                const statusClass = resultado.status.includes('Entreg') ? 'text-green-600' : 
+                                   resultado.status.includes('Trânsito') ? 'text-blue-600' : 
+                                   resultado.status.includes('Colet') ? 'text-yellow-600' : 'text-gray-600';
+                
+                row.innerHTML = `
+                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                        ${resultado.nota_fiscal}
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                        ${resultado.transportadora}
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm ${statusClass} font-medium">
+                        ${resultado.status}
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                        ${resultado.cidade_destino || '-'}
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                        ${resultado.uf_destino || '-'}
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                        ${resultado.previsao || '-'}
+                    </td>
+                    <td class="px-6 py-4 text-sm text-gray-500 max-w-xs truncate" title="${resultado.descricao}">
+                        ${resultado.descricao || '-'}
+                    </td>
+                `;
+                tbody.appendChild(row);
+            });
+            
+            document.getElementById('resultados').classList.remove('hidden');
+        } else {
+            document.getElementById('mensagemErro').textContent = data.error || 'Erro ao buscar histórico';
+            document.getElementById('erro').classList.remove('hidden');
+        }
+    } catch (error) {
+        document.getElementById('mensagemErro').textContent = 'Erro de conexão';
+        document.getElementById('erro').classList.remove('hidden');
+    }
+    
+    document.getElementById('loading').classList.add('hidden');
+});
+
+// Função para limpar tela
+document.getElementById('btnLimparHistorico').addEventListener('click', function() {
+    document.getElementById('resultados').classList.add('hidden');
+    document.getElementById('resumo').classList.add('hidden');
+    document.getElementById('erro').classList.add('hidden');
+    document.getElementById('historicoTransportadora').value = '';
+    document.getElementById('notasFiscais').value = '';
+    document.getElementById('transportadoraFiltro').value = '';
+});
+</script>
+{% endblock %}

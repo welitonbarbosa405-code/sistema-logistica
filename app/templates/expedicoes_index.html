@@ -1,0 +1,409 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="expedicoes-container">
+    <!-- Cabeçalho da página -->
+    <div class="page-header mb-6">
+        <div class="flex items-center justify-between">
+            <div>
+                <h1 class="text-3xl font-bold text-kuhn-red mb-2">📦 Expedições</h1>
+                <p class="text-gray-600">Controle e análise de expedições realizadas</p>
+            </div>
+            <div class="flex items-center space-x-4">
+                <button id="debug-btn" class="kuhn-premium-btn bg-yellow-600 hover:bg-yellow-700">
+                    🐛 Debug APIs
+                </button>
+                <button id="refresh-btn" class="kuhn-premium-btn bg-blue-600 hover:bg-blue-700">
+                    🔄 Atualizar
+                </button>
+                <button id="export-btn" class="kuhn-premium-btn bg-green-600 hover:bg-green-700">
+                    📊 Exportar
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- KPIs Cards -->
+    <div class="kpis-grid mb-6">
+        <div class="kpi-card bg-gradient-to-r from-green-500 to-green-600">
+            <div class="kpi-icon">💰</div>
+            <div class="kpi-content">
+                <div class="kpi-value" id="valor-total">--</div>
+                <div class="kpi-label">Valor Total (R$)</div>
+            </div>
+        </div>
+        <div class="kpi-card bg-gradient-to-r from-blue-500 to-blue-600">
+            <div class="kpi-icon">📦</div>
+            <div class="kpi-content">
+                <div class="kpi-value" id="total-quantidade">--</div>
+                <div class="kpi-label">Total Quantidade</div>
+            </div>
+        </div>
+        <div class="kpi-card bg-gradient-to-r from-purple-500 to-purple-600">
+            <div class="kpi-icon">📄</div>
+            <div class="kpi-content">
+                <div class="kpi-value" id="qtd-nf">--</div>
+                <div class="kpi-label">Qtd NF</div>
+            </div>
+        </div>
+        <div class="kpi-card bg-gradient-to-r from-orange-500 to-orange-600">
+            <div class="kpi-icon">🗺️</div>
+            <div class="kpi-content">
+                <div class="kpi-value" id="estados-atendidos">--</div>
+                <div class="kpi-label">Estados Atendidos</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Filtros -->
+    <div class="filters-section mb-6">
+        <div class="bg-white rounded-lg shadow-lg p-6">
+            <h3 class="text-lg font-semibold text-gray-800 mb-4">🔍 Filtros de Pesquisa</h3>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-6 gap-4">
+                <!-- Filtro NF -->
+                <div class="filter-group-premium">
+                    <label class="filter-label-premium">
+                        <span class="icon">📄</span>
+                        Nota Fiscal
+                    </label>
+                    <input type="text" id="filter-nf" placeholder="Digite a NF sem ponto (ex: 3019, 82746 ou 206882)..." 
+                           class="filter-input-premium">
+                </div>
+                
+                <!-- Filtro Transportadora -->
+                <div class="filter-group-premium">
+                    <label class="filter-label-premium">
+                        <span class="icon">🚛</span>
+                        Transportadora
+                    </label>
+                    <select id="filter-transportadora" class="filter-select-premium">
+                        <option value="">Todas as transportadoras</option>
+                    </select>
+                </div>
+                
+                <!-- Filtro Filial -->
+                <div class="filter-group-premium">
+                    <label class="filter-label-premium">
+                        <span class="icon">🏢</span>
+                        Filial
+                    </label>
+                    <select id="filter-filial" class="filter-select-premium">
+                        <option value="">Todas as filiais</option>
+                    </select>
+                </div>
+                
+                <!-- Filtro Cliente -->
+                <div class="filter-group-premium">
+                    <label class="filter-label-premium">
+                        <span class="icon">👤</span>
+                        Cliente
+                    </label>
+                    <select id="filter-cliente" class="filter-select-premium">
+                        <option value="">Todos os clientes</option>
+                    </select>
+                </div>
+                
+                <!-- Filtro Data -->
+                <div class="filter-group-premium date-filter-container lg:col-span-2">
+                    <label class="filter-label-premium">
+                        <span class="icon">📅</span>
+                        Data de Expedição
+                    </label>
+                    <div class="date-inputs-premium">
+                        <input type="date" id="filter-data-inicio" 
+                               class="date-input-premium">
+                        <div class="date-separator">até</div>
+                        <input type="date" id="filter-data-fim" 
+                               class="date-input-premium">
+                    </div>
+                </div>
+            </div>
+            
+            <div class="flex flex-wrap justify-end mt-4 gap-3">
+                <button id="clear-filters" class="px-4 py-2 text-gray-600 border border-gray-300 rounded-md hover:bg-gray-50">
+                    🗑️ Limpar Filtros
+                </button>
+                <button id="apply-filters" class="kuhn-premium-btn bg-blue-600 hover:bg-blue-700">
+                    🔍 Aplicar Filtros
+                </button>
+                <button id="btn-salvar-filtro" class="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 transition-colors">
+                    💾 Salvar Filtro
+                </button>
+                <button id="btn-filtros-salvos" class="px-4 py-2 bg-purple-600 text-white rounded-md hover:bg-purple-700 transition-colors">
+                    ⭐ Filtros Salvos
+                </button>
+                <button id="btn-historico" class="px-4 py-2 bg-orange-600 text-white rounded-md hover:bg-orange-700 transition-colors">
+                    📜 Histórico
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Gráficos -->
+    <div class="charts-section mb-6">
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <!-- Gráfico de Distribuição por Transportadora -->
+            <div class="chart-container bg-white rounded-lg shadow-lg p-6">
+                <h3 class="text-lg font-semibold text-gray-800 mb-4">📊 Distribuição por Transportadora</h3>
+                <div style="height: 300px; position: relative;">
+                    <canvas id="chart-transportadoras" style="width: 100%; height: 100%;"></canvas>
+                    <div id="loading-transportadoras" class="flex items-center justify-center h-full text-gray-500 absolute inset-0 bg-white">
+                        <div class="text-center">
+                            <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-2"></div>
+                            <p>Carregando dados...</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Gráfico de Expedições por Mês -->
+            <div class="chart-container bg-white rounded-lg shadow-lg p-6">
+                <h3 class="text-lg font-semibold text-gray-800 mb-4">📈 Quantidade NF Expedidas Por Período</h3>
+                <div style="height: 300px; position: relative;">
+                    <canvas id="chart-expedicoes-mes" style="width: 100%; height: 100%;"></canvas>
+                    <div id="loading-expedicoes-mes" class="flex items-center justify-center h-full text-gray-500 absolute inset-0 bg-white">
+                        <div class="text-center">
+                            <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-2"></div>
+                            <p>Carregando dados...</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Segunda linha de gráficos -->
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mt-6">
+            <!-- Gráfico de Prazos por Região -->
+            <div class="chart-container bg-white rounded-lg shadow-lg p-6">
+                <h3 class="text-lg font-semibold text-gray-800 mb-4">🗺️ Quantidade NF Expedidas Por Região</h3>
+                <div style="height: 300px; position: relative;">
+                    <canvas id="chart-prazos-regiao" style="width: 100%; height: 100%;"></canvas>
+                    <div id="loading-prazos-regiao" class="flex items-center justify-center h-full text-gray-500 absolute inset-0 bg-white">
+                        <div class="text-center">
+                            <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-2"></div>
+                            <p>Carregando dados...</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Top 10 Clientes por Valor -->
+            <div class="chart-container bg-white rounded-lg shadow-lg p-6">
+                <h3 class="text-lg font-semibold text-gray-800 mb-4">🏆 Top 10 Clientes por Valor</h3>
+                <div style="height: 300px; position: relative;">
+                    <canvas id="chart-top-clientes" style="width: 100%; height: 100%;"></canvas>
+                    <div id="loading-top-clientes" class="flex items-center justify-center h-full text-gray-500 absolute inset-0 bg-white">
+                        <div class="text-center">
+                            <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-2"></div>
+                            <p>Carregando dados...</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Terceira linha de gráficos -->
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mt-6">
+            <!-- Comparativo Mensal -->
+            <div class="chart-container bg-white rounded-lg shadow-lg p-6">
+                <h3 class="text-lg font-semibold text-gray-800 mb-4">📊 Comparativo Mensal</h3>
+                <div style="height: 300px; position: relative;">
+                    <canvas id="chart-comparativo-mensal" style="width: 100%; height: 100%;"></canvas>
+                    <div id="loading-comparativo-mensal" class="flex items-center justify-center h-full text-gray-500 absolute inset-0 bg-white">
+                        <div class="text-center">
+                            <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-2"></div>
+                            <p>Carregando dados...</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Métricas de Performance -->
+            <div class="chart-container bg-white rounded-lg shadow-lg p-6">
+                <h3 class="text-lg font-semibold text-gray-800 mb-4">⚡ Métricas de Performance</h3>
+                <div style="height: 300px; position: relative;">
+                    <canvas id="chart-metricas-performance" style="width: 100%; height: 100%;"></canvas>
+                    <div id="loading-metricas-performance" class="flex items-center justify-center h-full text-gray-500 absolute inset-0 bg-white">
+                        <div class="text-center">
+                            <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-2"></div>
+                            <p>Carregando dados...</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Quarta linha - Gráfico de Área -->
+        <div class="mt-6">
+            <div class="chart-container bg-white rounded-lg shadow-lg p-6">
+                <h3 class="text-lg font-semibold text-gray-800 mb-4">📈 Evolução Valor Expedido (Área)</h3>
+                <div style="height: 400px; position: relative;">
+                    <canvas id="chart-evolucao-vendas" style="width: 100%; height: 100%;"></canvas>
+                    <div id="loading-evolucao-vendas" class="flex items-center justify-center h-full text-gray-500 absolute inset-0 bg-white">
+                        <div class="text-center">
+                            <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-2"></div>
+                            <p>Carregando dados...</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Mapa de Expedições -->
+    <div class="map-section mb-6">
+        <div class="bg-white rounded-lg shadow-lg p-6">
+            <h3 class="text-lg font-semibold text-gray-800 mb-4">🗺️ Mapa de Destinos</h3>
+            <div id="mapa-expedicoes" style="height: 500px;">
+                <div id="loading-mapa" class="flex items-center justify-center h-full text-gray-500">
+                    <div class="text-center">
+                        <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-2"></div>
+                        <p>Carregando mapa...</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Tabela de Dados -->
+    <div class="data-table-section">
+        <div class="bg-white rounded-lg shadow-lg p-6">
+            <div class="flex justify-between items-center mb-4">
+                <h3 class="text-lg font-semibold text-gray-800">📋 Dados de Expedições</h3>
+                <div class="flex items-center space-x-3">
+                    <span class="text-sm text-gray-600">Registros por página:</span>
+                    <select id="per-page-select" class="px-3 py-1 border border-gray-300 rounded-md">
+                        <option value="25">25</option>
+                        <option value="50" selected>50</option>
+                        <option value="100">100</option>
+                    </select>
+                </div>
+            </div>
+            
+            <!-- Loading -->
+            <div id="loading" class="text-center py-8 hidden">
+                <div class="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+                <p class="mt-2 text-gray-600">Carregando dados...</p>
+            </div>
+            
+            <!-- Tabela -->
+            <div id="table-container">
+                <div class="overflow-x-auto">
+                    <table id="expedicoes-table" class="w-full table-auto">
+                        <thead class="bg-gray-50">
+                            <tr>
+                                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">NF</th>
+                                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Filial</th>
+                                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Produto</th>
+                                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Descrição</th>
+                                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Quantidade</th>
+                                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Valor Unitário</th>
+                                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Valor Total</th>
+                                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Cliente</th>
+                                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Transportadora</th>
+                                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Destino</th>
+                                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Data Expedição</th>
+                                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Ações</th>
+                            </tr>
+                        </thead>
+                        <tbody id="expedicoes-tbody" class="bg-white divide-y divide-gray-200">
+                            <!-- Dados serão carregados via JavaScript -->
+                        </tbody>
+                    </table>
+                </div>
+                
+                <!-- Paginação -->
+                <div id="pagination" class="mt-4 flex justify-between items-center">
+                    <!-- Paginação será inserida aqui -->
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Scripts específicos da página -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.js"></script>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.css" />
+<!-- Leaflet MarkerCluster -->
+<script src="https://cdn.jsdelivr.net/npm/leaflet.markercluster@1.4.1/dist/leaflet.markercluster.js"></script>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/leaflet.markercluster@1.4.1/dist/MarkerCluster.css" />
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/leaflet.markercluster@1.4.1/dist/MarkerCluster.Default.css" />
+
+<style>
+/* Estilos customizados para marcadores e clusters */
+.custom-marker {
+    background: transparent !important;
+    border: none !important;
+}
+
+.custom-cluster {
+    background: transparent !important;
+    border: none !important;
+}
+
+/* Estilos para controles do mapa */
+.density-controls {
+    font-family: 'Segoe UI', Arial, sans-serif;
+}
+
+.density-controls input[type="range"] {
+    accent-color: #ED1C24;
+}
+
+.fullscreen-control {
+    transition: all 0.3s ease;
+}
+
+.fullscreen-control:hover {
+    transform: scale(1.1);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.3) !important;
+}
+
+/* Estilos para modais */
+#drill-down-modal,
+#transportadora-drill-down-modal,
+#timeline-modal {
+    animation: fadeIn 0.3s ease;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+/* Estilos para tooltips avançados */
+.leaflet-popup-content {
+    margin: 0 !important;
+    padding: 0 !important;
+}
+
+.leaflet-popup-content-wrapper {
+    border-radius: 8px !important;
+    box-shadow: 0 8px 25px rgba(0,0,0,0.2) !important;
+}
+
+/* Estilos para gráficos interativos */
+.chart-container {
+    transition: all 0.3s ease;
+}
+
+.chart-container:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+}
+
+/* Estilos para botões de drill-down */
+button[onclick*="showDrillDownModal"],
+button[onclick*="showTransportadoraDrillDown"] {
+    transition: all 0.3s ease;
+}
+
+button[onclick*="showDrillDownModal"]:hover,
+button[onclick*="showTransportadoraDrillDown"]:hover {
+    transform: scale(1.05);
+    box-shadow: 0 4px 12px rgba(237, 28, 36, 0.3);
+}
+</style>
+    <script src="{{ url_for('static', filename='js/expedicoes.js') }}?v={{ range(1000000, 9999999) | random }}"></script>
+{% endblock %}

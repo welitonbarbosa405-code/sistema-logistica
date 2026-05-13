@@ -1,0 +1,627 @@
+{% extends 'base.html' %}
+{% block content %}
+
+<!-- Toast Notifications -->
+<div id="toast-container" class="fixed top-4 right-4 z-50 flex flex-col gap-2">
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            {% for category, message in messages %}
+            <div class="toast-notification {{ 'bg-green-500' if category == 'success' else 'bg-red-500' if category == 'danger' else 'bg-blue-500' }} text-white px-6 py-4 rounded-lg shadow-2xl flex items-center gap-3 transform transition-all duration-500 animate-slide-in">
+                <span class="text-xl">{{ '✅' if category == 'success' else '❌' if category == 'danger' else 'ℹ️' }}</span>
+                <span class="font-medium">{{ message }}</span>
+                <button onclick="this.parentElement.remove()" class="ml-4 text-white hover:text-gray-200 text-xl font-bold">&times;</button>
+            </div>
+            {% endfor %}
+        {% endif %}
+    {% endwith %}
+</div>
+
+<style>
+    @keyframes slideIn {
+        from { transform: translateX(100%); opacity: 0; }
+        to { transform: translateX(0); opacity: 1; }
+    }
+    @keyframes slideOut {
+        from { transform: translateX(0); opacity: 1; }
+        to { transform: translateX(100%); opacity: 0; }
+    }
+    @keyframes pulse-icon {
+        0%, 100% { transform: scale(1); }
+        50% { transform: scale(1.1); }
+    }
+    @keyframes float {
+        0%, 100% { transform: translateY(0); }
+        50% { transform: translateY(-10px); }
+    }
+    @keyframes fadeInUp {
+        from { opacity: 0; transform: translateY(20px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+    .animate-slide-in { animation: slideIn 0.4s ease-out; }
+    .animate-slide-out { animation: slideOut 0.4s ease-out forwards; }
+    .animate-float { animation: float 3s ease-in-out infinite; }
+    .animate-fade-in-up { animation: fadeInUp 0.5s ease-out; }
+    
+    /* Cards de estatísticas com animações aprimoradas */
+    .stat-card { 
+        transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        position: relative;
+        overflow: hidden;
+    }
+    .stat-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: linear-gradient(135deg, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0) 100%);
+        opacity: 0;
+        transition: opacity 0.3s ease;
+    }
+    .stat-card:hover { 
+        transform: translateY(-8px) scale(1.02); 
+        box-shadow: 0 20px 40px rgba(0,0,0,0.15);
+    }
+    .stat-card:hover::before {
+        opacity: 1;
+    }
+    .stat-card:hover .stat-value {
+        transform: scale(1.05);
+    }
+    .stat-value {
+        transition: transform 0.3s ease;
+    }
+    
+    .table-row-animate { transition: all 0.2s ease; }
+    .table-row-animate:hover { background-color: #fef2f2; }
+    
+    /* Garantir espaço para o footer fixo */
+    .pagination-wrapper {
+        margin-bottom: 60px !important;
+        padding-bottom: 20px;
+    }
+    
+    .tooltip-container {
+        position: relative;
+    }
+    .tooltip-container .tooltip {
+        visibility: hidden;
+        opacity: 0;
+        position: absolute;
+        bottom: calc(100% + 8px);
+        left: 50%;
+        transform: translateX(-50%);
+        background: #1f2937;
+        color: white;
+        padding: 6px 12px;
+        border-radius: 6px;
+        font-size: 12px;
+        white-space: nowrap;
+        transition: all 0.2s ease;
+        z-index: 10;
+    }
+    .tooltip-container .tooltip::after {
+        content: '';
+        position: absolute;
+        top: 100%;
+        left: 50%;
+        transform: translateX(-50%);
+        border: 6px solid transparent;
+        border-top-color: #1f2937;
+    }
+    .tooltip-container:hover .tooltip {
+        visibility: visible;
+        opacity: 1;
+    }
+    
+    .search-dropdown {
+        position: absolute;
+        top: 100%;
+        left: 0;
+        right: 0;
+        background: white;
+        border-radius: 0 0 8px 8px;
+        box-shadow: 0 10px 25px rgba(0,0,0,0.15);
+        z-index: 50;
+        max-height: 300px;
+        overflow-y: auto;
+    }
+    .search-item {
+        padding: 10px 12px;
+        border-bottom: 1px solid #f3f4f6;
+        cursor: pointer;
+        transition: background 0.15s;
+    }
+    .search-item:hover {
+        background: #fef2f2;
+    }
+    .search-item:last-child {
+        border-bottom: none;
+    }    thead th {
+        position: sticky;
+        top: 0;
+        z-index: 2;
+        background: #2F2F2F;
+    }
+    /* Garante que a tabela tenha rolagem vertical mantendo as colunas */
+    .tabela-fixa-cabecalho {
+        max-height: 70vh;
+        overflow-y: auto;
+        overflow-x: auto;
+    }
+    .tabela-fixa-cabecalho table {
+        width: 100%;
+        border-collapse: collapse;
+    }
+</style>
+
+<div class="w-full px-0 py-3">
+    <!-- Cabeçalho com título e botões -->
+    <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-3 gap-2 px-4">
+        <div>
+            <h2 class="text-xl font-bold text-kuhn-red flex items-center gap-2">
+                <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M4 4a2 2 0 012-2h4.586A2 2 0 0112 2.586L15.414 6A2 2 0 0116 7.414V16a2 2 0 01-2 2H6a2 2 0 01-2-2V4zm2 6a1 1 0 011-1h6a1 1 0 110 2H7a1 1 0 01-1-1zm1 3a1 1 0 100 2h6a1 1 0 100-2H7z" clip-rule="evenodd"></path></svg>
+                Lançamentos Fiscais (CTe)
+            </h2>
+            <p class="text-kuhn-dark-gray text-xs">Gerencie os conhecimentos de transporte eletrônico</p>
+        </div>
+        <div class="flex gap-2">
+            <button onclick="sincronizarDados()" id="btn-sincronizar" 
+                   class="bg-kuhn-red hover:bg-kuhn-red-dark text-white font-semibold py-1.5 px-4 rounded-lg shadow transition transform hover:scale-105 flex items-center gap-2 text-sm">
+                <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M4 2a1 1 0 011 1v2.101a7.002 7.002 0 0111.601 2.566 1 1 0 11-1.885.666A5.002 5.002 0 005.999 5.199V4a1 1 0 011-1h-2zm12 12a1 1 0 011 1v2.101a7.002 7.002 0 01-11.601 2.566 1 1 0 11.885-.666A5.002 5.002 0 0014 14.8v2.101a1 1 0 01-1 1h2z" clip-rule="evenodd"></path></svg>
+                Sincronizar
+            </button>
+        </div>
+    </div>    <!-- Cards de estatísticas - Design Minimalista -->
+    <div class="grid grid-cols-2 md:grid-cols-4 gap-2 mb-3 px-4">
+        <!-- Total de CTes -->
+        <div class="stat-card bg-white rounded-lg shadow-sm p-3 border-l-4 border-kuhn-red">
+            <p class="text-gray-500 text-[10px] font-medium uppercase">Total de CTes</p>
+            <p class="text-2xl font-bold text-kuhn-navy stat-value">{{ total }}</p>
+        </div>
+        
+        <!-- Valor Frete Total -->
+        <div class="stat-card bg-white rounded-lg shadow-sm p-3 border-l-4 border-green-500">
+            <p class="text-gray-500 text-[10px] font-medium uppercase">Valor Frete</p>
+            <p class="text-lg font-bold text-green-600 stat-value">R$ {{ "{:,.2f}".format(total_frete|default(0)).replace(",", "X").replace(".", ",").replace("X", ".") }}</p>
+        </div>
+        
+        <!-- Valor NF Total -->
+        <div class="stat-card bg-white rounded-lg shadow-sm p-3 border-l-4 border-blue-500">
+            <p class="text-gray-500 text-[10px] font-medium uppercase">Valor NF Total</p>
+            <p class="text-lg font-bold text-blue-600 stat-value">R$ {{ "{:,.2f}".format(total_nf|default(0)).replace(",", "X").replace(".", ",").replace("X", ".") }}</p>
+        </div>
+        
+        <!-- Transportadoras -->
+        <div class="stat-card bg-white rounded-lg shadow-sm p-3 border-l-4 border-yellow-500">
+            <p class="text-gray-500 text-[10px] font-medium uppercase">Transportadoras</p>
+            <p class="text-2xl font-bold text-yellow-600 stat-value">{{ total_transportadoras|default(transportadoras|length) }}</p>
+        </div>
+    </div>    <!-- Filtros compactos -->
+    <div class="bg-white rounded-lg shadow mb-3">
+        <div class="p-3 px-4">{% set filtros_ativos = (filtro_transportadora or filtro_uf or filtro_status or filtro_data) %}
+            {% set qtd_filtros = (1 if filtro_transportadora else 0) + (1 if filtro_uf else 0) + (1 if filtro_status else 0) + (1 if filtro_data else 0) %}<form method="GET" id="formFiltros" class="flex flex-wrap items-center gap-2">
+                <!-- Busca rápida -->
+                <div class="relative min-w-[180px]">
+                    <input type="text" id="buscaRapida" placeholder="🔍 Buscar..." 
+                           class="w-full border border-gray-300 rounded px-2 py-1.5 text-xs focus:ring-2 focus:ring-kuhn-red focus:border-kuhn-red"
+                           autocomplete="off">
+                    <div id="searchDropdown" class="search-dropdown hidden"></div>
+                </div>
+
+                <!-- Campo: Transportadora -->
+                <select name="transportadora" id="filtro_transportadora" class="border border-gray-300 rounded px-2 py-1.5 text-xs focus:ring-2 focus:ring-kuhn-red focus:border-kuhn-red bg-white hover:border-kuhn-red transition" style="min-width: 140px;">
+                    <option value="">Transportadora</option>
+                    {% for t in transportadoras %}
+                    <option value="{{ t }}" {% if filtro_transportadora == t %}selected{% endif %}>{{ t }}</option>
+                    {% endfor %}
+                </select>
+                
+                <!-- Campo: UF Destino -->
+                <select name="uf_destino" id="filtro_uf" class="border border-gray-300 rounded px-2 py-1.5 text-xs focus:ring-2 focus:ring-kuhn-red focus:border-kuhn-red bg-white hover:border-kuhn-red transition" style="min-width: 110px;">
+                    <option value="">UF Destino</option>
+                    {% for u in ufs %}
+                    <option value="{{ u }}" {% if filtro_uf == u %}selected{% endif %}>{{ u }}</option>
+                    {% endfor %}
+                </select>
+                
+                <!-- Campo: Status -->
+                <select name="status" id="filtro_status" class="border border-gray-300 rounded px-2 py-1.5 text-xs focus:ring-2 focus:ring-kuhn-red focus:border-kuhn-red bg-white hover:border-kuhn-red transition" style="min-width: 130px;">
+                    <option value="">Todos</option>
+                    <option value="lancado" {% if filtro_status == 'lancado' %}selected{% endif %}>Lançado</option>
+                    <option value="sem_lancamento" {% if filtro_status == 'sem_lancamento' %}selected{% endif %}>Sem Lançamento</option>
+                </select>                <!-- Campo: Data de Lançamento -->
+                <input type="date" name="data_lancamento" id="filtro_data" 
+                       class="border border-gray-300 rounded px-2 py-1.5 text-xs focus:ring-2 focus:ring-kuhn-red focus:border-kuhn-red bg-white hover:border-kuhn-red transition"
+                       {% if filtro_data %}value="{{ filtro_data }}"{% endif %}>                <!-- Campo: Registros por página -->
+                <select name="per_page" id="filtro_per_page" class="border border-gray-300 rounded px-2 py-1.5 text-xs focus:ring-2 focus:ring-kuhn-red focus:border-kuhn-red bg-white hover:border-kuhn-red transition" style="min-width: 110px;">
+                    <option value="50" {% if per_page|int == 50 %}selected{% endif %}>50 por página</option>
+                    <option value="100" {% if per_page|int == 100 %}selected{% endif %}>100 por página</option>
+                    <option value="200" {% if per_page|int == 200 %}selected{% endif %}>200 por página</option>
+                    <option value="500" {% if per_page|int == 500 %}selected{% endif %}>500 por página</option>
+                    <option value="1000" {% if per_page|int == 1000 %}selected{% endif %}>1000 por página</option>
+                </select>
+                
+                <!-- Badge: Filtros Ativos -->
+                {% if filtros_ativos %}
+                <span class="text-xs text-kuhn-red font-semibold bg-red-50 border border-red-200 px-2.5 py-1.5 rounded inline-flex items-center gap-1 flex-shrink-0 ml-auto">
+                    <svg class="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"></path></svg>
+                    {{ qtd_filtros }}
+                </span>
+                {% endif %}
+            </form>
+        </div>    </div>    <!-- Tabela de Lançamentos -->    <div class="bg-white rounded-lg shadow overflow-hidden">
+        <div class="w-full tabela-fixa-cabecalho">
+            <table class="w-full text-xs border-collapse"><thead>                    <tr class="text-white font-semibold" style="background-color: #2F2F2F;">
+                        <th class="px-3 py-3 text-left text-[11px] flex-1">Transportadora</th>
+                        <th class="px-3 py-3 text-left text-[11px] flex-1">Nº CTe</th>
+                        <th class="px-3 py-3 text-left text-[11px] flex-[1.5]">Chave</th>
+                        <th class="px-3 py-3 text-left text-[11px] flex-1 hidden lg:table-cell">Mun. Envio</th>
+                        <th class="px-3 py-3 text-center text-[11px] flex-0.5">UF</th>
+                        <th class="px-3 py-3 text-left text-[11px] flex-1 hidden lg:table-cell">Mun. Dest.</th>
+                        <th class="px-3 py-3 text-center text-[11px] flex-0.5">UF D</th>
+                        <th class="px-3 py-3 text-right text-[11px] flex-1 hidden sm:table-cell">Val. NF</th>
+                        <th class="px-3 py-3 text-right text-[11px] flex-1">Val. Frete</th>
+                        <th class="px-3 py-3 text-left text-[11px] flex-1 hidden lg:table-cell">Nº Fat.</th>
+                        <th class="px-3 py-3 text-left text-[11px] flex-1 hidden xl:table-cell">Venc.</th>
+                        <th class="px-3 py-3 text-left text-[11px] flex-1">Status CTe</th>
+                        <th class="px-3 py-3 text-center text-[11px] flex-0.7">PDF CTe</th>
+                        <th class="px-3 py-3 text-center text-[11px] flex-0.7">PDF Fatura</th>
+                        <th class="px-3 py-3 text-left text-[11px] flex-1 hidden 2xl:table-cell">Data</th>
+                        <th class="px-3 py-3 text-center text-[11px] flex-0.7">Ações</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% if lancamentos %}
+                        {% for l in lancamentos %}                        <tr class="table-row-animate border-b hover:bg-red-50">
+                            <td class="px-3 py-3 text-[11px]">
+                                <div class="flex items-center gap-2">
+                                    <svg class="w-4 h-4 text-blue-500 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20"><path d="M8 16.5a1.5 1.5 0 11-3 0 1.5 1.5 0 013 0zM15 16.5a1.5 1.5 0 11-3 0 1.5 1.5 0 013 0z"/><path d="M3 4a1 1 0 00-1 1v10a1 1 0 001 1h1.05a2.5 2.5 0 014.9 0H10a1 1 0 001-1v-1h3.05a2.5 2.5 0 014.9 0H19a1 1 0 001-1v-4a1 1 0 00-.293-.707l-3-3A1 1 0 0016 5h-5a1 1 0 00-1 1v4H3V5a1 1 0 00-1-1z"/></svg>
+                                    <span class="font-medium text-gray-800 line-clamp-2">{{ l.transportadora }}</span>
+                                </div>
+                            </td>
+                            <td class="px-3 py-3 text-[11px]">
+                                <span class="bg-blue-100 text-blue-700 px-2 py-1 rounded font-semibold whitespace-nowrap">{{ l.numero_cte }}</span>
+                            </td>                            <td class="px-3 py-3 text-[11px]">
+                                <span class="font-mono text-gray-600 text-[10px]" title="{{ l.chave_cte }}">{{ l.chave_cte }}</span>
+                            </td>
+                            <td class="px-3 py-3 text-[11px] text-gray-700 hidden lg:table-cell">
+                                <span class="line-clamp-2">{{ l.municipio_envio }}</span>
+                            </td>
+                            <td class="px-3 py-3 text-center">
+                                <span class="bg-gray-100 text-gray-700 px-2 py-1 rounded text-[10px] font-semibold whitespace-nowrap">{{ l.uf_envio }}</span>
+                            </td>
+                            <td class="px-3 py-3 text-[11px] text-gray-700 hidden lg:table-cell">
+                                <span class="line-clamp-2">{{ l.municipio_destino }}</span>
+                            </td>
+                            <td class="px-3 py-3 text-center">
+                                <span class="bg-gray-100 text-gray-700 px-2 py-1 rounded text-[10px] font-semibold whitespace-nowrap">{{ l.uf_destino }}</span>
+                            </td>
+                            <td class="px-3 py-3 text-right font-semibold text-blue-600 text-[11px] hidden sm:table-cell">
+                                {% if l.valor_nota_fiscal %}<span class="truncate block">R$ {{ "{:,.2f}".format(l.valor_nota_fiscal).replace(",", "X").replace(".", ",").replace("X", ".") }}</span>{% else %}<span class="text-gray-400">—</span>{% endif %}
+                            </td>
+                            <td class="px-3 py-3 text-right font-semibold text-green-600 text-[11px]">
+                                {% if l.valor_frete %}<span class="truncate block">R$ {{ "{:,.2f}".format(l.valor_frete).replace(",", "X").replace(".", ",").replace("X", ".") }}</span>{% else %}<span class="text-gray-400">—</span>{% endif %}
+                            </td>
+                            <td class="px-3 py-3 text-[11px] hidden lg:table-cell">
+                                {% if l.numero_fatura %}
+                                <span class="bg-green-100 text-green-700 px-2 py-1 rounded text-[9px] font-semibold line-clamp-1">{{ l.numero_fatura }}</span>
+                                {% else %}
+                                <span class="bg-gray-100 text-gray-600 px-2 py-1 rounded text-[9px] font-semibold">Pendente</span>
+                                {% endif %}
+                            </td>
+                            <td class="px-3 py-3 hidden xl:table-cell text-[11px]">
+                                {% if l.venc_fatura %}
+                                <span class="font-medium text-gray-700">{{ l.venc_fatura }}</span>
+                                {% else %}
+                                <span class="text-gray-400">—</span>
+                                {% endif %}
+                            </td>                            <td class="px-3 py-3 text-[11px]">
+    {% if l.status_cte == 'Lançado' %}
+        <span class="bg-green-100 text-green-700 px-2 py-1 rounded text-[10px] font-semibold whitespace-nowrap">Lançado</span>
+    {% elif l.status_cte == 'Falta Lançamento' %}
+        <span class="bg-red-100 text-red-700 px-2 py-1 rounded text-[10px] font-semibold whitespace-nowrap">Sem Lançamento</span>
+    {% else %}
+        <span class="bg-gray-100 text-gray-700 px-2 py-1 rounded text-[10px] font-semibold whitespace-nowrap">{{ l.status_cte or '—' }}</span>
+    {% endif %}
+</td>
+                            <td class="px-3 py-3 text-center">
+                                {% if l.pdf_cte %}
+                                <div class="flex gap-1 justify-center">
+                                    <button onclick="visualizarPDF('{{ l.pdf_cte }}')" 
+                                            class="bg-blue-500 hover:bg-blue-600 text-white p-1.5 rounded transition tooltip-container inline-flex" title="Visualizar CTe">
+                                        <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20"><path d="M10 12a2 2 0 100-4 2 2 0 000 4z"></path><path fill-rule="evenodd" d="M.458 10C1.732 5.943 5.522 3 10 3s8.268 2.943 9.542 7c-1.274 4.057-5.064 7-9.542 7S1.732 14.057.458 10zM14 10a4 4 0 11-8 0 4 4 0 018 0z" clip-rule="evenodd"></path></svg>
+                                    </button>
+                                    <a href="{{ url_for('lancamentos_cte.download_pdf', tipo='cte', caminho=l.pdf_cte) }}" 
+                                       class="bg-red-500 hover:bg-red-600 text-white p-1.5 rounded transition tooltip-container inline-flex" title="Baixar CTe">
+                                        <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20"><path d="M5.5 13a3.5 3.5 0 01-.369-6.98 4 4 0 117.753-1.3A4.5 4.5 0 1113.5 13H11V9.413l1.293 1.293a1 1 0 001.414-1.414l-3-3a1 1 0 00-1.414 0l-3 3a1 1 0 001.414 1.414L9 9.414V13H5.5z"></path></svg>
+                                    </a>
+                                </div>
+                                {% else %}
+                                <span class="text-gray-400 text-[10px]">—</span>
+                                {% endif %}
+                            </td>
+                            <td class="px-3 py-3 text-center">
+                                {% if l.pdf_fatura %}
+                                <div class="flex gap-1 justify-center">
+                                    <button onclick="visualizarPDF('{{ l.pdf_fatura }}')" 
+                                            class="bg-blue-500 hover:bg-blue-600 text-white p-1.5 rounded transition tooltip-container inline-flex" title="Visualizar Fatura">
+                                        <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20"><path d="M10 12a2 2 0 100-4 2 2 0 000 4z"></path><path fill-rule="evenodd" d="M.458 10C1.732 5.943 5.522 3 10 3s8.268 2.943 9.542 7c-1.274 4.057-5.064 7-9.542 7S1.732 14.057.458 10zM14 10a4 4 0 11-8 0 4 4 0 018 0z" clip-rule="evenodd"></path></svg>
+                                    </button>
+                                    <a href="{{ url_for('lancamentos_cte.download_pdf', tipo='fatura', caminho=l.pdf_fatura) }}" 
+                                       class="bg-green-500 hover:bg-green-600 text-white p-1.5 rounded transition tooltip-container inline-flex" title="Baixar Fatura">
+                                        <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20"><path d="M5.5 13a3.5 3.5 0 01-.369-6.98 4 4 0 117.753-1.3A4.5 4.5 0 1113.5 13H11V9.413l1.293 1.293a1 1 0 001.414-1.414l-3-3a1 1 0 00-1.414 0l-3 3a1 1 0 001.414 1.414L9 9.414V13H5.5z"></path></svg>
+                                    </a>
+                                </div>
+                                {% else %}
+                                <span class="text-gray-400 text-[10px]">—</span>
+                                {% endif %}
+                            </td>
+                            <td class="px-3 py-3 text-[11px] text-gray-700 hidden 2xl:table-cell">
+                                {% if l.data_lancamento %}{{ l.data_lancamento }}{% else %}<span class="text-gray-400">—</span>{% endif %}
+                            </td>
+                            <td class="px-3 py-3 text-center">
+                                <a href="{{ url_for('lancamentos_cte.detalhes_lancamento', id=l.id) }}" 
+                                   class="bg-blue-500 hover:bg-blue-600 text-white p-1.5 rounded transition inline-flex tooltip-container" title="Ver detalhes">
+                                    <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20"><path d="M10 12a2 2 0 100-4 2 2 0 000 4z"></path><path fill-rule="evenodd" d="M.458 10C1.732 5.943 5.522 3 10 3s8.268 2.943 9.542 7c-1.274 4.057-5.064 7-9.542 7S1.732 14.057.458 10zM14 10a4 4 0 11-8 0 4 4 0 018 0z" clip-rule="evenodd"></path></svg>
+                                </a>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    {% else %}                    <tr>
+                        <td colspan="15" class="text-center py-8">
+                            <div class="flex flex-col items-center justify-center gap-2">
+                                <svg class="w-12 h-12 text-gray-300" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M4 4a2 2 0 012-2h4.586A2 2 0 0112 2.586L15.414 6A2 2 0 0116 7.414V16a2 2 0 01-2 2H6a2 2 0 01-2-2V4zm2 6a1 1 0 011-1h6a1 1 0 110 2H7a1 1 0 01-1-1zm1 3a1 1 0 100 2h6a1 1 0 100-2H7z" clip-rule="evenodd"></path></svg>
+                                <p class="text-gray-500 font-medium">Nenhum lançamento encontrado</p>
+                            </div>
+                        </td>
+                    </tr>
+                    {% endif %}
+                </tbody>
+            </table>
+    </div>    </div>    <!-- Paginação Melhorada -->
+    <div class="bg-white rounded-lg shadow p-4 mt-4 pagination-wrapper">
+        <!-- Informações da paginação -->
+        <div class="flex flex-col md:flex-row items-center justify-between gap-4 mb-4">
+            <div class="text-sm text-gray-600">
+                Mostrando <span class="font-semibold text-kuhn-red">{{ (pagina_atual - 1) * per_page|int + 1 }}</span> 
+                a 
+                <span class="font-semibold text-kuhn-red">{{ [pagina_atual * per_page|int, total]|min }}</span> 
+                de 
+                <span class="font-semibold text-kuhn-red">{{ total }}</span> registros
+                <span class="text-gray-500 ml-2">(Página {{ pagina_atual }} de {{ paginas }})</span>
+            </div>
+            
+            <!-- Ir para página -->
+            <div class="flex items-center gap-2">
+                <label for="irParaPagina" class="text-xs text-gray-600 font-medium">Ir para página:</label>
+                <input type="number" id="irParaPagina" min="1" max="{{ paginas }}" value="{{ pagina_atual }}" 
+                       class="w-16 border border-gray-300 rounded px-2 py-1 text-xs focus:ring-2 focus:ring-kuhn-red focus:border-kuhn-red">
+                <button onclick="irParaPagina()" class="bg-kuhn-red hover:bg-kuhn-red-dark text-white px-3 py-1 rounded text-xs font-medium transition">Ir</button>
+            </div>
+        </div>
+        
+        <!-- Botões de paginação -->
+        <nav class="flex justify-center gap-1 flex-wrap">
+            {% if pagina_atual > 1 %}
+            <a href="?pagina=1{% if filtro_transportadora %}&transportadora={{ filtro_transportadora }}{% endif %}{% if filtro_uf %}&uf_destino={{ filtro_uf }}{% endif %}{% if filtro_status %}&status={{ filtro_status }}{% endif %}{% if filtro_data %}&data_lancamento={{ filtro_data }}{% endif %}{% if per_page != 50 %}&per_page={{ per_page }}{% endif %}" 
+               class="px-3 py-1 rounded border border-gray-300 text-gray-700 hover:bg-gray-100 transition text-xs font-medium">« Primeira</a>
+            <a href="?pagina={{ pagina_atual - 1 }}{% if filtro_transportadora %}&transportadora={{ filtro_transportadora }}{% endif %}{% if filtro_uf %}&uf_destino={{ filtro_uf }}{% endif %}{% if filtro_status %}&status={{ filtro_status }}{% endif %}{% if filtro_data %}&data_lancamento={{ filtro_data }}{% endif %}{% if per_page != 50 %}&per_page={{ per_page }}{% endif %}" 
+               class="px-3 py-1 rounded border border-gray-300 text-gray-700 hover:bg-gray-100 transition text-xs font-medium">‹ Anterior</a>
+            {% endif %}
+            
+            <!-- Páginas numeradas com range dinâmico -->
+            {% set start_page = [1, pagina_atual - 5]|max %}
+            {% set end_page = [paginas, pagina_atual + 5]|min %}
+            
+            {% if start_page > 1 %}
+            <span class="px-2 py-1 text-gray-500 text-xs">...</span>
+            {% endif %}
+            
+            {% for p in range(start_page, end_page + 1) %}
+            <a href="?pagina={{ p }}{% if filtro_transportadora %}&transportadora={{ filtro_transportadora }}{% endif %}{% if filtro_uf %}&uf_destino={{ filtro_uf }}{% endif %}{% if filtro_status %}&status={{ filtro_status }}{% endif %}{% if filtro_data %}&data_lancamento={{ filtro_data }}{% endif %}{% if per_page != 50 %}&per_page={{ per_page }}{% endif %}" 
+               class="px-3 py-1 rounded text-xs font-medium {{ 'bg-kuhn-red text-white' if p == pagina_atual else 'border border-gray-300 text-gray-700 hover:bg-gray-100' }} transition">
+               {{ p }}
+            </a>
+            {% endfor %}
+            
+            {% if end_page < paginas %}
+            <span class="px-2 py-1 text-gray-500 text-xs">...</span>
+            {% endif %}
+            
+            {% if pagina_atual < paginas %}
+            <a href="?pagina={{ pagina_atual + 1 }}{% if filtro_transportadora %}&transportadora={{ filtro_transportadora }}{% endif %}{% if filtro_uf %}&uf_destino={{ filtro_uf }}{% endif %}{% if filtro_status %}&status={{ filtro_status }}{% endif %}{% if filtro_data %}&data_lancamento={{ filtro_data }}{% endif %}{% if per_page != 50 %}&per_page={{ per_page }}{% endif %}" 
+               class="px-3 py-1 rounded border border-gray-300 text-gray-700 hover:bg-gray-100 transition text-xs font-medium">Próxima ›</a>
+            <a href="?pagina={{ paginas }}{% if filtro_transportadora %}&transportadora={{ filtro_transportadora }}{% endif %}{% if filtro_uf %}&uf_destino={{ filtro_uf }}{% endif %}{% if filtro_status %}&status={{ filtro_status }}{% endif %}{% if filtro_data %}&data_lancamento={{ filtro_data }}{% endif %}{% if per_page != 50 %}&per_page={{ per_page }}{% endif %}" 
+               class="px-3 py-1 rounded border border-gray-300 text-gray-700 hover:bg-gray-100 transition text-xs font-medium">Última »</a>
+            {% endif %}        </nav>
+    </div>
+
+</div>
+
+<script>
+function sincronizarDados() {
+    const btn = document.getElementById('btn-sincronizar');
+    const originalHTML = btn.innerHTML;
+    btn.disabled = true;
+    btn.innerHTML = '<svg class="w-4 h-4 animate-spin inline mr-2" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M4 2a1 1 0 011 1v2.101a7.002 7.002 0 0111.601 2.566 1 1 0 11-1.885.666A5.002 5.002 0 005.999 5.199V4a1 1 0 011-1h-2zm12 12a1 1 0 011 1v2.101a7.002 7.002 0 01-11.601 2.566 1 1 0 11.885-.666A5.002 5.002 0 0014 14.8v2.101a1 1 0 01-1 1h2z" clip-rule="evenodd"></path></svg>Sincronizando...';
+
+    fetch('{{ url_for("lancamentos_cte.sincronizar") }}', { method: 'POST' })
+        .then(response => response.json())
+        .then(data => {
+            if (data.sucesso) {
+                const toast = document.createElement('div');
+                toast.className = 'toast-notification bg-green-500 text-white px-6 py-4 rounded-lg shadow-2xl flex items-center gap-3 transform transition-all duration-500 animate-slide-in';
+                toast.innerHTML = `
+                    <span class="text-xl">✅</span>
+                    <span class="font-medium">Sincronização concluída! ${data.sincronizados} registros sincronizados.</span>
+                    <button onclick="this.parentElement.remove()" class="ml-4 text-white hover:text-gray-200 text-xl font-bold">&times;</button>
+                `;
+                document.getElementById('toast-container').appendChild(toast);
+                
+                setTimeout(() => {
+                    location.reload();
+                }, 2000);
+            } else {
+                const toast = document.createElement('div');
+                toast.className = 'toast-notification bg-red-500 text-white px-6 py-4 rounded-lg shadow-2xl flex items-center gap-3 transform transition-all duration-500 animate-slide-in';
+                toast.innerHTML = `
+                    <span class="text-xl">❌</span>
+                    <span class="font-medium">Erro: ${data.mensagem}</span>
+                    <button onclick="this.parentElement.remove()" class="ml-4 text-white hover:text-gray-200 text-xl font-bold">&times;</button>
+                `;
+                document.getElementById('toast-container').appendChild(toast);
+                btn.disabled = false;
+                btn.innerHTML = originalHTML;
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            const toast = document.createElement('div');
+            toast.className = 'toast-notification bg-red-500 text-white px-6 py-4 rounded-lg shadow-2xl flex items-center gap-3 transform transition-all duration-500 animate-slide-in';
+            toast.innerHTML = `
+                <span class="text-xl">❌</span>
+                <span class="font-medium">Erro ao sincronizar</span>
+                <button onclick="this.parentElement.remove()" class="ml-4 text-white hover:text-gray-200 text-xl font-bold">&times;</button>
+            `;
+            document.getElementById('toast-container').appendChild(toast);
+            btn.disabled = false;
+            btn.innerHTML = originalHTML;
+        });
+}
+
+// Busca rápida
+document.getElementById('buscaRapida').addEventListener('input', function() {
+    const valor = this.value.toLowerCase();
+    if (valor.length < 2) {
+        document.getElementById('searchDropdown').classList.add('hidden');
+        return;
+    }
+    // Implementar busca conforme necessário
+});
+
+// Submeter formulário de filtros ao mudar qualquer select
+document.getElementById('filtro_transportadora').addEventListener('change', function() {
+    document.getElementById('formFiltros').submit();
+});
+
+document.getElementById('filtro_uf').addEventListener('change', function() {
+    document.getElementById('formFiltros').submit();
+});
+
+document.getElementById('filtro_status').addEventListener('change', function() {
+    document.getElementById('formFiltros').submit();
+});
+
+document.getElementById('filtro_data').addEventListener('change', function() {
+    document.getElementById('formFiltros').submit();
+});
+
+document.getElementById('filtro_per_page').addEventListener('change', function() {
+    document.getElementById('formFiltros').submit();
+});
+
+// Função para visualizar PDF em modal
+function visualizarPDF(caminhoRelativo) {
+    console.log('📄 Caminho original:', caminhoRelativo);
+    const modal = document.createElement('div');
+    modal.className = 'fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4 animate-fade-in-up';
+    // Normalizar caminho: converter barras invertidas para forward slash
+    const caminhoNormalizado = caminhoRelativo.replace(/\\/g, '/');
+    console.log('📄 Caminho normalizado:', caminhoNormalizado);
+    const urlView = `/lancamentos-cte/view-pdf/${encodeURIComponent(caminhoNormalizado)}`;
+    const urlDownload = `/lancamentos-cte/pdf/cte/${encodeURIComponent(caminhoNormalizado)}`;
+    console.log('🔗 URL View:', urlView);
+    console.log('🔗 URL Download:', urlDownload);
+    
+    modal.innerHTML = `
+        <div class="bg-white rounded-lg shadow-2xl max-w-4xl w-full max-h-[90vh] flex flex-col">
+            <div class="flex justify-between items-center p-4 border-b border-gray-200">
+                <h3 class="text-lg font-semibold text-gray-800">Visualizador de PDF</h3>
+                <button onclick="this.closest('.fixed').remove()" class="text-gray-500 hover:text-gray-700 text-2xl">&times;</button>
+            </div>
+            <div class="flex-1 overflow-auto bg-gray-100 flex items-center justify-center" id="pdfContainer">
+                <iframe id="pdfFrame"
+                        src="${urlView}" 
+                        class="w-full h-full border-none" 
+                        title="PDF Viewer"
+                        onload="document.getElementById('pdfLoadingSpinner')?.remove()">
+                </iframe>
+                <div id="pdfLoadingSpinner" class="flex flex-col items-center justify-center">
+                    <div class="animate-spin rounded-full h-12 w-12 border-4 border-blue-500 border-t-transparent"></div>
+                    <p class="mt-3 text-gray-600">Carregando PDF...</p>
+                </div>
+            </div>
+            <div class="p-4 border-t border-gray-200 flex justify-end gap-2">
+                <a href="${urlDownload}" 
+                   download class="bg-blue-500 hover:bg-blue-600 text-white font-semibold py-2 px-4 rounded-lg transition">
+                    📥 Baixar PDF
+                </a>
+                <button onclick="this.closest('.fixed').remove()" class="bg-gray-300 hover:bg-gray-400 text-gray-800 font-semibold py-2 px-4 rounded-lg transition">
+                    Fechar
+                </button>
+            </div>
+        </div>
+    `;
+    document.body.appendChild(modal);
+      // Fechar ao clicar fora da modal
+    modal.addEventListener('click', function(e) {
+        if (e.target === this) {
+            this.remove();
+        }
+    });
+}
+
+// eslint-disable-next-line
+var irParaPaginaData = {
+    // eslint-disable-next-line
+    paginas: {{ paginas }},
+    // eslint-disable-next-line
+    filtroTransportadora: '{{ filtro_transportadora }}',
+    // eslint-disable-next-line
+    filtroUf: '{{ filtro_uf }}',
+    // eslint-disable-next-line
+    filtroStatus: '{{ filtro_status }}',
+    // eslint-disable-next-line
+    filtroData: '{{ filtro_data }}',
+    // eslint-disable-next-line
+    perPage: '{{ per_page }}'
+};
+
+// Função para ir para página específica
+function irParaPagina() {
+    const pagina = document.getElementById('irParaPagina').value;
+    const data = irParaPaginaData;
+    
+    if (!pagina || pagina < 1 || pagina > data.paginas) {
+        alert(`Por favor, digite um número entre 1 e ${data.paginas}`);
+        return;
+    }
+    
+    // Construir URL com parâmetros
+    const params = new URLSearchParams();
+    params.append('pagina', pagina);
+    if (data.filtroTransportadora) params.append('transportadora', data.filtroTransportadora);
+    if (data.filtroUf) params.append('uf_destino', data.filtroUf);
+    if (data.filtroStatus) params.append('status', data.filtroStatus);
+    if (data.filtroData) params.append('data_lancamento', data.filtroData);
+    if (data.perPage !== '50') params.append('per_page', data.perPage);
+    
+    window.location.href = '?' + params.toString();
+}
+
+// Permitir Enter para ir para página
+document.addEventListener('DOMContentLoaded', function() {
+    const irParaPaginaInput = document.getElementById('irParaPagina');
+    if (irParaPaginaInput) {
+        irParaPaginaInput.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                irParaPagina();
+            }
+        });
+    }
+});
+</script>
+
+{% endblock %}

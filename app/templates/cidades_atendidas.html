@@ -1,0 +1,572 @@
+{% extends "base.html" %}
+{% block content %}
+
+<!-- Header Kuhn Compacto e Clean -->
+<div class="kuhn-header rounded-lg mb-3 overflow-hidden">
+  <div class="kuhn-header-content p-3 sm:p-4">
+    <div class="flex items-center justify-between gap-2">
+      <div class="flex-1 min-w-0">
+        <div class="flex items-center gap-2 flex-wrap">
+          <div class="w-8 h-8 kuhn-glass-effect rounded-lg flex items-center justify-center flex-shrink-0">
+            <span class="text-base">🌍</span>
+          </div>
+          <h1 class="text-lg sm:text-xl font-bold">Cidades Atendidas</h1>
+          <span class="text-xs kuhn-glass-effect px-1.5 py-0.5 rounded-full text-gray-600">v2.0</span>
+        </div>
+        <div class="flex items-center gap-1.5 text-xs mt-1 flex-wrap">
+          <div class="flex items-center gap-1 kuhn-glass-effect px-1.5 py-0.5 rounded-full">
+            <span class="w-1 h-1 bg-green-500 rounded-full animate-pulse"></span>
+            <span>Tempo real</span>
+          </div>
+          <div class="text-gray-600 text-xs" id="ultimaAtualizacao"></div>
+        </div>
+      </div>
+      <div class="hidden sm:flex items-center flex-shrink-0">
+        <div class="kuhn-glass-effect px-2 py-0.5 rounded text-center text-xs">
+          <div class="text-gray-600">Cobertura</div>
+          <div class="font-bold text-kuhn-red text-sm">19 UF</div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="absolute top-0 right-0 w-16 h-16 bg-red-100/15 rounded-full -translate-y-8 translate-x-8"></div>
+</div>
+
+<!-- Filtros Avançados - Design Compacto -->
+<div class="bg-gradient-to-br from-white via-gray-50 to-gray-100 rounded-lg shadow-md border border-gray-200 p-3 mb-2 relative overflow-hidden">
+  <!-- Decoração de fundo reduzida -->
+  <div class="absolute top-0 right-0 w-20 h-20 bg-gradient-to-br from-red-100 to-transparent rounded-full -translate-y-10 translate-x-10"></div>
+  <div class="absolute bottom-0 left-0 w-16 h-16 bg-gradient-to-tr from-yellow-100 to-transparent rounded-full translate-y-8 -translate-x-8"></div>
+  
+  <div class="relative z-10">
+    <!-- Cabeçalho com ações - Compacto -->
+    <div class="flex items-center justify-between gap-2 mb-2 flex-wrap">
+      <div class="flex items-center gap-1.5">
+        <div class="w-7 h-7 bg-gradient-to-br from-red-500 to-red-600 rounded-lg flex items-center justify-center shadow-sm flex-shrink-0">
+          <svg class="w-3.5 h-3.5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+          </svg>
+        </div>
+        <div>
+          <h3 class="text-sm font-bold text-gray-800">Filtros</h3>
+          <p class="text-xs text-gray-600">Busca em tempo real</p>
+        </div>
+      </div>
+      
+      <div class="flex items-center gap-1.5 flex-wrap">
+        <button id="btnExport" class="group relative bg-gradient-to-r from-yellow-500 to-yellow-600 hover:from-yellow-600 hover:to-yellow-700 text-white px-2.5 py-1.5 rounded-lg font-medium text-xs transition-all duration-300 transform hover:scale-105 shadow-sm hover:shadow-md flex items-center gap-1">
+          <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+          </svg>
+          <span class="hidden sm:inline">Exportar</span>
+        </button>
+        
+        <button id="btnMapa" class="group relative bg-gradient-to-r from-gray-500 to-gray-600 hover:from-gray-600 hover:to-gray-700 text-white px-2.5 py-1.5 rounded-lg font-medium text-xs transition-all duration-300 transform hover:scale-105 shadow-sm hover:shadow-md flex items-center gap-1">
+          <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-1.447-.894L15 4m0 13V4m0 0L9 7"></path>
+          </svg>
+          <span class="hidden sm:inline">Mapa</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- Filtros Salvos - Compacto -->
+    <div class="mb-2 bg-gradient-to-r from-gray-50 to-gray-100 rounded-lg p-2 border border-gray-200">
+      <div class="flex items-center justify-between gap-1.5 flex-wrap">
+        <h3 class="text-xs font-semibold text-gray-700 flex items-center gap-1">
+          <svg class="w-3 h-3 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z"></path>
+          </svg>
+          Filtros Salvos
+        </h3>
+        <button id="saveFilterBtn" class="text-xs bg-gray-600 hover:bg-gray-700 text-white px-1.5 py-0.5 rounded transition-colors flex items-center gap-0.5">
+          <svg class="w-2.5 h-2.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
+          </svg>
+          <span class="hidden sm:inline">Salvar</span>
+        </button>
+      </div>
+      <div id="savedFilters" class="flex flex-wrap gap-1.5 mt-1.5">
+        <!-- Filtros salvos serão inseridos aqui -->
+      </div>
+    </div>
+
+    <!-- Chips de Filtros Ativos -->
+    <div id="filterChips" class="mb-2 flex flex-wrap gap-1.5 items-center min-h-[20px]">
+      <!-- Chips serão inseridos aqui dinamicamente -->
+    </div>
+
+    <!-- Campos de Filtro - Grid Responsivo Compacto -->
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-6 gap-2 mb-2">
+      <!-- Campo de Busca Principal -->
+      <div class="lg:col-span-2 relative group">
+        <label class="block text-xs font-semibold text-red-600 mb-1 flex items-center gap-0.5">
+          <svg class="w-3 h-3 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path>
+          </svg>
+          Cidade
+        </label>
+        <div class="relative">
+          <input id="inpCidade" class="w-full px-2.5 py-1.5 pr-8 bg-white border border-gray-300 rounded-lg focus:border-red-500 focus:ring-1 focus:ring-red-200 transition-all duration-200 text-xs placeholder-gray-400 filter-input" 
+                 placeholder="Digite a cidade..." autocomplete="off" />
+          <div class="absolute right-2.5 top-1/2 transform -translate-y-1/2 text-gray-400 group-hover:text-red-500 transition-colors">
+            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+            </svg>
+          </div>
+          <div class="absolute left-2.5 top-1/2 transform -translate-y-1/2 hidden" id="searchIndicator">
+            <div class="w-1.5 h-1.5 bg-red-500 rounded-full animate-pulse"></div>
+          </div>
+        </div>
+        <div id="cidadeSuggestions" class="absolute z-50 w-full bg-white border border-red-200 rounded-lg shadow-lg mt-0.5 max-h-48 overflow-y-auto hidden">
+          <!-- Sugestões serão inseridas aqui -->
+        </div>
+      </div>
+      
+      <!-- Filtros Secundários -->
+      <div class="relative group">
+        <label class="block text-xs font-semibold text-red-600 mb-1 flex items-center gap-0.5">
+          <svg class="w-3 h-3 text-yellow-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 21v-4m0 0V5a2 2 0 012-2h6.5l1 1H21l-3 6 3 6h-8.5l-1-1H5a2 2 0 00-2 2zm9-13.5V9"></path>
+          </svg>
+          Origem
+        </label>
+        <select id="selCidadeOrigem" class="w-full px-2.5 py-1.5 bg-white border border-gray-300 rounded-lg focus:border-yellow-500 focus:ring-1 focus:ring-yellow-200 transition-all duration-200 text-xs">
+          <option value="">Todas</option>
+        </select>
+      </div>
+      
+      <div class="relative group">
+        <label class="block text-xs font-semibold text-red-600 mb-1 flex items-center gap-0.5">
+          <svg class="w-3 h-3 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"></path>
+          </svg>
+          Transp.
+        </label>
+        <select id="selTransp" class="w-full px-2.5 py-1.5 bg-white border border-gray-300 rounded-lg focus:border-gray-500 focus:ring-1 focus:ring-gray-200 transition-all duration-200 text-xs">
+          <option value="">Todas</option>
+        </select>
+      </div>
+      
+      <div class="relative group">
+        <label class="block text-xs font-semibold text-red-600 mb-1 flex items-center gap-0.5">
+          <svg class="w-3 h-3 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 18.657A8 8 0 016.343 7.343S7 9 9 10c0-2 .5-5 2.986-7C14 5 16.09 5.777 17.656 7.343A7.975 7.975 0 0120 13a7.975 7.975 0 01-2.343 5.657z"></path>
+          </svg>
+          Estado
+        </label>
+        <select id="selUF" class="w-full px-2.5 py-1.5 bg-white border border-gray-300 rounded-lg focus:border-gray-500 focus:ring-1 focus:ring-gray-200 transition-all duration-200 text-xs">
+          <option value="">Todos</option>
+        </select>
+      </div>
+      
+      <div class="relative group">
+        <label class="block text-xs font-semibold text-red-600 mb-1 flex items-center gap-0.5">
+          <svg class="w-3 h-3 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+          </svg>
+          Prazo
+        </label>
+        <select id="selPrazo" class="w-full px-2.5 py-1.5 bg-white border border-gray-300 rounded-lg focus:border-gray-500 focus:ring-1 focus:ring-gray-200 transition-all duration-200 text-xs">
+          <option value="">Qualquer</option>
+          <option value="1">1 dia</option>
+          <option value="2">2 dias</option>
+          <option value="3">3 dias</option>
+          <option value="5">5 dias</option>
+          <option value="7">7 dias</option>
+          <option value="10">10 dias</option>
+        </select>
+      </div>
+    </div>
+
+    <!-- Botões de Ação - Compactos -->
+    <div class="flex items-center justify-between gap-1.5 flex-wrap">
+      <div class="flex items-center gap-1.5">
+        <button id="btnBuscar" class="group bg-gradient-to-r from-red-600 to-red-700 hover:from-red-700 hover:to-red-800 text-white px-4 py-1.5 rounded-lg font-medium text-xs transition-all duration-300 transform hover:scale-105 shadow-sm hover:shadow-md flex items-center gap-1.5">
+          <svg class="w-3.5 h-3.5 group-hover:rotate-12 transition-transform duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+          </svg>
+          <span>Buscar</span>
+          <div class="w-1.5 h-1.5 bg-yellow-400 rounded-full animate-pulse"></div>
+        </button>
+        
+        <button id="btnLimpar" class="group bg-gradient-to-r from-gray-500 to-gray-600 hover:from-gray-600 hover:to-gray-700 text-white px-2.5 py-1.5 rounded-lg font-medium text-xs transition-all duration-300 transform hover:scale-105 shadow-sm hover:shadow-md">
+          <svg class="w-3.5 h-3.5 group-hover:rotate-90 transition-transform duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+          </svg>
+        </button>
+      </div>
+      
+      <div class="flex items-center gap-1.5 text-xs text-gray-600">
+        <div class="w-1.5 h-1.5 bg-red-400 rounded-full animate-pulse"></div>
+        <span id="resultCounter" class="font-medium">Pronto</span>
+      </div>
+    </div>
+
+    {% if current_user.is_authenticated and current_user.role == 'admin' %}
+    <div class="mt-2 pt-2 border-t border-gray-200">
+      <button id="btnImport" class="group bg-gradient-to-r from-yellow-500 to-yellow-600 hover:from-yellow-600 hover:to-yellow-700 text-white px-3 py-1.5 rounded-lg font-medium text-xs transition-all duration-300 transform hover:scale-105 shadow-sm hover:shadow-md inline-flex items-center gap-1.5">
+        <span id="icnSpin" class="icon-rotate" style="display:none;"></span>
+        <svg class="w-3.5 h-3.5 group-hover:rotate-180 transition-transform duration-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path>
+        </svg>
+        <span>Atualizar</span>
+        <div class="w-1.5 h-1.5 bg-gray-400 rounded-full animate-pulse"></div>
+      </button>
+      <span id="importMsg" class="ml-2 text-xs text-gray-500"></span>
+    </div>
+    {% endif %}
+  </div>
+</div>
+
+<!-- Loading Skeletons para KPIs -->
+<div id="kpiSkeletons" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8 hidden">
+  <div class="bg-gradient-to-br from-white to-gray-50 rounded-xl shadow-lg border border-gray-200 p-6">
+    <div class="animate-pulse">
+      <div class="h-8 bg-gray-200 rounded mb-2"></div>
+      <div class="h-4 bg-gray-200 rounded mb-1"></div>
+      <div class="h-3 bg-gray-200 rounded w-3/4"></div>
+      <div class="mt-4 h-1 bg-gray-200 rounded"></div>
+    </div>
+  </div>
+  <div class="bg-gradient-to-br from-white to-gray-50 rounded-xl shadow-lg border border-gray-200 p-6">
+    <div class="animate-pulse">
+      <div class="h-8 bg-gray-200 rounded mb-2"></div>
+      <div class="h-4 bg-gray-200 rounded mb-1"></div>
+      <div class="h-3 bg-gray-200 rounded w-3/4"></div>
+      <div class="mt-4 h-1 bg-gray-200 rounded"></div>
+    </div>
+  </div>
+  <div class="bg-gradient-to-br from-white to-gray-50 rounded-xl shadow-lg border border-gray-200 p-6">
+    <div class="animate-pulse">
+      <div class="h-8 bg-gray-200 rounded mb-2"></div>
+      <div class="h-4 bg-gray-200 rounded mb-1"></div>
+      <div class="h-3 bg-gray-200 rounded w-3/4"></div>
+      <div class="mt-4 h-1 bg-gray-200 rounded"></div>
+    </div>
+      </div>
+  <div class="bg-gradient-to-br from-white to-gray-50 rounded-xl shadow-lg border border-gray-200 p-6">
+    <div class="animate-pulse">
+      <div class="h-8 bg-gray-200 rounded mb-2"></div>
+      <div class="h-4 bg-gray-200 rounded mb-1"></div>
+      <div class="h-3 bg-gray-200 rounded w-3/4"></div>
+      <div class="mt-4 h-1 bg-gray-200 rounded"></div>
+    </div>
+  </div>
+</div>
+
+<!-- KPIs Compactos com Design Clean -->
+<div id="kpiCards" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3 mb-3 stagger-animation">
+  <!-- Cidades Atendidas -->
+  <div class="relative group">
+    <div class="bg-gradient-to-br from-white to-gray-50 rounded-lg shadow-md border border-gray-200 p-3 hover:shadow-lg transition-all duration-300 cursor-pointer kpi-card">
+      <div class="flex items-center justify-between gap-2">
+        <div class="flex-1">
+          <div class="text-xs text-gray-500 uppercase tracking-wider font-semibold mb-0.5">Cidades</div>
+          <div id="kpiTotal" class="text-2xl font-bold text-gray-800 cursor-help" 
+               data-tooltip="Cidades distintas com cobertura ativa">—</div>
+          <div class="text-xs text-gray-600 mt-0.5" id="kpiTotalChange">únicas</div>
+        </div>
+        <div class="relative">
+          <div class="w-10 h-10 bg-gray-100 rounded-lg flex items-center justify-center flex-shrink-0">
+            <span class="text-lg text-gray-600">📊</span>
+          </div>
+        </div>
+      </div>
+      <div class="mt-2 h-0.5 bg-gray-200 rounded-full overflow-hidden">
+        <div id="kpiTotalBar" class="h-full bg-gray-500 rounded-full transition-all duration-1000" style="width: 0%"></div>
+      </div>
+    </div>
+  </div>
+  
+  <!-- Transportadoras -->
+  <div class="relative group">
+    <div class="bg-gradient-to-br from-yellow-50 to-yellow-100 rounded-lg shadow-md border border-yellow-200 p-3 hover:shadow-lg transition-all duration-300 cursor-pointer kpi-card">
+      <div class="flex items-center justify-between gap-2">
+        <div class="flex-1">
+          <div class="text-xs text-yellow-600 uppercase tracking-wider font-semibold mb-0.5">Transp.</div>
+          <div id="kpiTransp" class="text-2xl font-bold text-yellow-700 cursor-help" 
+               data-tooltip="Transportadoras parceiras ativas">—</div>
+          <div class="text-xs text-yellow-600 mt-0.5" id="kpiTranspChange">ativas</div>
+        </div>
+        <div class="relative">
+          <div class="w-10 h-10 bg-yellow-100 rounded-lg flex items-center justify-center flex-shrink-0">
+            <span class="text-lg text-yellow-600">🚛</span>
+          </div>
+        </div>
+      </div>
+      <div class="mt-2 h-0.5 bg-yellow-200 rounded-full overflow-hidden">
+        <div id="kpiTranspBar" class="h-full bg-yellow-500 rounded-full transition-all duration-1000" style="width: 0%"></div>
+      </div>
+    </div>
+  </div>
+  
+  <!-- Prazo Médio -->
+  <div class="relative group">
+    <div class="bg-gradient-to-br from-red-50 to-red-100 rounded-lg shadow-md border border-red-200 p-3 hover:shadow-lg transition-all duration-300 cursor-pointer kpi-card">
+      <div class="flex items-center justify-between gap-2">
+        <div class="flex-1">
+          <div class="text-xs text-red-600 uppercase tracking-wider font-semibold mb-0.5">Prazo</div>
+          <div id="kpiPrazo" class="text-2xl font-bold text-red-700 cursor-help" 
+               data-tooltip="Prazo médio em dias úteis">—</div>
+          <div class="text-xs text-red-600 mt-0.5">dias</div>
+        </div>
+        <div class="relative">
+          <div class="w-10 h-10 bg-red-100 rounded-lg flex items-center justify-center flex-shrink-0">
+            <span class="text-lg text-red-600">⏱️</span>
+          </div>
+        </div>
+      </div>
+      <div class="mt-2 h-0.5 bg-red-200 rounded-full overflow-hidden">
+        <div id="kpiPrazoBar" class="h-full bg-red-500 rounded-full transition-all duration-1000" style="width: 0%"></div>
+      </div>
+    </div>
+  </div>
+  
+  <!-- Estados Atendidos -->
+  <div class="relative group">
+    <div class="bg-gradient-to-br from-blue-50 to-blue-100 rounded-lg shadow-md border border-blue-200 p-3 hover:shadow-lg transition-all duration-300 cursor-pointer kpi-card">
+      <div class="flex items-center justify-between gap-2">
+        <div class="flex-1">
+          <div class="text-xs text-blue-600 uppercase tracking-wider font-semibold mb-0.5">Estados</div>
+          <div id="kpiEstados" class="text-2xl font-bold text-blue-700 cursor-help" 
+               data-tooltip="Estados com cobertura de entregas">—</div>
+          <div class="text-xs text-blue-600 mt-0.5" id="kpiEstadosChange">cobertos</div>
+        </div>
+        <div class="relative">
+          <div class="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center flex-shrink-0">
+            <span class="text-lg text-blue-600">🗺️</span>
+          </div>
+        </div>
+      </div>
+      <div class="mt-2 h-0.5 bg-blue-200 rounded-full overflow-hidden">
+        <div id="kpiEstadosBar" class="h-full bg-blue-500 rounded-full transition-all duration-1000" style="width: 0%"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Gráficos Interativos Compactos -->
+<div class="grid grid-cols-1 lg:grid-cols-2 gap-2 mb-3">
+  <div class="bg-kuhn-white rounded-lg shadow-md border border-kuhn-gray p-3">
+    <h3 class="text-sm font-semibold text-gray-800 mb-2 flex items-center gap-1.5">
+      <span class="text-blue-500 text-base">📊</span>
+      <span>Por Transportadora</span>
+    </h3>
+    <div class="h-48 flex items-center justify-center">
+      <canvas id="transportadoraChart" width="400" height="160"></canvas>
+    </div>
+  </div>
+  
+  <div class="bg-kuhn-white rounded-lg shadow-md border border-kuhn-gray p-3">
+    <h3 class="text-sm font-semibold text-gray-800 mb-2 flex items-center gap-1.5">
+      <span class="text-green-500 text-base">📈</span>
+      <span>Prazos por Região</span>
+    </h3>
+    <div class="h-48 flex items-center justify-center">
+      <canvas id="prazoChart" width="400" height="160"></canvas>
+    </div>
+  </div>
+</div>
+
+<!-- Tabela Compacta -->
+<div class="bg-kuhn-white rounded-lg shadow-md border border-kuhn-gray">
+  <div class="flex items-center justify-between px-3 py-2 border-b border-kuhn-gray bg-gradient-to-r from-gray-50 to-gray-100 flex-wrap gap-2">
+    <div class="text-xs text-gray-600 flex items-center gap-2">
+      <span>Mostrando <span id="lblFrom" class="font-semibold text-blue-600">0</span>-<span id="lblTo" class="font-semibold text-blue-600">0</span> de <span id="lblTotal" class="font-semibold text-blue-600">0</span></span>
+      <div class="flex items-center gap-1.5">
+        <span class="text-xs text-gray-500">Por página:</span>
+        <select id="pageSize" class="text-xs border border-gray-300 rounded px-1.5 py-0.5">
+          <option value="25">25</option>
+          <option value="50" selected>50</option>
+          <option value="100">100</option>
+        </select>
+      </div>
+    </div>
+    <div class="flex items-center gap-1.5">
+      <button id="btnPrev" class="bg-gray-200 hover:bg-gray-300 text-gray-700 hover:text-gray-800 text-xs px-2 py-1 flex items-center gap-0.5 rounded transition-colors">
+        <svg class="w-2.5 h-2.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
+        </svg>
+        <span class="hidden sm:inline">Ant.</span>
+      </button>
+      <span id="pageInfo" class="text-xs text-gray-600 px-1.5">1/1</span>
+      <button id="btnNext" class="bg-gray-600 hover:bg-gray-700 text-white text-xs px-2 py-1 flex items-center gap-0.5 rounded transition-colors">
+        <span class="hidden sm:inline">Próx.</span>
+        <svg class="w-2.5 h-2.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+        </svg>
+      </button>
+    </div>
+  </div>
+
+<!-- Loading Skeleton para Tabela -->
+<div id="tableSkeleton" class="bg-white rounded-xl shadow-lg border border-gray-200 overflow-hidden hidden">
+  <div class="p-6 border-b border-gray-200">
+    <div class="animate-pulse">
+      <div class="h-6 bg-gray-200 rounded w-1/4 mb-4"></div>
+      <div class="flex gap-4">
+        <div class="h-10 bg-gray-200 rounded w-32"></div>
+        <div class="h-10 bg-gray-200 rounded w-32"></div>
+        <div class="h-10 bg-gray-200 rounded w-32"></div>
+      </div>
+    </div>
+  </div>
+  <div class="p-6">
+    <div class="animate-pulse space-y-4">
+      <div class="h-4 bg-gray-200 rounded"></div>
+      <div class="h-4 bg-gray-200 rounded"></div>
+      <div class="h-4 bg-gray-200 rounded"></div>
+      <div class="h-4 bg-gray-200 rounded"></div>
+      <div class="h-4 bg-gray-200 rounded"></div>
+    </div>
+  </div>
+</div>
+
+<!-- Bulk Actions Bar -->
+<div id="bulkActionsBar" class="bg-red-50 border border-red-200 rounded-lg p-4 mb-4 hidden">
+  <div class="flex items-center justify-between">
+    <div class="flex items-center gap-3">
+      <span class="text-sm font-medium text-red-700">
+        <span id="selectedCount">0</span> itens selecionados
+      </span>
+    </div>
+    <div class="flex items-center gap-2">
+      <button id="exportSelected" class="text-xs bg-red-600 hover:bg-red-700 text-white px-3 py-1 rounded-md transition-colors flex items-center gap-1">
+        <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+        </svg>
+        Exportar
+      </button>
+      <button id="clearSelection" class="text-xs bg-gray-500 hover:bg-gray-800 text-white px-3 py-1 rounded-md transition-colors">
+        Limpar
+      </button>
+    </div>
+  </div>
+</div>
+
+  <div id="mainTable" class="overflow-x-auto overflow-y-auto custom-scrollbar max-h-[70vh]">
+    <table class="min-w-full table-hover">
+      <thead class="sticky top-0 z-10">
+        <tr class="text-left text-xs text-white border-b border-gray-200 bg-gray-900">
+          <th class="px-6 py-4 font-medium uppercase tracking-wider">
+            <input type="checkbox" id="selectAll" class="rounded border-gray-300 text-white focus:ring-red-500">
+          </th>
+          <th class="th-sort px-6 py-4 font-medium uppercase tracking-wider cursor-pointer hover:bg-gray-800 transition-colors" data-key="transportadora">
+            <div class="flex items-center gap-2">
+              <span class="text-white">Transportadora</span>
+              <svg class="w-3 h-3 opacity-50" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16V4m0 0L3 8m4-4l4 4m6 0v12m0 0l4-4m-4 4l-4-4"></path>
+              </svg>
+            </div>
+          </th>
+          <th class="th-sort px-6 py-4 font-medium uppercase tracking-wider cursor-pointer hover:bg-gray-800 transition-colors" data-key="cidade_origem">
+            <div class="flex items-center gap-2">
+              <span class="text-white">Cidade Origem</span>
+              <svg class="w-3 h-3 opacity-50" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16V4m0 0L3 8m4-4l4 4m6 0v12m0 0l4-4m-4 4l-4-4"></path>
+              </svg>
+            </div>
+          </th>
+          <th class="th-sort px-6 py-4 font-medium uppercase tracking-wider cursor-pointer hover:bg-gray-800 transition-colors" data-key="cidade">
+            <div class="flex items-center gap-2">
+              <span class="text-white">Cidade Destino</span>
+              <svg class="w-3 h-3 opacity-50" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16V4m0 0L3 8m4-4l4 4m6 0v12m0 0l4-4m-4 4l-4-4"></path>
+              </svg>
+            </div>
+          </th>
+          <th class="th-sort px-6 py-4 font-medium uppercase tracking-wider cursor-pointer hover:bg-gray-800 transition-colors" data-key="estado">
+            <div class="flex items-center gap-2">
+              <span class="text-white">Estado</span>
+              <svg class="w-3 h-3 opacity-50" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16V4m0 0L3 8m4-4l4 4m6 0v12m0 0l4-4m-4 4l-4-4"></path>
+              </svg>
+            </div>
+          </th>
+          <th class="th-sort px-6 py-4 font-medium uppercase tracking-wider cursor-pointer hover:bg-gray-800 transition-colors" data-key="prazo">
+            <div class="flex items-center gap-2">
+              <span class="text-white">Prazo</span>
+              <svg class="w-3 h-3 opacity-50" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16V4m0 0L3 8m4-4l4 4m6 0v12m0 0l4-4m-4 4l-4-4"></path>
+              </svg>
+            </div>
+          </th>
+          <th class="th-sort px-6 py-4 font-medium uppercase tracking-wider cursor-pointer hover:bg-gray-800 transition-colors" data-key="pais">
+            <div class="flex items-center gap-2">
+              <span class="text-white">País</span>
+              <svg class="w-3 h-3 opacity-50" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16V4m0 0L3 8m4-4l4 4m6 0v12m0 0l4-4m-4 4l-4-4"></path>
+              </svg>
+            </div>
+          </th>
+        </tr>
+      </thead>
+      <tbody id="tbRows" class="text-sm divide-y divide-gray-100">
+        <!-- Dados serão inseridos aqui -->
+      </tbody>
+    </table>
+  </div>
+
+  <div id="loading" class="loading hidden">
+    <div class="spinner"></div>
+    <div class="text-sm text-gray-500 mt-2">Carregando dados...</div>
+  </div>
+</div>
+
+<!-- Modal do Mapa Interativo -->
+<div id="mapModal" class="fixed inset-0 bg-black bg-opacity-50 z-50 hidden">
+  <div class="flex items-center justify-center min-h-screen p-4">
+    <div class="bg-white rounded-xl shadow-2xl w-full max-w-6xl h-[80vh] flex flex-col">
+      <div class="flex items-center justify-between p-6 border-b border-gray-200">
+        <h3 class="text-xl font-semibold text-gray-800 flex items-center gap-2">
+          <span class="text-blue-500">🗺️</span>
+          Mapa de Cobertura Nacional
+        </h3>
+        <button id="closeMapModal" class="text-gray-400 hover:text-gray-600 transition-colors">
+          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+          </svg>
+        </button>
+      </div>
+      <div class="flex-1 p-6">
+        <div id="mapContainer" class="w-full h-full bg-gray-100 rounded-lg flex items-center justify-center">
+          <div class="text-center text-gray-500">
+            <div class="text-4xl mb-2">🗺️</div>
+            <div>Mapa interativo será carregado aqui</div>
+            <div class="text-sm mt-1">Mostrando cidades atendidas por região</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Toast Notifications Container -->
+<div id="toastContainer" class="fixed top-4 right-4 z-50 space-y-2">
+  <!-- Toasts serão inseridos aqui -->
+</div>
+
+<!-- CSS Enhancements -->
+<link rel="stylesheet" href="{{ url_for('static', filename='css/enhancements.css') }}">
+<!-- CSS Compact Design -->
+<link rel="stylesheet" href="{{ url_for('static', filename='css/cidades-atendidas-compact.css') }}">
+
+<!-- Chart.js para gráficos interativos -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<!-- jsPDF para exportação PDF (usar jsDelivr por CSP) -->
+<script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/jspdf-autotable@3.5.31/dist/jspdf.plugin.autotable.min.js"></script>
+<!-- SheetJS para exportação Excel (jsDelivr) -->
+<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+<script>
+  // Desabilitar source maps para evitar erro de CSP
+  if (window.Chart) {
+    Chart.defaults.plugins.legend.display = true;
+    Chart.defaults.responsive = true;
+  }
+</script>
+
+<link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}" />
+<script src="{{ url_for('static', filename='js/cidades_atendidas.js') }}"></script>
+{% endblock %}

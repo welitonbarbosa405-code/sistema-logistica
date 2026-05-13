@@ -1,0 +1,271 @@
+<?xml version="1.0" encoding="utf-8"?>
+<cteProc versao="4.00" xmlns="http://www.portalfiscal.inf.br/cte">
+ <CTe xmlns="http://www.portalfiscal.inf.br/cte">
+  <infCte Id="CTe41260209296295000402570030019538621578551253" versao="4.00">
+   <ide>
+    <cUF>41</cUF>
+    <cCT>57855125</cCT>
+    <CFOP>5353</CFOP>
+    <natOp>PRESTACAO DE SERVICO AEREO</natOp>
+    <mod>57</mod>
+    <serie>3</serie>
+    <nCT>1953862</nCT>
+    <dhEmi>2026-02-25T14:41:17-03:00</dhEmi>
+    <tpImp>1</tpImp>
+    <tpEmis>1</tpEmis>
+    <cDV>3</cDV>
+    <tpAmb>1</tpAmb>
+    <tpCTe>0</tpCTe>
+    <procEmi>0</procEmi>
+    <verProc>OnlineApp-1.0</verProc>
+    <cMunEnv>4119905</cMunEnv>
+    <xMunEnv>Ponta Grossa</xMunEnv>
+    <UFEnv>PR</UFEnv>
+    <modal>02</modal>
+    <tpServ>0</tpServ>
+    <cMunIni>4119905</cMunIni>
+    <xMunIni>Ponta Grossa</xMunIni>
+    <UFIni>PR</UFIni>
+    <cMunFim>4125506</cMunFim>
+    <xMunFim>Sao Jose dos Pinhais</xMunFim>
+    <UFFim>PR</UFFim>
+    <retira>1</retira>
+    <xDetRetira>R FRANCISCO DAL NEGRO3400STO ANTONIOSao Jose dos PinhaisPR83025320</xDetRetira>
+    <indIEToma>1</indIEToma>
+    <toma3>
+     <toma>0</toma>
+    </toma3>
+   </ide>
+   <compl>
+    <xCaracAd>EMBARQUE</xCaracAd>
+    <fluxo>
+     <xOrig>CWB</xOrig>
+     <pass>
+      <xPass>CWB</xPass>
+     </pass>
+     <xDest>CWB</xDest>
+    </fluxo>
+    <Entrega>
+     <comData>
+      <tpPer>1</tpPer>
+      <dProg>2026-03-02</dProg>
+     </comData>
+     <semHora>
+      <tpHor>0</tpHor>
+     </semHora>
+    </Entrega>
+    <xObs>Base Legal:[Bases com IE centralizada - Dispositivo Legal - Ajuste SINIEF n. 10/89 | Artigo 17, inciso II , alinea I, RICMS/PR. PIS   COFINS  ]  Produto:[ECOMM_CORP] OR:[PGZ] DE:[CWBT1] Pagto:[ PX - FRETE PAGO EM CONTA CORRENTE]  SHC:[NOR-CARGA NORMAL]</xObs>
+    <ObsCont xCampo="PIS">
+     <xTexto>0.21</xTexto>
+    </ObsCont>
+    <ObsCont xCampo="COFINS">
+     <xTexto>0.96</xTexto>
+    </ObsCont>
+    <ObsCont xCampo="AWBNumber">
+     <xTexto>57757855125</xTexto>
+    </ObsCont>
+   </compl>
+   <emit>
+    <CNPJ>09296295000402</CNPJ>
+    <IE>9046311911</IE>
+    <xNome>AZUL LINHAS AEREAS BRASILEIRAS SA</xNome>
+    <enderEmit>
+     <xLgr>AV ROCHA POMBO</xLgr>
+     <nro>SN</nro>
+     <xBairro>SAO JOSE DOS PINHAIS</xBairro>
+     <cMun>4106902</cMun>
+     <xMun>CURITIBA</xMun>
+     <CEP>83010900</CEP>
+     <UF>PR</UF>
+    </enderEmit>
+    <CRT>3</CRT>
+   </emit>
+   <rem>
+    <CNPJ>06293564000146</CNPJ>
+    <IE>9034773693</IE>
+    <xNome>KADESH EQUIPAMENTOS PROFISSIONAIS LTDA</xNome>
+    <fone>04223436895</fone>
+    <enderReme>
+     <xLgr>R ANTONIO LOURENCO</xLgr>
+     <nro>8</nro>
+     <xBairro>CENTRO</xBairro>
+     <cMun>4110102</cMun>
+     <xMun>Imbituva</xMun>
+     <CEP>84430000</CEP>
+     <UF>PR</UF>
+     <cPais>1058</cPais>
+     <xPais>Brasil</xPais>
+    </enderReme>
+    <email>lincoln@kadeshonline.com</email>
+   </rem>
+   <dest>
+    <CNPJ>01186305000100</CNPJ>
+    <IE>9010969376</IE>
+    <xNome>KUHN DO BRASIL SA</xNome>
+    <fone>4121020200</fone>
+    <enderDest>
+     <xLgr>R FRANCISCO DAL NEGRO</xLgr>
+     <nro>3400</nro>
+     <xBairro>STO ANTONIO</xBairro>
+     <cMun>4125506</cMun>
+     <xMun>Sao Jose dos Pinhais</xMun>
+     <CEP>83025320</CEP>
+     <UF>PR</UF>
+     <cPais>1058</cPais>
+     <xPais>Brasil</xPais>
+    </enderDest>
+    <email>weliton.almeidas@kuhn.com</email>
+   </dest>
+   <vPrest>
+    <vTPrest>15.70</vTPrest>
+    <vRec>15.70</vRec>
+    <Comp>
+     <xNome>BC/TAXA EMISSAO</xNome>
+     <vComp>1.00</vComp>
+    </Comp>
+    <Comp>
+     <xNome>FRETE</xNome>
+     <vComp>12.67</vComp>
+    </Comp>
+    <Comp>
+     <xNome>IN/AD-VALOREM</xNome>
+     <vComp>1.83</vComp>
+    </Comp>
+    <Comp>
+     <xNome>KA/CAPATAZIA CO</xNome>
+     <vComp>0.20</vComp>
+    </Comp>
+   </vPrest>
+   <imp>
+    <ICMS>
+     <ICMS00>
+      <CST>00</CST>
+      <vBC>15.70</vBC>
+      <pICMS>12.00</pICMS>
+      <vICMS>1.88</vICMS>
+     </ICMS00>
+    </ICMS>
+    <vTotTrib>1.88</vTotTrib>
+    <IBSCBS>
+     <CST>000</CST>
+     <cClassTrib>000001</cClassTrib>
+     <gIBSCBS>
+      <vBC>15.70</vBC>
+      <gIBSUF>
+       <pIBSUF>0.1000</pIBSUF>
+       <vIBSUF>0.01</vIBSUF>
+      </gIBSUF>
+      <gIBSMun>
+       <pIBSMun>0.00</pIBSMun>
+       <vIBSMun>0.00</vIBSMun>
+      </gIBSMun>
+      <vIBS>0.01</vIBS>
+      <gCBS>
+       <pCBS>0.9000</pCBS>
+       <vCBS>0.14</vCBS>
+      </gCBS>
+     </gIBSCBS>
+    </IBSCBS>
+    <vTotDFe>15.70</vTotDFe>
+   </imp>
+   <infCTeNorm>
+    <infCarga>
+     <vCarga>277.80</vCarga>
+     <proPred>CALCADOS</proPred>
+     <xOutCat>NORMAL</xOutCat>
+     <infQ>
+      <cUnid>00</cUnid>
+      <tpMed>CUBAGEM</tpMed>
+      <qCarga>0.0200</qCarga>
+     </infQ>
+     <infQ>
+      <cUnid>01</cUnid>
+      <tpMed>PESO CUBADO</tpMed>
+      <qCarga>4.0000</qCarga>
+     </infQ>
+     <infQ>
+      <cUnid>01</cUnid>
+      <tpMed>PESO REAL</tpMed>
+      <qCarga>3.1000</qCarga>
+     </infQ>
+     <infQ>
+      <cUnid>01</cUnid>
+      <tpMed>PESO TAXADO</tpMed>
+      <qCarga>4.0000</qCarga>
+     </infQ>
+     <infQ>
+      <cUnid>03</cUnid>
+      <tpMed>VOLUMES</tpMed>
+      <qCarga>1.0000</qCarga>
+     </infQ>
+    </infCarga>
+    <infDoc>
+     <infNFe>
+      <chave>41260206293564000146550020003302561672620288</chave>
+     </infNFe>
+    </infDoc>
+    <infModal versaoModal="4.00">
+     <aereo>
+      <nMinu>057855125</nMinu>
+      <nOCA>57757855125</nOCA>
+      <dPrevAereo>2026-03-02</dPrevAereo>
+      <natCarga>
+       <xDime>20X30X40</xDime>
+      </natCarga>
+      <tarifa>
+       <CL>G</CL>
+       <vTar>12.67</vTar>
+      </tarifa>
+     </aereo>
+    </infModal>
+   </infCTeNorm>
+   <autXML>
+    <CNPJ>07947821000189</CNPJ>
+   </autXML>
+   <autXML>
+    <CNPJ>72699408000104</CNPJ>
+   </autXML>
+   <infRespTec>
+    <CNPJ>08580849000193</CNPJ>
+    <xContato>SmartOnline</xContato>
+    <email>suporte@onlineapp.com.br</email>
+    <fone>1940628611</fone>
+   </infRespTec>
+  </infCte>
+  <infCTeSupl>
+   <qrCodCTe><![CDATA[http://www.fazenda.pr.gov.br/cte/qrcode?chCTe=41260209296295000402570030019538621578551253&tpAmb=1]]></qrCodCTe>
+  </infCTeSupl>
+  <Signature xmlns="http://www.w3.org/2000/09/xmldsig#">
+   <SignedInfo>
+    <CanonicalizationMethod Algorithm="http://www.w3.org/TR/2001/REC-xml-c14n-20010315" />
+    <SignatureMethod Algorithm="http://www.w3.org/2000/09/xmldsig#rsa-sha1" />
+    <Reference URI="#CTe41260209296295000402570030019538621578551253">
+     <Transforms>
+      <Transform Algorithm="http://www.w3.org/2000/09/xmldsig#enveloped-signature" />
+      <Transform Algorithm="http://www.w3.org/TR/2001/REC-xml-c14n-20010315" />
+     </Transforms>
+     <DigestMethod Algorithm="http://www.w3.org/2000/09/xmldsig#sha1" />
+     <DigestValue>Y5jiBdHHMgC8eYDuzpG0qpo1qDM=</DigestValue>
+    </Reference>
+   </SignedInfo>
+   <SignatureValue>gBG/kNj/B0ywp5taHOV66R8UYZp/Evb2M9lPAqYblcPoB2mWvZ6Ih20Dxe+MVzGSvzOnWrQsbTBDDPeDLuNUpBgSkM5dnBYIeaARe0NVKhRGg1Ip9c+YB9z0IE5AGydId6oCnm4HLgDJasTB1r/t9AnnSkRuAgQUcNQhZk/YNb6szaGadXYPDn4aBrbui31whRscWw8s50OeMo2b3AaI0p86JU9futm2edPmavocNuK/7zZfdJ01RrxkMaV5EoQS9X4G2IgSoRdp76BgT/bMX3rsp9niSMxroXuWbKK6sOCtzLRI3KqmMb/EpXpUml54zDbNwi4xM6ECcw6yUxV9xQ==</SignatureValue>
+   <KeyInfo>
+    <X509Data>
+     <X509Certificate>MIIHSzCCBTOgAwIBAgIITF4lBhBxDUowDQYJKoZIhvcNAQELBQAwWTELMAkGA1UEBhMCQlIxEzARBgNVBAoTCklDUC1CcmFzaWwxFTATBgNVBAsTDEFDIFNPTFVUSSB2NTEeMBwGA1UEAxMVQUMgU09MVVRJIE11bHRpcGxhIHY1MB4XDTI1MDYxMDIxMTEwMFoXDTI2MDYxMDIxMTEwMFowgfExCzAJBgNVBAYTAkJSMRMwEQYDVQQKEwpJQ1AtQnJhc2lsMQswCQYDVQQIEwJTUDEQMA4GA1UEBxMHQmFydWVyaTEeMBwGA1UECxMVQUMgU09MVVRJIE11bHRpcGxhIHY1MRcwFQYDVQQLEw4yNTI2ODQyMjAwMDE3MzEcMBoGA1UECxMTQ2VydGlmaWNhZG8gRGlnaXRhbDEaMBgGA1UECxMRQ2VydGlmaWNhZG8gUEogQTExOzA5BgNVBAMTMkFaVUwgTElOSEFTIEFFUkVBUyBCUkFTSUxFSVJBUyBTLkEuOjA5Mjk2Mjk1MDAwMTYwMIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEApheOB/ijPoaJEsxpnZRZkz8xxK3P8yrQ5AwToqU3dt18qrcpcHL/igFXRw9hXCPMNSaDvDNwgKeGKW0piAFwK1y3XBdV5R0+XIvttKcReEeeFZa4xnmRimgqgn/4yJT53mridyWj0TIAh4mXyr2sGOCfZnZ3VBt8MZMxnMo/49F2Lgs/sTiO4bGA6z9g3G1ZuqmT7Q4zWB7A8TrW7stwyDMecB8kJ1r8CuNpv9PlOSEE8N6Os5ULbn2UxKG2dO6vTk3lMwUEIt39gSNclkJNsyBEVrYhqwx89d5T73wPIMr0IeML/pKy+vZxTM9/Tyfe94z+V+ik8Y3Tfu0vLXYzGQIDAQABo4ICfDCCAngwCQYDVR0TBAIwADAfBgNVHSMEGDAWgBTFUu0lgAnfnILIn0fG3bRfMd25sTBUBggrBgEFBQcBAQRIMEYwRAYIKwYBBQUHMAKGOGh0dHA6Ly9jY2QuYWNzb2x1dGkuY29tLmJyL2xjci9hYy1zb2x1dGktbXVsdGlwbGEtdjUucDdiMIG3BgNVHREEga8wgayBIGxlYW5kcm8uc29saXZlaXJhQHZvZWF6dWwuY29tLmJyoBoGBWBMAQMCoBETD0FCSEkgTUFOT0ogU0hBSKAZBgVgTAEDA6AQEw4wOTI5NjI5NTAwMDE2MKA4BgVgTAEDBKAvEy0yNzA5MTk3ODIzMzQyMDYzODU4MDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDCgFwYFYEwBAwegDhMMMDAwMDAwMDAwMDAwMF0GA1UdIARWMFQwUgYGYEwBAgEmMEgwRgYIKwYBBQUHAgEWOmh0dHA6Ly9jY2QuYWNzb2x1dGkuY29tLmJyL2RvY3MvZHBjLWFjLXNvbHV0aS1tdWx0aXBsYS5wZGYwHQYDVR0lBBYwFAYIKwYBBQUHAwIGCCsGAQUFBwMEMIGMBgNVHR8EgYQwgYEwPqA8oDqGOGh0dHA6Ly9jY2QuYWNzb2x1dGkuY29tLmJyL2xjci9hYy1zb2x1dGktbXVsdGlwbGEtdjUuY3JsMD+gPaA7hjlodHRwOi8vY2NkMi5hY3NvbHV0aS5jb20uYnIvbGNyL2FjLXNvbHV0aS1tdWx0aXBsYS12NS5jcmwwHQYDVR0OBBYEFPHR3Q+iHTznJoHrdHrKWVaaHdqeMA4GA1UdDwEB/wQEAwIF4DANBgkqhkiG9w0BAQsFAAOCAgEAhm4hNPFwuqSnSrpEsC4hW01NIuey8YSiyA8BWSJSRBTMUhWDWxZgGZcjgNi0MUjBAiGBoPlhvIHmDk8iHelGUNGXd8CUFXZPR8AR3fr1uz6BqbtiillAua1Tu3pyIgwHy/QYMEiBhepVSGYU/jIFK6LzQcGN+1lNhjr5aBc0x+VLk+zl6UlD/fgEnY7LfZeHOkoyfWq3w4xiaOmJ74xe24/wX/BAa7YH9HjWuGe6CNGmiZfa8c31EBEurC2K0Z7DvcXkdByVROeAEOkrOIuCtUp+y0yPNptv4xlh8ydiLTkJOzIKcKcZtfJhwxmsCi+BYmI+IINwKLQncthGL1Rd4j4keoEZbm/STJpaXBWfrLyj3n10KUpLFPwo+6FZwySuMX6zsTNtg1vewNAyCIoMnb38kUDEaedEO4f1PElZaYknkFYDEaOHqTfii0xlY38+EN8N6ex0A3fav3qOlm7R1JK3NI8s4ghY5E+2SoUy+cxlTMsmEAYWh8PH58S5srpdOONo1DzV2JwG46DD9G7QB6uWyrCXyYmV4Xbay3A0CDcPYcva9bhqZC+rl0IEUGvA5ukaumx27l4qezCBi+DL6v7Gw73PtEeBR0ez96wupCH2GzgTkXhT9U6HsZg6X2TmR1XoNDVwCMHIztwFnq6rKgFPWWaahnHfWrKqBYZxrX8=</X509Certificate>
+    </X509Data>
+   </KeyInfo>
+  </Signature>
+ </CTe>
+ <protCTe versao="4.00">
+  <infProt Id="ID141260055694961">
+   <tpAmb>1</tpAmb>
+   <verAplic>PR-v4.3.19</verAplic>
+   <chCTe>41260209296295000402570030019538621578551253</chCTe>
+   <dhRecbto>2026-02-25T14:41:19-03:00</dhRecbto>
+   <nProt>141260055694961</nProt>
+   <digVal>Y5jiBdHHMgC8eYDuzpG0qpo1qDM=</digVal>
+   <cStat>100</cStat>
+   <xMotivo>Autorizado o uso do CTe</xMotivo>
+  </infProt>
+ </protCTe>
+</cteProc>

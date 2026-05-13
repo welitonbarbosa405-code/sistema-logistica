@@ -1,0 +1,181 @@
+/**
+ * CSS para Corrigir Corte das Imagens do Slideshow
+ * Garantir cobertura total da viewport
+ */
+
+/* ===== CORREÇÃO FORÇADA PARA SLIDESHOW ===== */
+.kuhn-gallery-simple {
+  position: fixed !important;
+  top: 0 !important;
+  left: 0 !important;
+  width: 100% !important;
+  height: 100vh !important;
+  min-height: 100vh !important;
+  z-index: -2 !important;
+  overflow: hidden !important;
+}
+
+.slideshow-container-simple {
+  position: relative !important;
+  width: 100% !important;
+  height: 100vh !important;
+  min-height: 100vh !important;
+  overflow: hidden !important;
+}
+
+.slide-simple {
+  position: absolute !important;
+  top: 0 !important;
+  left: 0 !important;
+  width: 100% !important;
+  height: 100vh !important;
+  min-height: 100vh !important;
+  opacity: 0 !important;
+  transition: opacity 1s ease !important;
+  overflow: hidden !important;
+}
+
+.slide-simple.active {
+  opacity: 1 !important;
+}
+
+.slide-simple.active .slide-image-simple {
+  opacity: 1 !important;
+  visibility: visible !important;
+  display: block !important;
+}
+
+.slide-image-simple {
+  width: 100% !important;
+  height: 100vh !important;
+  min-height: 100vh !important;
+  object-fit: cover !important;
+  object-position: center center !important;
+  filter: brightness(1.1) saturate(1.2) contrast(1.1) !important;
+  position: absolute !important;
+  top: 0 !important;
+  left: 0 !important;
+  right: 0 !important;
+  bottom: 0 !important;
+  display: block !important;
+  visibility: visible !important;
+  opacity: 1 !important;
+  z-index: 1 !important;
+}
+
+.slide-overlay-simple {
+  position: absolute !important;
+  top: 0 !important;
+  left: 0 !important;
+  width: 100% !important;
+  height: 100vh !important;
+  min-height: 100vh !important;
+  background: linear-gradient(135deg, 
+    rgba(237, 28, 36, 0.1) 0%, 
+    rgba(196, 30, 58, 0.05) 50%, 
+    rgba(46, 52, 64, 0.1) 100%) !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  opacity: 0 !important;
+  transition: opacity 0.5s ease !important;
+}
+
+/* ===== RESPONSIVIDADE FORÇADA ===== */
+@media (max-width: 768px) {
+  .kuhn-gallery-simple,
+  .slideshow-container-simple,
+  .slide-simple,
+  .slide-image-simple,
+  .slide-overlay-simple {
+    height: 100vh !important;
+    min-height: 100vh !important;
+  }
+}
+
+@media (max-width: 480px) {
+  .kuhn-gallery-simple,
+  .slideshow-container-simple,
+  .slide-simple,
+  .slide-image-simple,
+  .slide-overlay-simple {
+    height: 100vh !important;
+    min-height: 100vh !important;
+  }
+}
+
+@media (max-height: 700px) {
+  .kuhn-gallery-simple,
+  .slideshow-container-simple,
+  .slide-simple,
+  .slide-image-simple,
+  .slide-overlay-simple {
+    height: 100vh !important;
+    min-height: 100vh !important;
+  }
+}
+
+@media (max-height: 600px) {
+  .kuhn-gallery-simple,
+  .slideshow-container-simple,
+  .slide-simple,
+  .slide-image-simple,
+  .slide-overlay-simple {
+    height: 100vh !important;
+    min-height: 100vh !important;
+  }
+}
+
+/* ===== GARANTIR QUE NÃO HAJA CORTES ===== */
+body {
+  margin: 0 !important;
+  padding: 0 !important;
+  overflow-x: hidden !important;
+  overflow-y: auto !important;
+}
+
+html {
+  margin: 0 !important;
+  padding: 0 !important;
+  overflow-x: hidden !important;
+  overflow-y: auto !important;
+}
+
+/* ===== REMOVER BARRAS DE ROLAGEM ===== */
+body::-webkit-scrollbar {
+  display: none !important;
+}
+
+html::-webkit-scrollbar {
+  display: none !important;
+}
+
+/* Para Firefox */
+body {
+  scrollbar-width: none !important;
+}
+
+html {
+  scrollbar-width: none !important;
+}
+
+/* ===== FORÇAR COBERTURA TOTAL ===== */
+.slide-image-simple {
+  background-size: cover !important;
+  background-position: center center !important;
+  background-repeat: no-repeat !important;
+}
+
+/* ===== ALTERNATIVA COM BACKGROUND ===== */
+.slide-simple[data-bg] {
+  background-size: cover !important;
+  background-position: center center !important;
+  background-repeat: no-repeat !important;
+}
+
+/* Manter as imagens visíveis mesmo com background */
+.slide-simple[data-bg] .slide-image-simple {
+  display: block !important;
+  opacity: 1 !important;
+  visibility: visible !important;
+}

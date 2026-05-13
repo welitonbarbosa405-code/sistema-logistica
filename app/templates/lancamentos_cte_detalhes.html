@@ -1,0 +1,381 @@
+{% extends "base.html" %}
+
+{% block title %}Detalhes do Lançamento Fiscal{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <!-- Breadcrumb -->
+    <nav aria-label="breadcrumb" class="mb-4">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="{{ url_for('lancamentos_cte.lista_lancamentos') }}">Lançamentos Fiscais</a></li>
+            <li class="breadcrumb-item active">{{ lancamento.numero_cte }}</li>
+        </ol>
+    </nav>
+
+    <!-- Header com CTE -->
+    <div class="row mb-4">
+        <div class="col-md-8">
+            <div class="d-flex align-items-center">
+                <h1 class="h3 me-3 mb-0">
+                    <i class="fas fa-file-invoice-dollar" style="color: #ff5722;"></i>
+                    CTe {{ lancamento.numero_cte }}
+                </h1>
+                {% if lancamento.status_cte %}
+                    <span class="badge bg-{{ lancamento.status_cte|lower|replace(' ', '-')|truncate(10, True, '')|replace('...', 'info', 1)|replace('info', 'warning') }}">
+                        {{ lancamento.status_cte }}
+                    </span>
+                {% endif %}
+            </div>
+            <p class="text-muted small">
+                <i class="fas fa-clock"></i> Sincronizado em: 
+                {{ lancamento.data_sincronizacao.strftime('%d/%m/%Y %H:%M:%S') if lancamento.data_sincronizacao else 'N/A' }}
+            </p>
+        </div>
+        <div class="col-md-4 text-end">
+            <a href="{{ url_for('lancamentos_cte.lista_lancamentos') }}" class="btn btn-secondary">
+                <i class="fas fa-arrow-left"></i> Voltar
+            </a>
+            {% if lancamento.pdf_cte %}
+            <a href="{{ url_for('lancamentos_cte.download_pdf', tipo='cte', caminho=lancamento.pdf_cte) }}" 
+               class="btn btn-primary" target="_blank">
+                <i class="fas fa-file-pdf"></i> Download CTe
+            </a>
+            {% endif %}
+        </div>
+    </div>
+
+    <div class="row">
+        <!-- Coluna Principal -->
+        <div class="col-lg-8">
+            <!-- Informações da Transportadora -->
+            <div class="card mb-4">
+                <div class="card-header bg-light d-flex align-items-center">
+                    <i class="fas fa-truck me-2" style="color: #ff5722;"></i>
+                    <h6 class="m-0">Transportadora</h6>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-12">
+                            <h5 class="mb-0">{{ lancamento.transportadora }}</h5>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Informações de Origem e Destino -->
+            <div class="card mb-4">
+                <div class="card-header bg-light d-flex align-items-center">
+                    <i class="fas fa-map-marked-alt me-2" style="color: #4CAF50;"></i>
+                    <h6 class="m-0">Localização</h6>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6 mb-3 mb-md-0">
+                            <h6 class="text-muted text-uppercase small">Origem (Envio)</h6>
+                            <p class="mb-0">
+                                <strong>{{ lancamento.municipio_envio }}</strong>
+                            </p>
+                            <p class="mb-0">
+                                <span class="badge bg-info">{{ lancamento.uf_envio }}</span>
+                            </p>
+                        </div>
+                        <div class="col-md-6">
+                            <h6 class="text-muted text-uppercase small">Destino</h6>
+                            <p class="mb-0">
+                                <strong>{{ lancamento.municipio_destino }}</strong>
+                            </p>
+                            <p class="mb-0">
+                                <span class="badge bg-success">{{ lancamento.uf_destino }}</span>
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Informações Financeiras -->
+            <div class="card mb-4">
+                <div class="card-header bg-light d-flex align-items-center">
+                    <i class="fas fa-dollar-sign me-2" style="color: #2196F3;"></i>
+                    <h6 class="m-0">Valores</h6>
+                </div>
+                <div class="card-body">
+                    <div class="row text-center">
+                        <div class="col-md-6 mb-3 mb-md-0">
+                            <h6 class="text-muted text-uppercase small">Valor Frete</h6>
+                            {% if lancamento.valor_frete %}
+                                <h4 class="text-success mb-0">R$ {{ "%.2f"|format(lancamento.valor_frete) }}</h4>
+                            {% else %}
+                                <p class="text-muted mb-0">—</p>
+                            {% endif %}
+                        </div>
+                        <div class="col-md-6">
+                            <h6 class="text-muted text-uppercase small">Valor Nota Fiscal</h6>
+                            {% if lancamento.valor_nota_fiscal %}
+                                <h4 class="text-primary mb-0">R$ {{ "%.2f"|format(lancamento.valor_nota_fiscal) }}</h4>
+                            {% else %}
+                                <p class="text-muted mb-0">—</p>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Informações de Fatura -->
+            <div class="card mb-4">
+                <div class="card-header bg-light d-flex align-items-center">
+                    <i class="fas fa-receipt me-2" style="color: #FF9800;"></i>
+                    <h6 class="m-0">Dados da Fatura</h6>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6 mb-3 mb-md-0">
+                            <h6 class="text-muted text-uppercase small">Número da Fatura</h6>
+                            {% if lancamento.numero_fatura %}
+                                <p class="mb-0">
+                                    <span class="badge bg-success">{{ lancamento.numero_fatura }}</span>
+                                </p>
+                            {% else %}
+                                <p class="text-muted mb-0">Não informado</p>
+                            {% endif %}
+                        </div>
+                        <div class="col-md-6">
+                            <h6 class="text-muted text-uppercase small">Vencimento da Fatura</h6>
+                            {% if lancamento.venc_fatura %}
+                                <p class="mb-0">{{ lancamento.venc_fatura }}</p>
+                            {% else %}
+                                <p class="text-muted mb-0">Não informado</p>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Informações Adicionais -->
+            <div class="card mb-4">
+                <div class="card-header bg-light d-flex align-items-center">
+                    <i class="fas fa-info-circle me-2" style="color: #9C27B0;"></i>
+                    <h6 class="m-0">Informações Adicionais</h6>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6 mb-3 mb-md-0">
+                            <h6 class="text-muted text-uppercase small">Nota Fiscal</h6>
+                            {% if lancamento.nota_fiscal %}
+                                <p class="mb-0">{{ lancamento.nota_fiscal }}</p>
+                            {% else %}
+                                <p class="text-muted mb-0">—</p>
+                            {% endif %}
+                        </div>
+                        <div class="col-md-6 mb-3 mb-md-0">
+                            <h6 class="text-muted text-uppercase small">Centro de Custo</h6>
+                            {% if lancamento.centro_custo %}
+                                <p class="mb-0">
+                                    <span class="badge bg-warning text-dark">{{ lancamento.centro_custo }}</span>
+                                </p>
+                            {% else %}
+                                <p class="text-muted mb-0">—</p>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Datas -->
+            <div class="card mb-4">
+                <div class="card-header bg-light d-flex align-items-center">
+                    <i class="fas fa-calendar-alt me-2" style="color: #00BCD4;"></i>
+                    <h6 class="m-0">Datas</h6>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-4 mb-3 mb-md-0">
+                            <h6 class="text-muted text-uppercase small">Emissão</h6>
+                            {% if lancamento.data_emissao %}
+                                <p class="mb-0">{{ lancamento.data_emissao }}</p>
+                            {% else %}
+                                <p class="text-muted mb-0">—</p>
+                            {% endif %}
+                        </div>
+                        <div class="col-md-4 mb-3 mb-md-0">
+                            <h6 class="text-muted text-uppercase small">Lançamento</h6>
+                            {% if lancamento.data_lancamento %}
+                                <p class="mb-0">{{ lancamento.data_lancamento }}</p>
+                            {% else %}
+                                <p class="text-muted mb-0">—</p>
+                            {% endif %}
+                        </div>
+                        <div class="col-md-4">
+                            <h6 class="text-muted text-uppercase small">Sincronização</h6>
+                            {% if lancamento.data_sincronizacao %}
+                                <p class="mb-0">
+                                    {{ lancamento.data_sincronizacao.strftime('%d/%m/%Y') }}
+                                    <small class="text-muted">{{ lancamento.data_sincronizacao.strftime('%H:%M') }}</small>
+                                </p>
+                            {% else %}
+                                <p class="text-muted mb-0">—</p>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Coluna Lateral (PDFs e CTE) -->
+        <div class="col-lg-4">
+            <!-- Card de Chave CTe -->
+            <div class="card mb-4 border-primary">
+                <div class="card-header bg-primary text-white d-flex align-items-center">
+                    <i class="fas fa-key me-2"></i>
+                    <h6 class="m-0">Chave CTe</h6>
+                </div>
+                <div class="card-body">
+                    <p class="mb-3 small font-monospace">
+                        {{ lancamento.chave_cte }}
+                    </p>
+                    <button class="btn btn-sm btn-outline-primary w-100" onclick="copiarChave()">
+                        <i class="fas fa-copy"></i> Copiar Chave
+                    </button>
+                </div>
+            </div>
+
+            <!-- Card de Downloads -->
+            <div class="card mb-4">
+                <div class="card-header bg-light d-flex align-items-center">
+                    <i class="fas fa-download me-2" style="color: #ff5722;"></i>
+                    <h6 class="m-0">Downloads</h6>
+                </div>
+                <div class="card-body">
+                    {% if lancamento.pdf_cte %}
+                    <a href="{{ url_for('lancamentos_cte.download_pdf', tipo='cte', caminho=lancamento.pdf_cte) }}" 
+                       class="btn btn-outline-danger w-100 mb-2" target="_blank">
+                        <i class="fas fa-file-pdf"></i> Download CTe
+                    </a>
+                    {% else %}
+                    <button class="btn btn-outline-secondary w-100 mb-2" disabled>
+                        <i class="fas fa-file-pdf"></i> CTe não disponível
+                    </button>
+                    {% endif %}
+
+                    {% if lancamento.pdf_fatura %}
+                    <a href="{{ url_for('lancamentos_cte.download_pdf', tipo='fatura', caminho=lancamento.pdf_fatura) }}" 
+                       class="btn btn-outline-success w-100" target="_blank">
+                        <i class="fas fa-receipt"></i> Download Fatura
+                    </a>
+                    {% else %}
+                    <button class="btn btn-outline-secondary w-100" disabled>
+                        <i class="fas fa-receipt"></i> Fatura não disponível
+                    </button>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Card de Status -->
+            <div class="card mb-4">
+                <div class="card-header bg-light d-flex align-items-center">
+                    <i class="fas fa-traffic-light me-2"></i>
+                    <h6 class="m-0">Status</h6>
+                </div>
+                <div class="card-body text-center">
+                    {% if lancamento.status_cte %}
+                        <h5 class="mb-3">
+                            <span class="badge bg-primary">{{ lancamento.status_cte }}</span>
+                        </h5>
+                    {% else %}
+                        <p class="text-muted">Informação não disponível</p>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Card de Resumo Rápido -->
+            <div class="card bg-light">
+                <div class="card-header bg-secondary text-white d-flex align-items-center">
+                    <i class="fas fa-list me-2"></i>
+                    <h6 class="m-0">Resumo Rápido</h6>
+                </div>
+                <div class="card-body">
+                    <ul class="list-unstyled small">
+                        <li class="mb-2">
+                            <strong>CTe:</strong> {{ lancamento.numero_cte }}
+                        </li>
+                        <li class="mb-2">
+                            <strong>Transportadora:</strong> {{ lancamento.transportadora }}
+                        </li>
+                        <li class="mb-2">
+                            <strong>Rota:</strong> {{ lancamento.uf_envio }} → {{ lancamento.uf_destino }}
+                        </li>
+                        <li class="mb-2">
+                            <strong>Frete:</strong> 
+                            {% if lancamento.valor_frete %}
+                                R$ {{ "%.2f"|format(lancamento.valor_frete) }}
+                            {% else %}
+                                —
+                            {% endif %}
+                        </li>
+                        <li class="mb-2">
+                            <strong>NF:</strong>
+                            {% if lancamento.numero_fatura %}
+                                {{ lancamento.numero_fatura }}
+                            {% else %}
+                                —
+                            {% endif %}
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Alert Inferior -->
+    <div class="row mt-4">
+        <div class="col-12">
+            <div class="alert alert-info alert-dismissible fade show" role="alert">
+                <i class="fas fa-lightbulb me-2"></i>
+                <strong>Dica:</strong> Mantenha os dados de CTe sincronizados! Clique no botão "Sincronizar" na lista de lançamentos para atualizar as informações.
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function copiarChave() {
+    const chave = '{{ lancamento.chave_cte }}';
+    navigator.clipboard.writeText(chave).then(() => {
+        alert('✅ Chave copiada para a área de transferência!');
+    }).catch(err => {
+        console.error('Erro ao copiar:', err);
+    });
+}
+</script>
+
+<style>
+    .font-monospace {
+        font-family: 'Courier New', Courier, monospace;
+        background-color: #f5f5f5;
+        padding: 8px 12px;
+        border-radius: 4px;
+        word-break: break-all;
+    }
+    
+    .border-left-primary {
+        border-left: 4px solid #007bff !important;
+    }
+    
+    .border-left-success {
+        border-left: 4px solid #28a745 !important;
+    }
+    
+    .border-left-info {
+        border-left: 4px solid #17a2b8 !important;
+    }
+    
+    .border-left-warning {
+        border-left: 4px solid #ffc107 !important;
+    }
+    
+    .badge {
+        font-size: 0.85rem;
+        padding: 0.5rem 0.75rem;
+    }
+</style>
+{% endblock %}

@@ -1,0 +1,17 @@
+.env
+venv/
+__pycache__/
+*.pyc
+
+*.db
+instance/
+
+logs/
+backups/
+
+.vscode/
+.vs/
+
+*.xlsx
+*.log
+`` 

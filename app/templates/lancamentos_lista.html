@@ -1,0 +1,1440 @@
+{% extends 'base.html' %}
+{% block content %}
+
+<!-- Toast Notifications -->
+<div id="toast-container" class="fixed top-4 right-4 z-50 flex flex-col gap-2">
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            {% for category, message in messages %}
+            <div class="toast-notification {{ 'bg-green-500' if category == 'success' else 'bg-red-500' if category == 'danger' else 'bg-blue-500' }} text-white px-6 py-4 rounded-lg shadow-2xl flex items-center gap-3 transform transition-all duration-500 animate-slide-in">
+                <span class="text-xl">{{ '✅' if category == 'success' else '❌' if category == 'danger' else 'ℹ️' }}</span>
+                <span class="font-medium">{{ message }}</span>
+                <button onclick="this.parentElement.remove()" class="ml-4 text-white hover:text-gray-200 text-xl font-bold">&times;</button>
+            </div>
+            {% endfor %}
+        {% endif %}
+    {% endwith %}
+</div>
+
+<style>
+    @keyframes slideIn {
+        from { transform: translateX(100%); opacity: 0; }
+        to { transform: translateX(0); opacity: 1; }
+    }
+    @keyframes slideOut {
+        from { transform: translateX(0); opacity: 1; }
+        to { transform: translateX(100%); opacity: 0; }
+    }
+    @keyframes pulse-icon {
+        0%, 100% { transform: scale(1); }
+        50% { transform: scale(1.1); }
+    }
+    @keyframes float {
+        0%, 100% { transform: translateY(0); }
+        50% { transform: translateY(-10px); }
+    }
+    @keyframes fadeInUp {
+        from { opacity: 0; transform: translateY(20px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+    .animate-slide-in { animation: slideIn 0.4s ease-out; }
+    .animate-slide-out { animation: slideOut 0.4s ease-out forwards; }
+    .animate-float { animation: float 3s ease-in-out infinite; }
+    .animate-fade-in-up { animation: fadeInUp 0.5s ease-out; }
+    
+    /* Cards de estatísticas com animações aprimoradas */
+    .stat-card { 
+        transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        position: relative;
+        overflow: hidden;
+    }
+    .stat-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: linear-gradient(135deg, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0) 100%);
+        opacity: 0;
+        transition: opacity 0.3s ease;
+    }
+    .stat-card:hover { 
+        transform: translateY(-8px) scale(1.02); 
+        box-shadow: 0 20px 40px rgba(0,0,0,0.15);
+    }
+    .stat-card:hover::before {
+        opacity: 1;
+    }
+    .stat-card:hover .stat-icon {
+        animation: pulse-icon 0.6s ease-in-out;
+    }
+    .stat-card:hover .stat-value {
+        transform: scale(1.05);
+    }
+    .stat-value {
+        transition: transform 0.3s ease;
+    }
+    
+    .table-row-animate { transition: all 0.2s ease; }
+    .table-row-animate:hover { background-color: #fef2f2; }
+    
+    /* Input com ícone */
+    .input-with-icon {
+        position: relative;
+    }
+    .input-with-icon .input-icon {
+        position: absolute;
+        left: 12px;
+        top: 50%;
+        transform: translateY(-50%);
+        color: #9ca3af;
+        pointer-events: none;
+        transition: color 0.2s ease;
+    }
+    .input-with-icon input:focus ~ .input-icon,
+    .input-with-icon select:focus ~ .input-icon {
+        color: #c41e3a;
+    }
+    .input-with-icon input,
+    .input-with-icon select {
+        padding-left: 40px !important;
+    }
+    
+    /* Tooltip customizado */
+    .tooltip-container {
+        position: relative;
+    }
+    .tooltip-container .tooltip {
+        visibility: hidden;
+        opacity: 0;
+        position: absolute;
+        bottom: calc(100% + 8px);
+        left: 50%;
+        transform: translateX(-50%);
+        background: #1f2937;
+        color: white;
+        padding: 6px 12px;
+        border-radius: 6px;
+        font-size: 12px;
+        white-space: nowrap;
+        transition: all 0.2s ease;
+        z-index: 10;
+    }
+    .tooltip-container .tooltip::after {
+        content: '';
+        position: absolute;
+        top: 100%;
+        left: 50%;
+        transform: translateX(-50%);
+        border: 6px solid transparent;
+        border-top-color: #1f2937;
+    }
+    .tooltip-container:hover .tooltip {
+        visibility: visible;
+        opacity: 1;
+    }
+    
+    /* Ilustração do estado vazio */
+    .empty-illustration {
+        position: relative;
+    }
+    .empty-illustration .doc-main {
+        animation: float 3s ease-in-out infinite;
+    }
+    .empty-illustration .doc-shadow {
+        animation: float 3s ease-in-out infinite;
+        animation-delay: 0.2s;
+        opacity: 0.3;
+    }
+    .empty-illustration .sparkle {
+        animation: pulse-icon 2s ease-in-out infinite;
+    }
+    .empty-illustration .sparkle:nth-child(2) { animation-delay: 0.3s; }
+    .empty-illustration .sparkle:nth-child(3) { animation-delay: 0.6s; }
+    
+    /* Cabeçalho da tabela ordenável */
+    .sortable-header {
+        cursor: pointer;
+        user-select: none;
+        position: relative;
+    }
+    .sortable-header:hover {
+        background: rgba(255,255,255,0.1);
+    }
+    .sort-icon {
+        opacity: 0.3;
+        transition: opacity 0.2s;
+    }
+    .sortable-header:hover .sort-icon,
+    .sortable-header.active .sort-icon {
+        opacity: 1;
+    }
+    
+    /* Card de fatura */
+    .fatura-card {
+        transition: all 0.2s ease;
+    }
+    .fatura-card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 25px rgba(0,0,0,0.1);
+    }
+    
+    /* Busca rápida dropdown */
+    .search-dropdown {
+        position: absolute;
+        top: 100%;
+        left: 0;
+        right: 0;
+        background: white;
+        border-radius: 0 0 8px 8px;
+        box-shadow: 0 10px 25px rgba(0,0,0,0.15);
+        z-index: 50;
+        max-height: 300px;
+        overflow-y: auto;
+    }
+    .search-item {
+        padding: 10px 12px;
+        border-bottom: 1px solid #f3f4f6;
+        cursor: pointer;
+        transition: background 0.15s;
+    }
+    .search-item:hover {
+        background: #fef2f2;
+    }
+    .search-item:last-child {
+        border-bottom: none;
+    }
+      /* Toggle visualização - Paleta Kuhn */
+    .view-toggle {
+        display: flex;
+        background: #f3f4f6;
+        border-radius: 6px;
+        padding: 2px;
+        gap: 2px;
+    }
+    .view-toggle button {
+        padding: 6px 12px;
+        border-radius: 4px;
+        transition: all 0.3s ease;
+        color: #4A4A4A;
+        border: 1px solid transparent;
+        cursor: pointer;
+        font-weight: 500;
+    }
+    .view-toggle button:hover {
+        background: #e5e7eb;
+        color: #ED1C24;
+    }
+    .view-toggle button.active {
+        background: #ED1C24;
+        color: white;
+        box-shadow: 0 4px 12px rgba(237, 28, 36, 0.3);
+        border-color: #ED1C24;
+    }    .view-toggle button.active:hover {
+        background: #c41e3a;
+        box-shadow: 0 6px 16px rgba(237, 28, 36, 0.4);
+    }
+    
+    /* Seção de filtros melhorada */
+    .filters-section {
+        background: linear-gradient(135deg, #f8f9fa 0%, #ffffff 100%);
+        border: 1px solid #e5e7eb;
+    }
+    
+    .filter-row {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 12px;
+        align-items: center;
+    }
+    
+    @media (max-width: 768px) {
+        .filter-row {
+            gap: 8px;
+        }
+    }
+    
+    .filter-group {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        flex-wrap: wrap;
+    }
+    
+    .filter-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        background: linear-gradient(135deg, #ED1C24 0%, #c41e3a 100%);
+        color: white;
+        padding: 6px 14px;
+        border-radius: 20px;
+        font-size: 12px;
+        font-weight: 600;
+        box-shadow: 0 4px 12px rgba(237, 28, 36, 0.25);
+        animation: slideIn 0.4s ease-out;
+    }
+    
+    .filter-badge svg {
+        width: 14px;
+        height: 14px;
+        animation: spin 2s linear infinite;
+    }
+    
+    @keyframes spin {
+        from { transform: rotate(0deg); }
+        to { transform: rotate(360deg); }
+    }
+    
+    .filter-separator {
+        height: 20px;
+        width: 1px;
+        background: #d1d5db;
+        margin: 0 4px;
+    }
+</style>
+
+<!-- Chart.js para gráficos -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<div class="container mx-auto px-4 py-3">
+    <!-- Cabeçalho com título e botões -->
+    <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-3 gap-2">
+        <div>
+            <h2 class="text-xl font-bold text-kuhn-red flex items-center gap-2">
+                <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M4 4a2 2 0 012-2h4.586A2 2 0 0112 2.586L15.414 6A2 2 0 0116 7.414V16a2 2 0 01-2 2H6a2 2 0 01-2-2V4zm2 6a1 1 0 011-1h6a1 1 0 110 2H7a1 1 0 01-1-1zm1 3a1 1 0 100 2h6a1 1 0 100-2H7z" clip-rule="evenodd"></path></svg>
+                Lançamentos Fiscais
+            </h2>
+            <p class="text-kuhn-dark-gray text-xs">Gerencie as faturas das transportadoras</p>
+        </div>
+        <div class="flex gap-2">
+            {% if lancamentos %}
+            <a href="{{ url_for('lancamentos.exportar_excel') }}{% if request.query_string %}?{{ request.query_string.decode() }}{% endif %}" 
+               class="bg-green-600 hover:bg-green-700 text-white font-semibold py-1.5 px-4 rounded-lg shadow transition transform hover:scale-105 flex items-center gap-2 text-sm">
+                <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M3 17a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm3.293-7.707a1 1 0 011.414 0L9 10.586V3a1 1 0 112 0v7.586l1.293-1.293a1 1 0 111.414 1.414l-3 3a1 1 0 01-1.414 0l-3-3a1 1 0 010-1.414z" clip-rule="evenodd"></path></svg>
+                Exportar Excel
+            </a>
+            {% endif %}
+            <a href="{{ url_for('lancamentos.upload_lancamento') }}" class="bg-kuhn-red hover:bg-kuhn-red-dark text-white font-semibold py-1.5 px-4 rounded-lg shadow transition transform hover:scale-105 flex items-center gap-2 text-sm">
+                <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" clip-rule="evenodd"></path></svg>
+                Nova Fatura
+            </a>
+        </div>
+    </div>
+
+    <!-- Cards de estatísticas - Design Minimalista -->
+    <div class="grid grid-cols-2 md:grid-cols-5 gap-2 mb-3">
+        <!-- Total de Faturas -->
+        <div class="bg-white rounded-lg shadow-sm p-3 border-l-4 border-kuhn-red">
+            <p class="text-gray-500 text-[10px] font-medium uppercase">Total</p>
+            <p class="text-2xl font-bold text-kuhn-navy">{{ total_faturas }}</p>
+        </div>
+        
+        <!-- Valor Total -->
+        <div class="bg-white rounded-lg shadow-sm p-3 border-l-4 border-green-500">
+            <p class="text-gray-500 text-[10px] font-medium uppercase">Valor Total</p>
+            <p class="text-lg font-bold text-green-600">R$ {{ "{:,.2f}".format(valor_total).replace(",", "X").replace(".", ",").replace("X", ".") }}</p>
+        </div>
+        
+        <!-- Faturas Vencidas -->
+        <a href="{{ url_for('lancamentos.lista_lancamentos', status='vencida') }}" class="bg-white rounded-lg shadow-sm p-3 border-l-4 border-red-500 hover:bg-red-50 transition">
+            <p class="text-gray-500 text-[10px] font-medium uppercase">Vencidas</p>
+            <p class="text-2xl font-bold text-red-600">{{ faturas_vencidas }}</p>
+            {% if valor_vencido > 0 %}
+            <p class="text-[10px] text-red-400">R$ {{ "{:,.2f}".format(valor_vencido).replace(",", "X").replace(".", ",").replace("X", ".") }}</p>
+            {% endif %}
+        </a>
+        
+        <!-- A Vencer -->
+        <a href="{{ url_for('lancamentos.lista_lancamentos', status='pendente') }}" class="bg-white rounded-lg shadow-sm p-3 border-l-4 border-yellow-500 hover:bg-yellow-50 transition">
+            <p class="text-gray-500 text-[10px] font-medium uppercase">A Vencer (7d)</p>
+            <p class="text-2xl font-bold text-yellow-600">{{ faturas_a_vencer }}</p>
+        </a>
+        
+        <!-- Faturas Pagas -->
+        <a href="{{ url_for('lancamentos.lista_lancamentos', status='paga') }}" class="bg-white rounded-lg shadow-sm p-3 border-l-4 border-emerald-500 hover:bg-emerald-50 transition">
+            <p class="text-gray-500 text-[10px] font-medium uppercase">Pagas</p>
+            <p class="text-2xl font-bold text-emerald-600">{{ faturas_pagas }}</p>        </a>
+    </div>    <!-- Filtros compactos - TUDO EM UMA LINHA -->
+    <div class="bg-white rounded-lg shadow mb-3">
+        <div class="p-3">
+            {% set filtros_ativos = (filtro_transportadora or filtro_numero or filtro_data_inicio or filtro_data_fim or filtro_status) %}
+            {% set qtd_filtros = (1 if filtro_transportadora else 0) + (1 if filtro_numero else 0) + (1 if filtro_data_inicio else 0) + (1 if filtro_data_fim else 0) + (1 if filtro_status else 0) %}
+            <form method="get" id="formFiltros" class="flex flex-wrap items-center gap-2">
+                <input type="hidden" name="view" value="{{ visualizacao }}">
+                <input type="hidden" name="ordenar" value="{{ ordenar_por }}">
+                <input type="hidden" name="direcao" value="{{ direcao }}">
+                
+                <!-- Busca rápida -->
+                <div class="relative min-w-[180px]">
+                    <input type="text" id="buscaRapida" placeholder="🔍 Buscar..." 
+                           value="{{ busca_rapida }}"
+                           class="w-full border border-gray-300 rounded px-2 py-1.5 text-xs focus:ring-2 focus:ring-kuhn-red focus:border-kuhn-red"
+                           autocomplete="off">
+                    <div id="searchDropdown" class="search-dropdown hidden"></div>
+                    <span id="searchLoader" class="absolute right-2 top-1/2 -translate-y-1/2 hidden">
+                        <svg class="animate-spin w-3 h-3 text-gray-400" fill="none" viewBox="0 0 24 24">
+                            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                        </svg>
+                    </span>
+                </div>
+                
+                <!-- Toggle Visualização -->
+                <div class="view-toggle" style="gap: 0;">
+                    <button type="button" onclick="alternarVisualizacao('tabela')" 
+                            class="{{ 'active' if visualizacao == 'tabela' else '' }}" title="Tabela" style="display: flex; align-items: center; gap: 4px; padding: 6px 10px; border-radius: 4px 0 0 4px;">
+                        <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M5 4a3 3 0 00-3 3v6a3 3 0 003 3h10a3 3 0 003-3V7a3 3 0 00-3-3H5zm-1 9v-1h5v2H5a1 1 0 01-1-1zm7 1h4a1 1 0 001-1v-1h-5v2zm0-4h5V8h-5v2zM9 8H4v2h5V8z" clip-rule="evenodd"></path></svg>
+                    </button>
+                    <button type="button" onclick="alternarVisualizacao('cards')" 
+                            class="{{ 'active' if visualizacao == 'cards' else '' }}" title="Cards" style="display: flex; align-items: center; gap: 4px; padding: 6px 10px;">
+                        <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20"><path d="M5 3a2 2 0 00-2 2v2a2 2 0 002 2h2a2 2 0 002-2V5a2 2 0 00-2-2H5zM5 11a2 2 0 00-2 2v2a2 2 0 002 2h2a2 2 0 002-2v-2a2 2 0 00-2-2H5zM11 5a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V5zM11 13a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"></path></svg>
+                    </button>
+                    <button type="button" onclick="alternarVisualizacao('dashboard')" 
+                            class="{{ 'active' if visualizacao == 'dashboard' else '' }}" title="Dashboard" style="display: flex; align-items: center; gap: 4px; padding: 6px 10px; border-radius: 0 4px 4px 0;">
+                        <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20"><path d="M2 11a1 1 0 011-1h2a1 1 0 011 1v5a1 1 0 01-1 1H3a1 1 0 01-1-1v-5zM8 7a1 1 0 011-1h2a1 1 0 011 1v9a1 1 0 01-1 1H9a1 1 0 01-1-1V7zM14 4a1 1 0 011-1h2a1 1 0 011 1v12a1 1 0 01-1 1h-2a1 1 0 01-1-1V4z"></path></svg>
+                    </button>
+                </div>                <!-- Campo: Transportadora -->
+                <select name="transportadora" id="filtro_transportadora" class="border border-gray-300 rounded px-2 py-1.5 text-xs focus:ring-2 focus:ring-kuhn-red focus:border-kuhn-red bg-white hover:border-kuhn-red transition" style="min-width: 120px;">
+                    <option value="">Transportadora</option>
+                    {% for t in transportadoras %}
+                    <option value="{{ t }}" {% if filtro_transportadora == t %}selected{% endif %}>{{ t }}</option>
+                    {% endfor %}
+                </select>
+                
+                <!-- Campo: Nº Fatura -->
+                <input type="text" name="numero_fatura" id="filtro_numero" value="{{ filtro_numero }}" placeholder="Nº Fatura" class="border border-gray-300 rounded px-2 py-1.5 text-xs focus:ring-2 focus:ring-kuhn-red focus:border-kuhn-red hover:border-kuhn-red transition" style="flex: 0 0 auto; width: 90px;">
+                
+                <!-- Campo: Data Início -->
+                <input type="date" name="data_inicio" id="filtro_data_inicio" value="{{ filtro_data_inicio }}" class="border border-gray-300 rounded px-2 py-1.5 text-xs focus:ring-2 focus:ring-kuhn-red focus:border-kuhn-red hover:border-kuhn-red transition" style="flex: 0 0 auto; min-width: 110px;">
+                  <!-- Campo: Data Fim -->
+                <input type="date" name="data_fim" id="filtro_data_fim" value="{{ filtro_data_fim }}" class="border border-gray-300 rounded px-2 py-1.5 text-xs focus:ring-2 focus:ring-kuhn-red focus:border-kuhn-red hover:border-kuhn-red transition" style="flex: 0 0 auto; min-width: 110px;">
+                
+                <!-- Campo: Status -->
+                <select name="status" id="filtro_status" class="border border-gray-300 rounded px-2 py-1.5 text-xs focus:ring-2 focus:ring-kuhn-red focus:border-kuhn-red bg-white hover:border-kuhn-red transition" style="min-width: 130px;">
+                    <option value="">Todos Status</option>
+                    <option value="pendente" {% if filtro_status == 'pendente' %}selected{% endif %}>🟡 Pendente</option>
+                    <option value="vencida" {% if filtro_status == 'vencida' %}selected{% endif %}>🔴 Vencida</option>
+                    <option value="paga" {% if filtro_status == 'paga' %}selected{% endif %}>🟢 Paga</option>
+                    <option value="cancelada" {% if filtro_status == 'cancelada' %}selected{% endif %}>⚫ Cancelada</option>
+                </select>
+                
+                <!-- Badge: Filtros Ativos -->
+                {% if filtros_ativos %}
+                <span class="text-xs text-kuhn-red font-semibold bg-red-50 border border-red-200 px-2.5 py-1.5 rounded inline-flex items-center gap-1 flex-shrink-0 ml-auto">
+                    <svg class="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"></path></svg>
+                    {{ qtd_filtros }}
+                </span>
+                {% endif %}
+            </form>
+        </div>
+    </div>
+      <!-- Dashboard com gráficos -->
+    <div id="dashboardView" class="{{ 'hidden' if visualizacao != 'dashboard' else '' }} mb-3">
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
+            <!-- Gráfico de faturas por mês -->
+            <div class="bg-white rounded-lg shadow p-4">
+                <h3 class="text-sm font-semibold text-kuhn-navy mb-3 flex items-center gap-2">
+                    <svg class="w-4 h-4 text-kuhn-red" fill="currentColor" viewBox="0 0 20 20"><path d="M2 11a1 1 0 011-1h2a1 1 0 011 1v5a1 1 0 01-1 1H3a1 1 0 01-1-1v-5zM8 7a1 1 0 011-1h2a1 1 0 011 1v9a1 1 0 01-1 1H9a1 1 0 01-1-1V7zM14 4a1 1 0 011-1h2a1 1 0 011 1v12a1 1 0 01-1 1h-2a1 1 0 01-1-1V4z"></path></svg>
+                    Faturas por Mês (Últimos 6 meses)
+                </h3>
+                <div class="relative" style="height: 200px;">
+                    <canvas id="chartFaturasMes"></canvas>
+                </div>
+            </div>
+            
+            <!-- Gráfico por transportadora -->
+            <div class="bg-white rounded-lg shadow p-4">
+                <h3 class="text-sm font-semibold text-kuhn-navy mb-3 flex items-center gap-2">
+                    <svg class="w-4 h-4 text-blue-500" fill="currentColor" viewBox="0 0 20 20"><path d="M8 16.5a1.5 1.5 0 11-3 0 1.5 1.5 0 013 0zM15 16.5a1.5 1.5 0 11-3 0 1.5 1.5 0 013 0z"/><path d="M3 4a1 1 0 00-1 1v10a1 1 0 001 1h1.05a2.5 2.5 0 014.9 0H10a1 1 0 001-1v-1h3.05a2.5 2.5 0 014.9 0H19a1 1 0 001-1v-4a1 1 0 00-.293-.707l-3-3A1 1 0 0016 5h-5a1 1 0 00-1 1v4H3V5a1 1 0 00-1-1z"/></svg>
+                    Top 5 Transportadoras (por valor)
+                </h3>
+                <div class="relative" style="height: 200px;">
+                    <canvas id="chartTransportadoras"></canvas>
+                </div>
+            </div>
+            
+            <!-- Gráfico de status -->
+            <div class="bg-white rounded-lg shadow p-4">
+                <h3 class="text-sm font-semibold text-kuhn-navy mb-3 flex items-center gap-2">
+                    <svg class="w-4 h-4 text-green-500" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path></svg>
+                    Distribuição por Status
+                </h3>
+                <div class="relative" style="height: 200px;">
+                    <canvas id="chartStatus"></canvas>
+                </div>
+            </div>
+            
+            <!-- Valores por mês -->
+            <div class="bg-white rounded-lg shadow p-4">
+                <h3 class="text-sm font-semibold text-kuhn-navy mb-3 flex items-center gap-2">
+                    <svg class="w-4 h-4 text-green-500" fill="currentColor" viewBox="0 0 20 20"><path d="M4 4a2 2 0 00-2 2v4a2 2 0 002 2V6h10a2 2 0 00-2-2H4zm2 6a2 2 0 012-2h8a2 2 0 012 2v4a2 2 0 01-2 2H8a2 2 0 01-2-2v-4zm6 4a2 2 0 100-4 2 2 0 000 4z"></path></svg>
+                    Valores por Mês (R$)
+                </h3>
+                <div class="relative" style="height: 200px;">
+                    <canvas id="chartValoresMes"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Visualização em Cards -->
+    <div id="cardsView" class="{{ 'hidden' if visualizacao != 'cards' else '' }} mb-3">
+        {% if lancamentos %}
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+            {% for lanc in lancamentos %}
+            <div class="fatura-card bg-white rounded-lg shadow p-4 border-l-4 
+                {{ 'border-green-500' if lanc.status_calculado == 'paga' else 
+                   'border-red-500' if lanc.status_calculado == 'vencida' else 
+                   'border-yellow-500' if lanc.status_calculado == 'pendente' else 'border-gray-400' }}">
+                <div class="flex justify-between items-start mb-2">
+                    <div>
+                        <h4 class="font-semibold text-kuhn-navy">{{ lanc.transportadora }}</h4>
+                        <span class="text-xs text-gray-500 font-mono">{{ lanc.numero_fatura }}</span>
+                    </div>
+                    {% set status = lanc.status_calculado %}
+                    {% if status == 'paga' %}
+                    <span class="bg-green-100 text-green-700 px-2 py-0.5 rounded text-[10px] font-semibold">Paga</span>
+                    {% elif status == 'vencida' %}
+                    <span class="bg-red-100 text-red-700 px-2 py-0.5 rounded text-[10px] font-semibold">Vencida</span>
+                    {% elif status == 'cancelada' %}
+                    <span class="bg-gray-100 text-gray-600 px-2 py-0.5 rounded text-[10px] font-semibold">Cancelada</span>
+                    {% else %}
+                    <span class="bg-yellow-100 text-yellow-700 px-2 py-0.5 rounded text-[10px] font-semibold">Pendente</span>
+                    {% endif %}
+                </div>
+                <div class="flex justify-between items-center mb-3">
+                    <span class="text-lg font-bold text-green-600">
+                        {% if lanc.valor_fatura %}
+                        R$ {{ "{:,.2f}".format(lanc.valor_fatura).replace(",", "X").replace(".", ",").replace("X", ".") }}
+                        {% else %}-{% endif %}
+                    </span>
+                    <span class="text-xs text-gray-500">
+                        {% if lanc.data_vencimento %}
+                        Venc: {{ lanc.data_vencimento.strftime('%d/%m/%Y') }}
+                        {% else %}-{% endif %}
+                    </span>
+                </div>
+                <div class="flex justify-end gap-1">
+                    <button onclick="abrirModal('{{ url_for('lancamentos.visualizar_lancamento', lanc_id=lanc.id) }}')" 
+                            class="bg-blue-500 hover:bg-blue-600 text-white p-1.5 rounded text-xs transition" title="Visualizar">
+                        <svg class="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 20 20"><path d="M10 12a2 2 0 100-4 2 2 0 000 4z"></path><path fill-rule="evenodd" d="M.458 10C1.732 5.943 5.522 3 10 3s8.268 2.943 9.542 7c-1.274 4.057-5.064 7-9.542 7S1.732 14.057.458 10zM14 10a4 4 0 11-8 0 4 4 0 018 0z" clip-rule="evenodd"></path></svg>
+                    </button>
+                    <a href="{{ url_for('lancamentos.download_lancamento', lanc_id=lanc.id) }}" 
+                       class="bg-green-500 hover:bg-green-600 text-white p-1.5 rounded text-xs transition" title="Baixar">
+                        <svg class="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M3 17a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm3.293-7.707a1 1 0 011.414 0L9 10.586V3a1 1 0 112 0v7.586l1.293-1.293a1 1 0 111.414 1.414l-3 3a1 1 0 01-1.414 0l-3-3a1 1 0 010-1.414z" clip-rule="evenodd"></path></svg>
+                    </a>
+                    <a href="{{ url_for('lancamentos.editar_lancamento', lanc_id=lanc.id) }}" 
+                       class="bg-amber-500 hover:bg-amber-600 text-white p-1.5 rounded text-xs transition" title="Editar">
+                        <svg class="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 20 20"><path d="M13.586 3.586a2 2 0 112.828 2.828l-.793.793-2.828-2.828.793-.793zM11.379 5.793L3 14.172V17h2.828l8.38-8.379-2.83-2.828z"></path></svg>
+                    </a>
+                    {% if lanc.status_calculado in ['pendente', 'vencida'] %}
+                    <button onclick="marcarComoPaga({{ lanc.id }}, '{{ lanc.numero_fatura }}')" 
+                            class="bg-emerald-500 hover:bg-emerald-600 text-white p-1.5 rounded text-xs transition" title="Marcar como Paga">
+                        <svg class="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"></path></svg>
+                    </button>
+                    {% endif %}
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        {% else %}
+        <div class="text-center py-8 text-gray-500">Nenhuma fatura encontrada</div>
+        {% endif %}
+    </div>    <!-- Tabela de lançamentos -->
+    <div id="tabelaView" class="{{ 'hidden' if visualizacao != 'tabela' else '' }}">
+    <div class="bg-white rounded-lg shadow overflow-hidden" style="animation: fadeInUp 0.5s ease-out;">
+        {% if lancamentos %}
+        <div class="overflow-x-auto">
+            <table class="min-w-full text-sm">
+                <thead class="bg-gradient-to-r from-kuhn-red to-red-600 text-white">
+                    <tr>
+                        <th class="px-3 py-2 text-left text-xs font-semibold uppercase tracking-wider sortable-header {{ 'active' if ordenar_por == 'transportadora' else '' }}" onclick="ordenarPor('transportadora')">
+                            <span class="flex items-center gap-1">
+                                Transportadora
+                                <svg class="w-3 h-3 sort-icon" fill="currentColor" viewBox="0 0 20 20">
+                                    {% if ordenar_por == 'transportadora' and direcao == 'asc' %}
+                                    <path fill-rule="evenodd" d="M5.293 7.707a1 1 0 010-1.414l4-4a1 1 0 011.414 0l4 4a1 1 0 01-1.414 1.414L10 4.414l-3.293 3.293a1 1 0 01-1.414 0z" clip-rule="evenodd"></path>
+                                    {% elif ordenar_por == 'transportadora' and direcao == 'desc' %}
+                                    <path fill-rule="evenodd" d="M14.707 12.293a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 111.414-1.414L10 15.586l3.293-3.293a1 1 0 011.414 0z" clip-rule="evenodd"></path>
+                                    {% else %}
+                                    <path fill-rule="evenodd" d="M10 3a1 1 0 01.707.293l3 3a1 1 0 01-1.414 1.414L10 5.414 7.707 7.707a1 1 0 01-1.414-1.414l3-3A1 1 0 0110 3zm-3.707 9.293a1 1 0 011.414 0L10 14.586l2.293-2.293a1 1 0 011.414 1.414l-3 3a1 1 0 01-1.414 0l-3-3a1 1 0 010-1.414z" clip-rule="evenodd"></path>
+                                    {% endif %}
+                                </svg>
+                            </span>
+                        </th>
+                        <th class="px-3 py-2 text-left text-xs font-semibold uppercase tracking-wider sortable-header {{ 'active' if ordenar_por == 'numero_fatura' else '' }}" onclick="ordenarPor('numero_fatura')">
+                            <span class="flex items-center gap-1">
+                                Nº Fatura
+                                <svg class="w-3 h-3 sort-icon" fill="currentColor" viewBox="0 0 20 20">
+                                    {% if ordenar_por == 'numero_fatura' and direcao == 'asc' %}
+                                    <path fill-rule="evenodd" d="M5.293 7.707a1 1 0 010-1.414l4-4a1 1 0 011.414 0l4 4a1 1 0 01-1.414 1.414L10 4.414l-3.293 3.293a1 1 0 01-1.414 0z" clip-rule="evenodd"></path>
+                                    {% elif ordenar_por == 'numero_fatura' and direcao == 'desc' %}
+                                    <path fill-rule="evenodd" d="M14.707 12.293a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 111.414-1.414L10 15.586l3.293-3.293a1 1 0 011.414 0z" clip-rule="evenodd"></path>
+                                    {% else %}
+                                    <path fill-rule="evenodd" d="M10 3a1 1 0 01.707.293l3 3a1 1 0 01-1.414 1.414L10 5.414 7.707 7.707a1 1 0 01-1.414-1.414l3-3A1 1 0 0110 3zm-3.707 9.293a1 1 0 011.414 0L10 14.586l2.293-2.293a1 1 0 011.414 1.414l-3 3a1 1 0 01-1.414 0l-3-3a1 1 0 010-1.414z" clip-rule="evenodd"></path>
+                                    {% endif %}
+                                </svg>
+                            </span>
+                        </th>
+                        <th class="px-3 py-2 text-left text-xs font-semibold uppercase tracking-wider sortable-header {{ 'active' if ordenar_por == 'valor' else '' }}" onclick="ordenarPor('valor')">
+                            <span class="flex items-center gap-1">
+                                Valor
+                                <svg class="w-3 h-3 sort-icon" fill="currentColor" viewBox="0 0 20 20">
+                                    {% if ordenar_por == 'valor' and direcao == 'asc' %}
+                                    <path fill-rule="evenodd" d="M5.293 7.707a1 1 0 010-1.414l4-4a1 1 0 011.414 0l4 4a1 1 0 01-1.414 1.414L10 4.414l-3.293 3.293a1 1 0 01-1.414 0z" clip-rule="evenodd"></path>
+                                    {% elif ordenar_por == 'valor' and direcao == 'desc' %}
+                                    <path fill-rule="evenodd" d="M14.707 12.293a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 111.414-1.414L10 15.586l3.293-3.293a1 1 0 011.414 0z" clip-rule="evenodd"></path>
+                                    {% else %}
+                                    <path fill-rule="evenodd" d="M10 3a1 1 0 01.707.293l3 3a1 1 0 01-1.414 1.414L10 5.414 7.707 7.707a1 1 0 01-1.414-1.414l3-3A1 1 0 0110 3zm-3.707 9.293a1 1 0 011.414 0L10 14.586l2.293-2.293a1 1 0 011.414 1.414l-3 3a1 1 0 01-1.414 0l-3-3a1 1 0 010-1.414z" clip-rule="evenodd"></path>
+                                    {% endif %}
+                                </svg>
+                            </span>
+                        </th>
+                        <th class="px-3 py-2 text-left text-xs font-semibold uppercase tracking-wider sortable-header {{ 'active' if ordenar_por == 'data_vencimento' else '' }}" onclick="ordenarPor('data_vencimento')">
+                            <span class="flex items-center gap-1">
+                                Vencimento
+                                <svg class="w-3 h-3 sort-icon" fill="currentColor" viewBox="0 0 20 20">
+                                    {% if ordenar_por == 'data_vencimento' and direcao == 'asc' %}
+                                    <path fill-rule="evenodd" d="M5.293 7.707a1 1 0 010-1.414l4-4a1 1 0 011.414 0l4 4a1 1 0 01-1.414 1.414L10 4.414l-3.293 3.293a1 1 0 01-1.414 0z" clip-rule="evenodd"></path>
+                                    {% elif ordenar_por == 'data_vencimento' and direcao == 'desc' %}
+                                    <path fill-rule="evenodd" d="M14.707 12.293a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 111.414-1.414L10 15.586l3.293-3.293a1 1 0 011.414 0z" clip-rule="evenodd"></path>
+                                    {% else %}
+                                    <path fill-rule="evenodd" d="M10 3a1 1 0 01.707.293l3 3a1 1 0 01-1.414 1.414L10 5.414 7.707 7.707a1 1 0 01-1.414-1.414l3-3A1 1 0 0110 3zm-3.707 9.293a1 1 0 011.414 0L10 14.586l2.293-2.293a1 1 0 011.414 1.414l-3 3a1 1 0 01-1.414 0l-3-3a1 1 0 010-1.414z" clip-rule="evenodd"></path>
+                                    {% endif %}
+                                </svg>
+                            </span>
+                        </th>
+                        <th class="px-3 py-2 text-center text-xs font-semibold uppercase tracking-wider">Status</th>
+                        <th class="px-3 py-2 text-left text-xs font-semibold uppercase tracking-wider">Usuário</th>
+                        <th class="px-3 py-2 text-left text-xs font-semibold uppercase tracking-wider sortable-header {{ 'active' if ordenar_por == 'data_upload' else '' }}" onclick="ordenarPor('data_upload')">
+                            <span class="flex items-center gap-1">
+                                Upload
+                                <svg class="w-3 h-3 sort-icon" fill="currentColor" viewBox="0 0 20 20">
+                                    {% if ordenar_por == 'data_upload' and direcao == 'asc' %}
+                                    <path fill-rule="evenodd" d="M5.293 7.707a1 1 0 010-1.414l4-4a1 1 0 011.414 0l4 4a1 1 0 01-1.414 1.414L10 4.414l-3.293 3.293a1 1 0 01-1.414 0z" clip-rule="evenodd"></path>
+                                    {% elif ordenar_por == 'data_upload' and direcao == 'desc' %}
+                                    <path fill-rule="evenodd" d="M14.707 12.293a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 111.414-1.414L10 15.586l3.293-3.293a1 1 0 011.414 0z" clip-rule="evenodd"></path>
+                                    {% else %}
+                                    <path fill-rule="evenodd" d="M10 3a1 1 0 01.707.293l3 3a1 1 0 01-1.414 1.414L10 5.414 7.707 7.707a1 1 0 01-1.414-1.414l3-3A1 1 0 0110 3zm-3.707 9.293a1 1 0 011.414 0L10 14.586l2.293-2.293a1 1 0 011.414 1.414l-3 3a1 1 0 01-1.414 0l-3-3a1 1 0 010-1.414z" clip-rule="evenodd"></path>
+                                    {% endif %}
+                                </svg>
+                            </span>
+                        </th>
+                        <th class="px-3 py-2 text-center text-xs font-semibold uppercase tracking-wider">Ações</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-gray-100">
+                    {% for lanc in lancamentos %}
+                    <tr class="table-row-animate">
+                        <td class="px-3 py-2">
+                            <div class="flex items-center gap-1.5">
+                                <div class="w-6 h-6 bg-blue-100 rounded-full flex items-center justify-center flex-shrink-0">
+                                    <svg class="w-3 h-3 text-blue-600" fill="currentColor" viewBox="0 0 20 20"><path d="M8 16.5a1.5 1.5 0 11-3 0 1.5 1.5 0 013 0zM15 16.5a1.5 1.5 0 11-3 0 1.5 1.5 0 013 0z"/><path d="M3 4a1 1 0 00-1 1v10a1 1 0 001 1h1.05a2.5 2.5 0 014.9 0H10a1 1 0 001-1v-1h3.05a2.5 2.5 0 014.9 0H19a1 1 0 001-1v-4a1 1 0 00-.293-.707l-3-3A1 1 0 0016 5h-5a1 1 0 00-1 1v4H3V5a1 1 0 00-1-1z"/></svg>
+                                </div>
+                                <span class="font-medium text-kuhn-navy text-sm">{{ lanc.transportadora }}</span>
+                            </div>
+                        </td>
+                        <td class="px-3 py-2">
+                            <span class="bg-gray-100 text-gray-700 px-2 py-0.5 rounded text-xs font-mono">{{ lanc.numero_fatura }}</span>
+                        </td>
+                        <td class="px-3 py-2">
+                            {% if lanc.valor_fatura %}
+                            <span class="text-green-600 font-semibold text-sm">R$ {{ "{:,.2f}".format(lanc.valor_fatura).replace(",", "X").replace(".", ",").replace("X", ".") }}</span>
+                            {% else %}
+                            <span class="text-gray-400 italic text-xs">-</span>
+                            {% endif %}                        </td>
+                        <td class="px-3 py-2">
+                            {% if lanc.data_vencimento %}
+                            <span class="text-gray-700 text-sm">{{ lanc.data_vencimento.strftime('%d/%m/%Y') }}</span>
+                            {% else %}
+                            <span class="text-gray-400 italic text-xs">-</span>
+                            {% endif %}
+                        </td>
+                        <td class="px-3 py-2 text-center">
+                            {% set status = lanc.status_calculado %}
+                            {% if status == 'paga' %}
+                            <span class="inline-flex items-center gap-0.5 bg-green-100 text-green-700 px-2 py-0.5 rounded text-[10px] font-semibold">
+                                <svg class="w-2.5 h-2.5" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"></path></svg>
+                                Paga
+                            </span>
+                            {% if lanc.data_pagamento %}
+                            <p class="text-[9px] text-gray-500">{{ lanc.data_pagamento.strftime('%d/%m/%Y') }}</p>
+                            {% endif %}
+                            {% elif status == 'vencida' %}
+                            <span class="inline-flex items-center gap-0.5 bg-red-100 text-red-700 px-2 py-0.5 rounded text-[10px] font-semibold">
+                                <svg class="w-2.5 h-2.5" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd"></path></svg>
+                                Vencida
+                            </span>
+                            <p class="text-[9px] text-red-500">{{ lanc.dias_vencimento }} dias</p>
+                            {% elif status == 'cancelada' %}
+                            <span class="inline-flex items-center gap-0.5 bg-gray-100 text-gray-600 px-2 py-0.5 rounded text-[10px] font-semibold">
+                                <svg class="w-2.5 h-2.5" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd"></path></svg>
+                                Cancelada
+                            </span>
+                            {% else %}
+                            <span class="inline-flex items-center gap-0.5 bg-yellow-100 text-yellow-700 px-2 py-0.5 rounded text-[10px] font-semibold">
+                                <svg class="w-2.5 h-2.5" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z" clip-rule="evenodd"></path></svg>
+                                Pendente
+                            </span>
+                            {% if lanc.dias_vencimento is not none and lanc.dias_vencimento <= 7 %}
+                            <p class="text-[9px] text-yellow-600">{{ lanc.dias_vencimento }}d</p>
+                            {% endif %}
+                            {% endif %}
+                        </td>
+                        <td class="px-3 py-2">
+                            <div class="flex items-center gap-1">
+                                <div class="w-5 h-5 bg-kuhn-red rounded-full flex items-center justify-center flex-shrink-0">
+                                    <span class="text-white text-[9px] font-bold">{{ (lanc.usuario.email[0] if lanc.usuario else '?')|upper }}</span>
+                                </div>
+                                <span class="text-xs text-gray-600 truncate max-w-[100px]">{{ lanc.usuario.email.split('@')[0] if lanc.usuario else '-' }}</span>
+                            </div>
+                        </td>
+                        <td class="px-3 py-2">
+                            <span class="text-xs text-gray-600">{{ lanc.data_upload.strftime('%d/%m/%y') }}</span>
+                        </td>
+                        <td class="px-3 py-2">
+                            <div class="flex justify-center gap-0.5">
+                                <!-- Visualizar -->
+                                <button onclick="abrirModal('{{ url_for('lancamentos.visualizar_lancamento', lanc_id=lanc.id) }}')" 
+                                        class="bg-blue-500 hover:bg-blue-600 text-white p-1.5 rounded text-xs transition" title="Visualizar PDF">
+                                    <svg class="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 20 20"><path d="M10 12a2 2 0 100-4 2 2 0 000 4z"></path><path fill-rule="evenodd" d="M.458 10C1.732 5.943 5.522 3 10 3s8.268 2.943 9.542 7c-1.274 4.057-5.064 7-9.542 7S1.732 14.057.458 10zM14 10a4 4 0 11-8 0 4 4 0 018 0z" clip-rule="evenodd"></path></svg>
+                                </button>
+                                <!-- Download -->
+                                <a href="{{ url_for('lancamentos.download_lancamento', lanc_id=lanc.id) }}" 
+                                   class="bg-green-500 hover:bg-green-600 text-white p-1.5 rounded text-xs transition" title="Baixar PDF">
+                                    <svg class="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M3 17a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm3.293-7.707a1 1 0 011.414 0L9 10.586V3a1 1 0 112 0v7.586l1.293-1.293a1 1 0 111.414 1.414l-3 3a1 1 0 01-1.414 0l-3-3a1 1 0 010-1.414z" clip-rule="evenodd"></path></svg>
+                                </a>
+                                <!-- Editar -->
+                                <a href="{{ url_for('lancamentos.editar_lancamento', lanc_id=lanc.id) }}" 
+                                   class="bg-amber-500 hover:bg-amber-600 text-white p-1.5 rounded text-xs transition" title="Editar">
+                                    <svg class="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 20 20"><path d="M13.586 3.586a2 2 0 112.828 2.828l-.793.793-2.828-2.828.793-.793zM11.379 5.793L3 14.172V17h2.828l8.38-8.379-2.83-2.828z"></path></svg>
+                                </a>
+                                <!-- Marcar como Paga / Reabrir -->
+                                {% if lanc.status_calculado in ['pendente', 'vencida'] %}
+                                <button onclick="marcarComoPaga({{ lanc.id }}, '{{ lanc.numero_fatura }}')" 
+                                        class="bg-emerald-500 hover:bg-emerald-600 text-white p-1.5 rounded text-xs transition" title="Marcar como Paga">
+                                    <svg class="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"></path></svg>
+                                </button>
+                                {% elif lanc.status_calculado == 'paga' %}
+                                <form action="{{ url_for('lancamentos.reabrir_fatura', lanc_id=lanc.id) }}" method="post" class="inline" onsubmit="return confirm('Deseja reabrir esta fatura?');">
+                                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+                                    <button type="submit" class="bg-yellow-500 hover:bg-yellow-600 text-white p-1.5 rounded text-xs transition" title="Reabrir Fatura">
+                                        <svg class="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M4 2a1 1 0 011 1v2.101a7.002 7.002 0 0111.601 2.566 1 1 0 11-1.885.666A5.002 5.002 0 005.999 7H9a1 1 0 010 2H4a1 1 0 01-1-1V3a1 1 0 011-1z" clip-rule="evenodd"></path></svg>
+                                    </button>
+                                </form>
+                                {% endif %}
+                                <!-- Excluir -->
+                                <form action="{{ url_for('lancamentos.excluir_lancamento', lanc_id=lanc.id) }}" method="post" class="inline" onsubmit="return confirmarExclusao(event, '{{ lanc.numero_fatura }}');">
+                                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+                                    <button type="submit" class="bg-red-500 hover:bg-red-600 text-white p-1.5 rounded text-xs transition" title="Excluir">
+                                        <svg class="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z" clip-rule="evenodd"></path></svg>
+                                    </button>
+                                </form>
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        <!-- Rodapé da tabela com paginação -->
+        <div class="bg-gray-50 px-3 py-2 border-t border-gray-100 flex flex-wrap items-center justify-between gap-2">
+            <p class="text-xs text-gray-600">
+                Exibindo <span class="font-semibold">{{ lancamentos|length }}</span> de <span class="font-semibold">{{ paginacao.total }}</span> fatura(s)
+                {% if filtro_transportadora or filtro_numero or filtro_data_inicio or filtro_data_fim or filtro_status %}
+                <span class="text-kuhn-red">(filtrado)</span>
+                {% endif %}
+            </p>
+            
+            {% if paginacao.pages > 1 %}
+            <div class="flex items-center gap-1">
+                <!-- Primeira página -->
+                {% if paginacao.has_prev %}
+                <a href="{{ url_for('lancamentos.lista_lancamentos', pagina=1, transportadora=filtro_transportadora, numero_fatura=filtro_numero, data_inicio=filtro_data_inicio, data_fim=filtro_data_fim, status=filtro_status, ordenar=ordenar_por, direcao=direcao, view=visualizacao) }}" 
+                   class="px-2 py-1 text-xs bg-white border border-gray-300 rounded hover:bg-gray-100 transition">
+                    <svg class="w-3 h-3" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M15.707 15.707a1 1 0 01-1.414 0l-5-5a1 1 0 010-1.414l5-5a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 010 1.414zm-6 0a1 1 0 01-1.414 0l-5-5a1 1 0 010-1.414l5-5a1 1 0 011.414 1.414L5.414 10l4.293 4.293a1 1 0 010 1.414z" clip-rule="evenodd"></path></svg>
+                </a>
+                <!-- Página anterior -->
+                <a href="{{ url_for('lancamentos.lista_lancamentos', pagina=paginacao.prev_num, transportadora=filtro_transportadora, numero_fatura=filtro_numero, data_inicio=filtro_data_inicio, data_fim=filtro_data_fim, status=filtro_status, ordenar=ordenar_por, direcao=direcao, view=visualizacao) }}" 
+                   class="px-2 py-1 text-xs bg-white border border-gray-300 rounded hover:bg-gray-100 transition">
+                    <svg class="w-3 h-3" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M12.707 5.293a1 1 0 010 1.414L9.414 10l3.293 3.293a1 1 0 01-1.414 1.414l-4-4a1 1 0 010-1.414l4-4a1 1 0 011.414 0z" clip-rule="evenodd"></path></svg>
+                </a>
+                {% endif %}
+                
+                <!-- Números das páginas -->
+                {% for p in paginacao.iter_pages(left_edge=1, left_current=2, right_current=2, right_edge=1) %}
+                    {% if p %}
+                        {% if p == paginacao.page %}
+                        <span class="px-2.5 py-1 text-xs bg-kuhn-red text-white rounded font-semibold">{{ p }}</span>
+                        {% else %}
+                        <a href="{{ url_for('lancamentos.lista_lancamentos', pagina=p, transportadora=filtro_transportadora, numero_fatura=filtro_numero, data_inicio=filtro_data_inicio, data_fim=filtro_data_fim, status=filtro_status, ordenar=ordenar_por, direcao=direcao, view=visualizacao) }}" 
+                           class="px-2.5 py-1 text-xs bg-white border border-gray-300 rounded hover:bg-gray-100 transition">{{ p }}</a>
+                        {% endif %}
+                    {% else %}
+                        <span class="px-1 text-gray-400">...</span>
+                    {% endif %}
+                {% endfor %}
+                
+                {% if paginacao.has_next %}
+                <!-- Próxima página -->
+                <a href="{{ url_for('lancamentos.lista_lancamentos', pagina=paginacao.next_num, transportadora=filtro_transportadora, numero_fatura=filtro_numero, data_inicio=filtro_data_inicio, data_fim=filtro_data_fim, status=filtro_status, ordenar=ordenar_por, direcao=direcao, view=visualizacao) }}" 
+                   class="px-2 py-1 text-xs bg-white border border-gray-300 rounded hover:bg-gray-100 transition">
+                    <svg class="w-3 h-3" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clip-rule="evenodd"></path></svg>
+                </a>
+                <!-- Última página -->
+                <a href="{{ url_for('lancamentos.lista_lancamentos', pagina=paginacao.pages, transportadora=filtro_transportadora, numero_fatura=filtro_numero, data_inicio=filtro_data_inicio, data_fim=filtro_data_fim, status=filtro_status, ordenar=ordenar_por, direcao=direcao, view=visualizacao) }}" 
+                   class="px-2 py-1 text-xs bg-white border border-gray-300 rounded hover:bg-gray-100 transition">
+                    <svg class="w-3 h-3" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10.293 15.707a1 1 0 010-1.414L14.586 10l-4.293-4.293a1 1 0 111.414-1.414l5 5a1 1 0 010 1.414l-5 5a1 1 0 01-1.414 0z" clip-rule="evenodd"></path><path fill-rule="evenodd" d="M4.293 15.707a1 1 0 010-1.414L8.586 10 4.293 5.707a1 1 0 011.414-1.414l5 5a1 1 0 010 1.414l-5 5a1 1 0 01-1.414 0z" clip-rule="evenodd"></path></svg>
+                </a>
+                {% endif %}
+            </div>
+            {% endif %}
+        </div>
+        {% else %}
+        <!-- Estado vazio com ilustração elaborada -->
+        <div class="text-center py-16 px-4 animate-fade-in-up">
+            <div class="empty-illustration inline-block relative mb-8">
+                <!-- Ilustração SVG elaborada -->
+                <svg class="w-48 h-48" viewBox="0 0 200 200" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <!-- Sombra -->
+                    <ellipse class="doc-shadow" cx="100" cy="180" rx="50" ry="10" fill="#e5e7eb"/>
+                    
+                    <!-- Documento principal flutuante -->
+                    <g class="doc-main">
+                        <!-- Documento de trás -->
+                        <rect x="55" y="45" width="90" height="110" rx="8" fill="#f3f4f6" stroke="#d1d5db" stroke-width="2"/>
+                        <rect x="70" y="65" width="50" height="6" rx="3" fill="#d1d5db"/>
+                        <rect x="70" y="80" width="60" height="6" rx="3" fill="#d1d5db"/>
+                        <rect x="70" y="95" width="40" height="6" rx="3" fill="#d1d5db"/>
+                        
+                        <!-- Documento da frente -->
+                        <rect x="45" y="35" width="90" height="110" rx="8" fill="white" stroke="#c41e3a" stroke-width="2"/>
+                        
+                        <!-- Header do documento -->
+                        <rect x="45" y="35" width="90" height="25" rx="8" fill="#c41e3a"/>
+                        <rect x="75" y="35" width="60" height="25" fill="#c41e3a"/>
+                        <circle cx="65" cy="47" r="6" fill="white" fill-opacity="0.3"/>
+                        <rect x="75" y="44" width="40" height="6" rx="3" fill="white" fill-opacity="0.5"/>
+                        
+                        <!-- Linhas de conteúdo -->
+                        <rect x="60" y="72" width="60" height="5" rx="2.5" fill="#e5e7eb"/>
+                        <rect x="60" y="85" width="50" height="5" rx="2.5" fill="#e5e7eb"/>
+                        <rect x="60" y="98" width="55" height="5" rx="2.5" fill="#e5e7eb"/>
+                        
+                        <!-- Badge de valor -->
+                        <rect x="60" y="115" width="45" height="16" rx="8" fill="#dcfce7"/>
+                        <text x="82" y="127" font-size="10" fill="#16a34a" text-anchor="middle" font-weight="bold">R$ 0,00</text>
+                    </g>
+                    
+                    <!-- Sparkles decorativos -->
+                    <g class="sparkle">
+                        <circle cx="150" cy="50" r="4" fill="#fbbf24"/>
+                        <path d="M150 42 L150 58 M142 50 L158 50" stroke="#fbbf24" stroke-width="2" stroke-linecap="round"/>
+                    </g>
+                    <g class="sparkle">
+                        <circle cx="40" cy="80" r="3" fill="#c41e3a"/>
+                        <path d="M40 74 L40 86 M34 80 L46 80" stroke="#c41e3a" stroke-width="1.5" stroke-linecap="round"/>
+                    </g>
+                    <g class="sparkle">
+                        <circle cx="160" cy="120" r="3" fill="#3b82f6"/>
+                        <path d="M160 114 L160 126 M154 120 L166 120" stroke="#3b82f6" stroke-width="1.5" stroke-linecap="round"/>
+                    </g>
+                    
+                    <!-- Ícone de upload/add -->
+                    <circle cx="145" cy="130" r="20" fill="#c41e3a" stroke="white" stroke-width="3"/>
+                    <path d="M145 122 L145 138 M137 130 L153 130" stroke="white" stroke-width="3" stroke-linecap="round"/>
+                </svg>
+            </div>
+            
+            <h3 class="text-2xl font-bold text-gray-800 mb-3">
+                {% if filtro_transportadora or filtro_numero or filtro_data_inicio or filtro_data_fim %}
+                Nenhuma fatura encontrada
+                {% else %}
+                Nenhuma fatura cadastrada
+                {% endif %}
+            </h3>
+            <p class="text-gray-500 mb-8 max-w-lg mx-auto text-lg">
+                {% if filtro_transportadora or filtro_numero or filtro_data_inicio or filtro_data_fim %}
+                Não encontramos faturas com os filtros aplicados. Tente ajustar os critérios de busca ou limpe os filtros para ver todas as faturas.
+                {% else %}
+                Comece a organizar suas faturas de frete! Faça o upload do primeiro documento PDF e mantenha tudo centralizado.
+                {% endif %}
+            </p>
+            <div class="flex flex-col sm:flex-row justify-center gap-4">
+                {% if filtro_transportadora or filtro_numero or filtro_data_inicio or filtro_data_fim %}
+                <a href="{{ url_for('lancamentos.lista_lancamentos') }}" class="bg-gray-200 hover:bg-gray-300 text-gray-700 font-semibold py-3 px-8 rounded-lg transition flex items-center justify-center gap-2 group">
+                    <svg class="w-5 h-5 group-hover:rotate-180 transition-transform duration-300" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M4 2a1 1 0 011 1v2.101a7.002 7.002 0 0111.601 2.566 1 1 0 11-1.885.666A5.002 5.002 0 005.999 7H9a1 1 0 010 2H4a1 1 0 01-1-1V3a1 1 0 011-1z" clip-rule="evenodd"></path></svg>
+                    Limpar Filtros
+                </a>
+                {% endif %}
+                <a href="{{ url_for('lancamentos.upload_lancamento') }}" class="bg-kuhn-red hover:bg-kuhn-red-dark text-white font-semibold py-3 px-8 rounded-lg shadow-lg transition transform hover:scale-105 flex items-center justify-center gap-2 group">
+                    <svg class="w-5 h-5 group-hover:rotate-90 transition-transform duration-300" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" clip-rule="evenodd"></path></svg>
+                    {% if filtro_transportadora or filtro_numero or filtro_data_inicio or filtro_data_fim %}
+                    Nova Fatura
+                    {% else %}
+                    Lançar Primeira Fatura
+                    {% endif %}
+                </a>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+    </div><!-- Fecha tabelaView -->
+</div>
+
+<!-- Modal para visualização do PDF -->
+<div id="modalPdf" class="fixed inset-0 bg-black bg-opacity-60 hidden z-50 flex items-center justify-center p-4 backdrop-blur-sm">
+    <div class="bg-white rounded-2xl shadow-2xl w-full max-w-6xl h-5/6 flex flex-col transform transition-all duration-300 scale-95 opacity-0" id="modalContent">
+        <div class="flex justify-between items-center p-4 border-b bg-gradient-to-r from-kuhn-red to-red-600 text-white rounded-t-2xl">
+            <h3 class="font-semibold text-lg flex items-center gap-2">
+                <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M4 4a2 2 0 012-2h4.586A2 2 0 0112 2.586L15.414 6A2 2 0 0116 7.414V16a2 2 0 01-2 2H6a2 2 0 01-2-2V4z" clip-rule="evenodd"></path></svg>
+                Visualizar Fatura
+            </h3>
+            <button onclick="fecharModal()" class="text-white hover:bg-white hover:bg-opacity-20 p-2 rounded-lg transition">
+                <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd"></path></svg>
+            </button>
+        </div>
+        <div class="flex-1 p-3 bg-gray-100">
+            <iframe id="pdfViewer" src="" class="w-full h-full rounded-lg border-0 shadow-inner"></iframe>
+        </div>
+    </div>
+</div>
+
+<!-- Modal de confirmação de exclusão -->
+<div id="modalConfirm" class="fixed inset-0 bg-black bg-opacity-60 hidden z-50 flex items-center justify-center p-4 backdrop-blur-sm">
+    <div class="bg-white rounded-2xl shadow-2xl w-full max-w-md p-6 transform transition-all duration-300">
+        <div class="text-center">
+            <div class="inline-flex items-center justify-center w-16 h-16 bg-red-100 rounded-full mb-4">
+                <svg class="w-8 h-8 text-red-600" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd"></path></svg>
+            </div>
+            <h3 class="text-xl font-bold text-gray-800 mb-2">Confirmar Exclusão</h3>
+            <p class="text-gray-600 mb-6">Tem certeza que deseja excluir a fatura <strong id="faturaNumero"></strong>? Esta ação não pode ser desfeita.</p>
+            <div class="flex justify-center gap-3">
+                <button onclick="cancelarExclusao()" class="bg-gray-200 hover:bg-gray-300 text-gray-700 font-semibold py-2 px-6 rounded-lg transition">
+                    Cancelar
+                </button>
+                <button onclick="confirmarExclusaoFinal()" class="bg-red-600 hover:bg-red-700 text-white font-semibold py-2 px-6 rounded-lg transition">
+                    Excluir
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal para marcar como paga -->
+<div id="modalPagar" class="fixed inset-0 bg-black bg-opacity-60 hidden z-50 flex items-center justify-center p-4 backdrop-blur-sm">
+    <div class="bg-white rounded-2xl shadow-2xl w-full max-w-md p-6 transform transition-all duration-300">
+        <div class="text-center">
+            <div class="inline-flex items-center justify-center w-16 h-16 bg-emerald-100 rounded-full mb-4">
+                <svg class="w-8 h-8 text-emerald-600" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"></path></svg>
+            </div>
+            <h3 class="text-xl font-bold text-gray-800 mb-2">Marcar como Paga</h3>
+            <p class="text-gray-600 mb-4">Fatura: <strong id="faturaPagarNumero"></strong></p>
+            <form id="formPagar" method="post" class="text-left">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+                <div class="mb-4">
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Data do Pagamento</label>
+                    <input type="date" name="data_pagamento" id="dataPagamento" 
+                           class="w-full border border-gray-300 rounded-lg px-3 py-2.5 focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
+                           value="{{ today.strftime('%Y-%m-%d') if today else '' }}">
+                </div>
+                <div class="mb-6">
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Observação (opcional)</label>
+                    <textarea name="observacao" rows="2" 
+                              class="w-full border border-gray-300 rounded-lg px-3 py-2.5 focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
+                              placeholder="Ex: Pago via PIX, Boleto bancário..."></textarea>
+                </div>
+                <div class="flex justify-center gap-3">
+                    <button type="button" onclick="fecharModalPagar()" class="bg-gray-200 hover:bg-gray-300 text-gray-700 font-semibold py-2 px-6 rounded-lg transition">
+                        Cancelar
+                    </button>
+                    <button type="submit" class="bg-emerald-600 hover:bg-emerald-700 text-white font-semibold py-2 px-6 rounded-lg transition flex items-center gap-2">
+                        <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"></path></svg>
+                        Confirmar Pagamento
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+let formParaExcluir = null;
+
+function abrirModal(url) {
+    document.getElementById('pdfViewer').src = url;
+    document.getElementById('modalPdf').classList.remove('hidden');
+    setTimeout(() => {
+        document.getElementById('modalContent').classList.remove('scale-95', 'opacity-0');
+        document.getElementById('modalContent').classList.add('scale-100', 'opacity-100');
+    }, 10);
+    document.body.style.overflow = 'hidden';
+}
+
+function fecharModal() {
+    document.getElementById('modalContent').classList.remove('scale-100', 'opacity-100');
+    document.getElementById('modalContent').classList.add('scale-95', 'opacity-0');
+    setTimeout(() => {
+        document.getElementById('modalPdf').classList.add('hidden');
+        document.getElementById('pdfViewer').src = '';
+    }, 300);
+    document.body.style.overflow = 'auto';
+}
+
+function confirmarExclusao(event, numeroFatura) {
+    event.preventDefault();
+    formParaExcluir = event.target;
+    document.getElementById('faturaNumero').textContent = numeroFatura;
+    document.getElementById('modalConfirm').classList.remove('hidden');
+    return false;
+}
+
+function cancelarExclusao() {
+    document.getElementById('modalConfirm').classList.add('hidden');
+    formParaExcluir = null;
+}
+
+function confirmarExclusaoFinal() {
+    if (formParaExcluir) {
+        formParaExcluir.submit();
+    }
+}
+
+// Fechar modal clicando fora
+document.getElementById('modalPdf').addEventListener('click', function(e) {
+    if (e.target === this) {
+        fecharModal();
+    }
+});
+
+document.getElementById('modalConfirm').addEventListener('click', function(e) {
+    if (e.target === this) {
+        cancelarExclusao();
+    }
+});
+
+// Auto-hide toast notifications
+document.querySelectorAll('.toast-notification').forEach(toast => {
+    setTimeout(() => {
+        toast.classList.add('animate-slide-out');
+        setTimeout(() => toast.remove(), 400);
+    }, 5000);
+});
+
+// Funções para modal de pagamento
+function marcarComoPaga(lancId, numeroFatura) {
+    document.getElementById('faturaPagarNumero').textContent = numeroFatura;
+    document.getElementById('formPagar').action = '/lancamentos/marcar-paga/' + lancId;
+    document.getElementById('dataPagamento').valueAsDate = new Date();
+    document.getElementById('modalPagar').classList.remove('hidden');
+}
+
+function fecharModalPagar() {
+    document.getElementById('modalPagar').classList.add('hidden');
+}
+
+document.getElementById('modalPagar').addEventListener('click', function(e) {
+    if (e.target === this) {
+        fecharModalPagar();
+    }
+});
+
+// Atualizar ESC para fechar todos os modais
+document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape') {
+        fecharModal();
+        cancelarExclusao();
+        fecharModalPagar();
+    }
+});
+
+// =============================================
+// NOVAS FUNCIONALIDADES
+// =============================================
+
+// Alternar visualização (tabela/cards/dashboard)
+function alternarVisualizacao(tipo) {
+    // Se for mudar para dashboard, recarregar gráficos com filtros atuais
+    if (tipo === 'dashboard') {
+        setTimeout(() => {
+            chartsLoaded = false; // Reset para recarregar
+            carregarDashboard(true);
+        }, 100);
+    }
+    
+    const url = new URL(window.location.href);
+    url.searchParams.set('view', tipo);
+    window.location.href = url.toString();
+}
+
+// Aplicar filtros automaticamente ao mudarem
+function aplicarFiltrosAutomaticos() {
+    const filtros = ['filtro_transportadora', 'filtro_numero', 'filtro_data_inicio', 'filtro_data_fim', 'filtro_status'];
+    
+    filtros.forEach(id => {
+        const elemento = document.getElementById(id);
+        if (elemento) {
+            elemento.addEventListener('change', () => {
+                const dashboardView = document.getElementById('dashboardView');
+                if (dashboardView && !dashboardView.classList.contains('hidden')) {
+                    chartsLoaded = false;
+                    setTimeout(() => carregarDashboard(true), 50);
+                }
+                setTimeout(() => {
+                    document.getElementById('formFiltros').submit();
+                }, 100);
+            });
+        }
+    });
+}
+
+// Limpar todos os filtros
+function limparFiltros() {
+    // Redireciona para a URL base mantendo apenas a visualização atual
+    const url = new URL(window.location.href);
+    const view = url.searchParams.get('view') || 'tabela';
+    window.location.href = '/lancamentos?view=' + view;
+}
+
+// Ordenar tabela por coluna
+function ordenarPor(coluna) {
+    const url = new URL(window.location.href);
+    const ordenarAtual = url.searchParams.get('ordenar') || 'data_vencimento';
+    const direcaoAtual = url.searchParams.get('direcao') || 'asc';
+    
+    if (ordenarAtual === coluna) {
+        // Inverte a direção
+        url.searchParams.set('direcao', direcaoAtual === 'asc' ? 'desc' : 'asc');
+    } else {
+        url.searchParams.set('ordenar', coluna);
+        url.searchParams.set('direcao', 'asc');
+    }
+    
+    window.location.href = url.toString();
+}
+
+// Busca rápida em tempo real
+let searchTimeout;
+const buscaInput = document.getElementById('buscaRapida');
+const searchDropdown = document.getElementById('searchDropdown');
+const searchLoader = document.getElementById('searchLoader');
+
+if (buscaInput) {
+    buscaInput.addEventListener('input', function() {
+        const termo = this.value.trim();
+        
+        clearTimeout(searchTimeout);
+        
+        if (termo.length < 2) {
+            searchDropdown.classList.add('hidden');
+            return;
+        }
+        
+        searchLoader.classList.remove('hidden');
+        
+        searchTimeout = setTimeout(() => {
+            fetch('/lancamentos/api/busca?q=' + encodeURIComponent(termo))
+                .then(response => response.json())
+                .then(data => {
+                    searchLoader.classList.add('hidden');
+                    
+                    if (data.length === 0) {
+                        searchDropdown.innerHTML = '<div class="search-item text-gray-500 text-sm">Nenhum resultado encontrado</div>';
+                    } else {
+                        searchDropdown.innerHTML = data.map(item => `
+                            <div class="search-item" onclick="window.location.href='${item.url_visualizar}'">
+                                <div class="flex justify-between items-center">
+                                    <div>
+                                        <span class="font-medium text-kuhn-navy">${item.transportadora}</span>
+                                        <span class="text-xs text-gray-500 ml-2">${item.numero_fatura}</span>
+                                    </div>
+                                    <span class="text-sm font-semibold ${item.status === 'paga' ? 'text-green-600' : item.status === 'vencida' ? 'text-red-600' : 'text-yellow-600'}">${item.valor_formatado}</span>
+                                </div>
+                                <div class="text-xs text-gray-400 mt-1">Venc: ${item.data_vencimento}</div>
+                            </div>
+                        `).join('');
+                    }
+                    
+                    searchDropdown.classList.remove('hidden');
+                })
+                .catch(err => {
+                    searchLoader.classList.add('hidden');
+                    console.error('Erro na busca:', err);
+                });
+        }, 300);
+    });
+    
+    // Fechar dropdown ao clicar fora
+    document.addEventListener('click', function(e) {
+        if (!buscaInput.contains(e.target) && !searchDropdown.contains(e.target)) {
+            searchDropdown.classList.add('hidden');
+        }
+    });
+    
+    // Submeter busca com Enter
+    buscaInput.addEventListener('keypress', function(e) {
+        if (e.key === 'Enter') {
+            e.preventDefault();
+            const url = new URL(window.location.href);
+            url.searchParams.set('busca', this.value);
+            window.location.href = url.toString();
+        }
+    });
+}
+
+// Carregar gráficos do dashboard
+let chartsLoaded = false;
+let chartInstances = {};
+
+// Paleta de cores Kuhn
+const kuhnPalette = {
+    red: '#ED1C24',           // Vermelho Kuhn (principal)
+    darkBlue: '#2E3440',      // Azul escuro
+    gold: '#D0B580',          // Dourado
+    darkGray: '#4A4A4A',      // Cinza escuro
+    lightPink: '#E8B8B8',     // Rosa claro
+    white: '#FFFFFF'          // Branco
+};
+
+// Cores com transparência para gráficos
+const kuhnColors = {
+    red: 'rgba(237, 28, 36, 0.8)',
+    redLight: 'rgba(237, 28, 36, 0.6)',
+    darkBlue: 'rgba(46, 52, 64, 0.8)',
+    darkBlueLight: 'rgba(46, 52, 64, 0.6)',
+    gold: 'rgba(208, 181, 128, 0.8)',
+    goldLight: 'rgba(208, 181, 128, 0.6)',
+    darkGray: 'rgba(74, 74, 74, 0.8)',
+    darkGrayLight: 'rgba(74, 74, 74, 0.6)',
+    lightPink: 'rgba(232, 184, 184, 0.8)',
+    lightPinkLight: 'rgba(232, 184, 184, 0.6)'
+};
+
+function carregarDashboard(comFiltros = false) {
+    // Se não temos dados ainda e não quer forçar com filtros
+    if (chartsLoaded && !comFiltros) return;
+    
+    // Construir URL com filtros se necessário
+    let urlDashboard = '/lancamentos/api/dashboard';
+    
+    if (comFiltros) {
+        const filtros = new URLSearchParams({
+            transportadora: document.getElementById('filtro_transportadora')?.value || '',
+            numero_fatura: document.getElementById('filtro_numero')?.value || '',
+            data_inicio: document.getElementById('filtro_data_inicio')?.value || '',
+            data_fim: document.getElementById('filtro_data_fim')?.value || '',
+            status: document.getElementById('filtro_status')?.value || ''
+        });
+        urlDashboard += '?' + filtros.toString();
+        console.log('🔍 Carregando dashboard com filtros:', urlDashboard);
+    } else {
+        console.log('📊 Carregando dashboard sem filtros');
+    }
+    
+    fetch(urlDashboard)
+        .then(response => response.json())
+        .then(data => {
+            chartsLoaded = true;
+            
+            // Destruir gráficos existentes antes de criar novos
+            Object.values(chartInstances).forEach(chart => {
+                if (chart) chart.destroy();
+            });
+            
+            // Gráfico de faturas por mês (barras) - Paleta Kuhn
+            const ctxFaturas = document.getElementById('chartFaturasMes');
+            if (ctxFaturas) {
+                chartInstances.faturas = new Chart(ctxFaturas, {
+                    type: 'bar',
+                    data: {
+                        labels: data.faturas_por_mes.labels,
+                        datasets: [{
+                            label: 'Quantidade',
+                            data: data.faturas_por_mes.quantidades,
+                            backgroundColor: kuhnColors.red,
+                            borderColor: kuhnPalette.red,
+                            borderWidth: 2,
+                            borderRadius: 4
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: { 
+                            legend: { display: false },
+                            tooltip: { 
+                                backgroundColor: kuhnPalette.darkBlue,
+                                padding: 12,
+                                titleFont: { size: 13, weight: 'bold' },
+                                bodyFont: { size: 12 }
+                            }
+                        },
+                        scales: { 
+                            y: { 
+                                beginAtZero: true, 
+                                ticks: { stepSize: 1 },
+                                grid: { color: 'rgba(200, 200, 200, 0.1)' }
+                            },
+                            x: { grid: { display: false } }
+                        }
+                    }
+                });
+            }
+            
+            // Gráfico por transportadora (horizontal bar) - Paleta Kuhn
+            const ctxTransp = document.getElementById('chartTransportadoras');
+            if (ctxTransp) {
+                const coresTransp = [
+                    kuhnColors.red,
+                    kuhnColors.darkBlue,
+                    kuhnColors.gold,
+                    kuhnColors.lightPink,
+                    kuhnColors.darkGray
+                ];
+                
+                chartInstances.transportadoras = new Chart(ctxTransp, {
+                    type: 'bar',
+                    data: {
+                        labels: data.transportadoras.labels,
+                        datasets: [{
+                            label: 'Valor Total (R$)',
+                            data: data.transportadoras.valores,
+                            backgroundColor: coresTransp,
+                            borderColor: [
+                                kuhnPalette.red,
+                                kuhnPalette.darkBlue,
+                                kuhnPalette.gold,
+                                kuhnPalette.lightPink,
+                                kuhnPalette.darkGray
+                            ],
+                            borderWidth: 2,
+                            borderRadius: 4
+                        }]
+                    },
+                    options: {
+                        indexAxis: 'y',
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: { 
+                            legend: { display: false },
+                            tooltip: { 
+                                backgroundColor: kuhnPalette.darkBlue,
+                                padding: 12,
+                                titleFont: { size: 13, weight: 'bold' },
+                                bodyFont: { size: 12 }
+                            }
+                        },
+                        scales: { 
+                            x: { 
+                                beginAtZero: true,
+                                grid: { color: 'rgba(200, 200, 200, 0.1)' }
+                            },
+                            y: { grid: { display: false } }
+                        }
+                    }
+                });
+            }
+            
+            // Gráfico de status (pizza) - Paleta Kuhn
+            const ctxStatus = document.getElementById('chartStatus');
+            if (ctxStatus) {
+                chartInstances.status = new Chart(ctxStatus, {
+                    type: 'doughnut',
+                    data: {
+                        labels: data.status.labels,
+                        datasets: [{
+                            data: data.status.valores,
+                            backgroundColor: [
+                                kuhnColors.red,           // Pendente - Vermelho
+                                kuhnColors.darkGray,      // Vencida - Cinza escuro
+                                kuhnColors.darkBlue,      // Paga - Azul
+                                kuhnColors.gold           // Cancelada - Dourado
+                            ],
+                            borderColor: kuhnPalette.white,
+                            borderWidth: 3
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: { 
+                                position: 'bottom', 
+                                labels: { 
+                                    boxWidth: 12, 
+                                    padding: 15,
+                                    font: { size: 12 },
+                                    color: kuhnPalette.darkBlue
+                                }
+                            },
+                            tooltip: { 
+                                backgroundColor: kuhnPalette.darkBlue,
+                                padding: 12,
+                                titleFont: { size: 13, weight: 'bold' },
+                                bodyFont: { size: 12 }
+                            }
+                        }
+                    }
+                });
+            }
+            
+            // Gráfico de valores por mês (linha) - Paleta Kuhn
+            const ctxValores = document.getElementById('chartValoresMes');
+            if (ctxValores) {
+                chartInstances.valores = new Chart(ctxValores, {
+                    type: 'line',
+                    data: {
+                        labels: data.faturas_por_mes.labels,
+                        datasets: [{
+                            label: 'Valor (R$)',
+                            data: data.faturas_por_mes.valores,
+                            borderColor: kuhnPalette.red,
+                            backgroundColor: kuhnColors.redLight,
+                            fill: true,
+                            tension: 0.4,
+                            borderWidth: 3,
+                            pointBackgroundColor: kuhnPalette.red,
+                            pointBorderColor: kuhnPalette.white,
+                            pointBorderWidth: 2,
+                            pointRadius: 5,
+                            pointHoverRadius: 7
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: { 
+                            legend: { display: false },
+                            tooltip: { 
+                                backgroundColor: kuhnPalette.darkBlue,
+                                padding: 12,
+                                titleFont: { size: 13, weight: 'bold' },
+                                bodyFont: { size: 12 }
+                            }
+                        },
+                        scales: { 
+                            y: { 
+                                beginAtZero: true,
+                                grid: { color: 'rgba(200, 200, 200, 0.1)' }
+                            },
+                            x: { grid: { color: 'rgba(200, 200, 200, 0.1)' } }
+                        }
+                    }
+                });
+            }
+        })
+        .catch(err => console.error('Erro ao carregar dashboard:', err));
+}
+
+// Carregar dashboard se estiver visível
+const dashboardView = document.getElementById('dashboardView');
+if (dashboardView && !dashboardView.classList.contains('hidden')) {
+    carregarDashboard();
+}
+
+// Ativar filtros automáticos
+aplicarFiltrosAutomaticos();
+</script>
+{% endblock %}

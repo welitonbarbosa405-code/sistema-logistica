@@ -1,0 +1,629 @@
+/* ============================================
+   LOGIN KUHN - DESIGN LIMPO COM FUNDO FULL
+   ============================================ */
+
+@font-face {
+  font-family: 'Montserrat';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url('../fonts/montserrat-400.ttf') format('truetype');
+}
+@font-face {
+  font-family: 'Montserrat';
+  font-style: normal;
+  font-weight: 500;
+  font-display: swap;
+  src: url('../fonts/montserrat-500.ttf') format('truetype');
+}
+@font-face {
+  font-family: 'Montserrat';
+  font-style: normal;
+  font-weight: 600;
+  font-display: swap;
+  src: url('../fonts/montserrat-600.ttf') format('truetype');
+}
+@font-face {
+  font-family: 'Montserrat';
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: url('../fonts/montserrat-700.ttf') format('truetype');
+}
+
+:root {
+    --red: #ED1C24;
+    --red-dark: #B10F15;
+    --gold: #D0B580;
+    --gray-dark: #2E3440;
+    --white: #FFFFFF;
+}
+
+/* ===== RESET PÁGINA LOGIN ===== */
+body.page-login {
+    font-family: 'Montserrat', sans-serif !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    min-height: 100vh !important;
+    overflow-x: hidden !important;
+    background: 
+        linear-gradient(
+            135deg,
+            rgba(0, 0, 0, 0.6) 0%,
+            rgba(0, 0, 0, 0.4) 50%,
+            rgba(237, 28, 36, 0.3) 100%
+        ),
+        url('../img/granprime.jpg') !important;
+    background-size: cover !important;
+    background-position: center !important;
+    background-repeat: no-repeat !important;
+    background-attachment: fixed !important;
+}
+
+/* ===== FORÇA IMAGEM DE FUNDO PARA LOGIN ===== */
+/* Aplicar a QUALQUER página que tenha login no nome */
+body[class*="login"],
+body:has(.hero),
+html:has(.hero),
+html,
+body {
+    background: 
+        linear-gradient(
+            135deg,
+            rgba(0, 0, 0, 0.6) 0%,
+            rgba(0, 0, 0, 0.4) 50%,
+            rgba(237, 28, 36, 0.3) 100%
+        ),
+        url('../img/granprime.jpg') !important;
+    background-size: cover !important;
+    background-position: center !important;
+    background-repeat: no-repeat !important;
+    background-attachment: fixed !important;
+}
+
+/* Sobrescrever todos os possíveis estilos do Tailwind */
+.bg-kuhn-gray,
+.bg-gray-50,
+.bg-gray-100,
+.bg-gray-200 {
+    background: transparent !important;
+    background-color: transparent !important;
+}
+
+/* Garantir transparência nos containers principais */
+main,
+main.flex-1,
+.main-wrapper {
+    background: transparent !important;
+    background-color: transparent !important;
+}
+
+/* Sobrescrever TODOS os backgrounds possíveis */
+html,
+html.bg-kuhn-gray,
+body.bg-kuhn-gray {
+    background: transparent !important;
+    background-color: transparent !important;
+    background-image: none !important;
+}
+
+/* Forçar transparência total para outros elementos */
+main.flex-1 {
+    background: transparent !important;
+}
+
+body.page-login nav,
+body.page-login footer.text-white,
+body.page-login .parallax-background {
+    display: none !important;
+}
+
+body.page-login main {
+    max-width: none !important;
+    width: 100% !important;
+    padding: 0 !important;
+    margin: 0 !important;
+}
+
+/* ===== HERO - CONTAINER PRINCIPAL ===== */
+.hero {
+    position: relative;
+    width: 100%;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    background: transparent !important;
+}
+
+.hero::before {
+    display: none;
+}
+
+/* ===== IMAGEM DE FUNDO FULLSCREEN - OCULTA ===== */
+.hero-background {
+    display: none;
+}
+
+
+
+/* ===== TOPBAR ===== */
+.topbar {
+    position: relative;
+    z-index: 10;
+    width: 100%;
+    padding: 16px 40px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: var(--red);
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+}
+
+.brand-group {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+}
+
+.brand-logos {
+    display: flex;
+    align-items: center;
+}
+
+.logo-kuhn {
+    width: 50px;
+    height: auto;
+    filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.3));
+}
+
+.brand-text {
+    display: flex;
+    flex-direction: column;
+    line-height: 1.2;
+    color: var(--white);
+}
+
+.brand-text span {
+    font-size: 0.75rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    opacity: 0.9;
+}
+
+.brand-text strong {
+    font-size: 1rem;
+    font-weight: 700;
+}
+
+.welcome-scroller {
+    position: absolute;
+    left: 50%;
+    transform: translateX(-50%);
+}
+
+.welcome-messages {
+    position: relative;
+    height: 30px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.welcome-item {
+    position: absolute;
+    text-align: center;
+    font-size: 0.95rem;
+    font-weight: 600;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    color: var(--white);
+    white-space: nowrap;
+    opacity: 0;
+    animation: welcomeFade 9s infinite;
+}
+
+.welcome-item:nth-child(1) { animation-delay: 0s; }
+.welcome-item:nth-child(2) { animation-delay: 3s; }
+.welcome-item:nth-child(3) { animation-delay: 6s; }
+
+@keyframes welcomeFade {
+    0%, 5% { opacity: 0; transform: translateY(10px); }
+    10%, 28% { opacity: 1; transform: translateY(0); }
+    33%, 100% { opacity: 0; transform: translateY(-10px); }
+}
+
+.topnav {
+    display: none;
+}
+
+/* ===== CONTENT - ÁREA DO FORMULÁRIO ===== */
+.content {
+    position: relative;
+    z-index: 5;
+    flex: 1;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 40px 20px;
+}
+
+/* ===== LOGIN CARD ===== */
+.login-card {
+    width: 100%;
+    max-width: 900px;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    border-radius: 20px;
+    overflow: hidden;
+    background: rgba(0, 0, 0, 0.7);
+    backdrop-filter: blur(20px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    box-shadow: 0 25px 80px rgba(0, 0, 0, 0.5);
+}
+
+/* ===== LADO ESQUERDO - INTRO ===== */
+.login-card__intro {
+    padding: 40px;
+    background: linear-gradient(
+        145deg,
+        rgba(237, 28, 36, 0.15) 0%,
+        rgba(208, 181, 128, 0.1) 100%
+    );
+    border-right: 1px solid rgba(255, 255, 255, 0.1);
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    gap: 24px;
+}
+
+.login-card__intro h1 {
+    font-size: 2.5rem;
+    font-weight: 700;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    color: var(--gold);
+    margin: 0;
+    text-shadow: 0 4px 15px rgba(0, 0, 0, 0.5);
+}
+
+.system-name {
+    font-size: 1rem;
+    color: rgba(255, 255, 255, 0.85);
+    margin: 0;
+}
+
+/* ===== FEATURES ===== */
+.features {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+}
+
+.features li {
+    display: flex;
+    align-items: flex-start;
+    gap: 14px;
+    padding: 14px 16px;
+    background: rgba(255, 255, 255, 0.08);
+    border-radius: 12px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    transition: all 0.3s ease;
+}
+
+.features li:hover {
+    background: rgba(255, 255, 255, 0.12);
+    transform: translateX(5px);
+}
+
+.feature-icon {
+    font-size: 1.5rem;
+    flex-shrink: 0;
+}
+
+.features strong {
+    display: block;
+    font-size: 0.95rem;
+    color: var(--white);
+    margin-bottom: 2px;
+}
+
+.features p {
+    font-size: 0.85rem;
+    color: rgba(255, 255, 255, 0.7);
+    margin: 0;
+}
+
+/* ===== LADO DIREITO - FORMULÁRIO ===== */
+.login-card__form {
+    padding: 40px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+}
+
+.login-card__form form {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.form-group label {
+    font-size: 0.85rem;
+    font-weight: 600;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    color: var(--white);
+}
+
+.form-group input,
+.form-control {
+    width: 100%;
+    padding: 14px 16px;
+    border-radius: 10px;
+    border: 2px solid rgba(255, 255, 255, 0.15);
+    background: rgba(0, 0, 0, 0.4);
+    color: var(--white);
+    font-size: 1rem;
+    font-family: 'Montserrat', sans-serif;
+    transition: all 0.3s ease;
+    box-sizing: border-box;
+}
+
+.form-group input::placeholder {
+    color: rgba(255, 255, 255, 0.5);
+}
+
+.form-group input:focus {
+    outline: none;
+    border-color: var(--red);
+    background: rgba(0, 0, 0, 0.5);
+    box-shadow: 0 0 0 4px rgba(237, 28, 36, 0.2);
+}
+
+.input-password-wrapper {
+    position: relative;
+}
+
+/* ===== ALERTAS E ERROS ===== */
+.login-alert {
+    display: none;
+    padding: 12px 16px;
+    border-radius: 10px;
+    font-size: 0.9rem;
+    font-weight: 500;
+    background: rgba(237, 28, 36, 0.2);
+    border: 1px solid rgba(237, 28, 36, 0.4);
+    color: #ffb8bc;
+}
+
+.login-alert.show {
+    display: block;
+}
+
+.field-error {
+    padding: 10px 14px;
+    border-radius: 8px;
+    font-size: 0.85rem;
+    background: rgba(237, 28, 36, 0.15);
+    border: 1px solid rgba(237, 28, 36, 0.3);
+    color: #ffd5d7;
+}
+
+/* ===== BOTÃO LOGIN ===== */
+.btn-login {
+    margin-top: 10px;
+    padding: 16px;
+    border-radius: 12px;
+    border: none;
+    background: linear-gradient(135deg, var(--red) 0%, var(--red-dark) 100%);
+    color: var(--white);
+    font-size: 1.1rem;
+    font-weight: 700;
+    font-family: 'Montserrat', sans-serif;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 8px 25px rgba(237, 28, 36, 0.4);
+}
+
+.btn-login:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 12px 35px rgba(237, 28, 36, 0.5);
+}
+
+.btn-login:active {
+    transform: translateY(0);
+}
+
+.btn-login.is-loading {
+    opacity: 0.7;
+    cursor: wait;
+}
+
+/* ===== LINK DE CADASTRO ===== */
+.signup-hint {
+    text-align: center;
+    font-size: 0.9rem;
+    color: rgba(255, 255, 255, 0.7);
+    margin-top: 10px;
+}
+
+.signup-hint a {
+    color: var(--gold);
+    text-decoration: none;
+    font-weight: 600;
+    transition: color 0.3s ease;
+}
+
+.signup-hint a:hover {
+    color: #e8d4a8;
+}
+
+/* ===== FOOTER / STATUSBAR ===== */
+.footer-portaria {
+    position: relative;
+    z-index: 10;
+    padding: 14px 40px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: rgba(0, 0, 0, 0.85);
+    backdrop-filter: blur(10px);
+    border-top: 2px solid var(--red);
+    color: var(--white);
+    font-size: 0.85rem;
+}
+
+.status-left,
+.status-center,
+.status-right {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.status-user-icon {
+    width: 32px;
+    height: 32px;
+    background: linear-gradient(135deg, #7c3aed, #a855f7);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 16px;
+}
+
+.status-user-text {
+    color: rgba(255, 255, 255, 0.8);
+}
+
+.status-user-text strong {
+    color: var(--white);
+}
+
+.status-badge {
+    background: var(--red);
+    color: var(--white);
+    padding: 4px 10px;
+    border-radius: 10px;
+    font-size: 0.7rem;
+    font-weight: 700;
+    text-transform: uppercase;
+}
+
+.status-date-box {
+    background: rgba(255, 255, 255, 0.1);
+    padding: 6px 12px;
+    border-radius: 6px;
+    color: rgba(255, 255, 255, 0.9);
+}
+
+.status-date-box strong {
+    color: var(--white);
+}
+
+.status-date-box--highlight {
+    background: var(--red);
+}
+
+.divider {
+    color: rgba(255, 255, 255, 0.3);
+}
+
+.status-online {
+    color: #10b981;
+    font-weight: 600;
+}
+
+.status-company {
+    color: var(--red);
+    font-weight: 700;
+}
+
+/* ===== RESPONSIVO ===== */
+@media (max-width: 900px) {
+    .login-card {
+        grid-template-columns: 1fr;
+        max-width: 450px;
+    }
+
+    .login-card__intro {
+        padding: 30px;
+        border-right: none;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .login-card__intro h1 {
+        font-size: 2rem;
+    }
+
+    .login-card__form {
+        padding: 30px;
+    }
+}
+
+@media (max-width: 600px) {
+    .topbar {
+        padding: 14px 20px;
+        flex-direction: column;
+        gap: 10px;
+    }
+
+    .welcome-scroller {
+        position: relative;
+        left: auto;
+        transform: none;
+    }
+
+    .welcome-item {
+        font-size: 0.8rem;
+    }
+
+    .content {
+        padding: 20px 15px;
+    }
+
+    .login-card__intro {
+        padding: 24px;
+    }
+
+    .login-card__intro h1 {
+        font-size: 1.75rem;
+    }
+
+    .features li {
+        padding: 12px;
+    }
+
+    .login-card__form {
+        padding: 24px;
+    }
+
+    .footer-portaria {
+        flex-direction: column;
+        gap: 10px;
+        padding: 12px 20px;
+        text-align: center;
+    }
+
+    .status-center,
+    .status-right {
+        flex-wrap: wrap;
+        justify-content: center;
+    }
+}
+
+/* ===== GLASS EFFECT ===== */
+.glass {
+    background: rgba(0, 0, 0, 0.6);
+    backdrop-filter: blur(15px);
+}
+

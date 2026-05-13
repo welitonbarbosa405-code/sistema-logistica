@@ -1,0 +1,277 @@
+/**
+ * CSS para Melhorias do Cabeçalho Kuhn
+ * Efeitos especiais e animações para maior impacto visual
+ */
+
+/* ===== CABEÇALHO PREMIUM COM EFEITOS ESPECIAIS ===== */
+nav {
+  position: relative;
+  overflow: hidden;
+  backdrop-filter: blur(8px);
+  box-shadow: 
+    0 4px 20px rgba(237, 28, 36, 0.4),
+    0 0 40px rgba(237, 28, 36, 0.2),
+    inset 0 1px 0 rgba(255, 255, 255, 0.1);
+  /* Removida animação headerGlow para melhor performance */
+}
+
+/* Removido efeito de partículas para melhor performance */
+
+/* ===== LOGO KUHN COM EFEITOS ESPECIAIS ===== */
+.kuhn-premium-logo-container {
+  position: relative;
+  overflow: hidden;
+}
+
+.kuhn-mega-logo {
+  position: relative;
+  display: inline-block;
+  /* Removida animação logoFloat para melhor performance */
+}
+
+.kuhn-rotating-logo {
+  filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.3));
+  transition: all 0.3s ease;
+}
+
+.kuhn-rotating-logo:hover {
+  transform: rotate(5deg) scale(1.1);
+  filter: drop-shadow(0 6px 12px rgba(0, 0, 0, 0.4));
+}
+
+/* ===== NOME DO SISTEMA COM EFEITOS ===== */
+.kuhn-system-name {
+  position: relative;
+  overflow: hidden;
+}
+
+.system-title {
+  background: linear-gradient(45deg, #ffffff, #f0f0f0, #ffffff);
+  background-size: 200% 200%;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  animation: textShimmer 3s ease-in-out infinite;
+}
+
+@keyframes textShimmer {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+.company-name {
+  color: #D0B580;
+  text-shadow: 
+    0 0 10px rgba(208, 181, 128, 0.5),
+    0 2px 4px rgba(0, 0, 0, 0.3);
+  animation: goldGlow 2s ease-in-out infinite alternate;
+}
+
+@keyframes goldGlow {
+  0% { 
+    text-shadow: 
+      0 0 10px rgba(208, 181, 128, 0.5),
+      0 2px 4px rgba(0, 0, 0, 0.3);
+  }
+  100% { 
+    text-shadow: 
+      0 0 20px rgba(208, 181, 128, 0.8),
+      0 4px 8px rgba(0, 0, 0, 0.4);
+  }
+}
+
+/* ===== LINKS DE NAVEGAÇÃO MELHORADOS ===== */
+.kuhn-premium-nav-link {
+  position: relative;
+  overflow: hidden;
+  border-radius: 12px;
+  transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.kuhn-premium-nav-link::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+  transition: left 0.6s ease;
+}
+
+.kuhn-premium-nav-link:hover::before {
+  left: 100%;
+}
+
+.kuhn-premium-nav-link:hover {
+  background: rgba(255, 255, 255, 0.25);
+  transform: translateY(-3px) scale(1.05);
+  box-shadow: 
+    0 8px 25px rgba(0, 0, 0, 0.2),
+    0 0 20px rgba(255, 255, 255, 0.3);
+  border-color: rgba(255, 255, 255, 0.3);
+}
+
+/* ===== BOTÃO ENTRAR ESPECIAL ===== */
+.kuhn-login-link {
+  background: linear-gradient(135deg, #FF6B35, #F7931E);
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  position: relative;
+  overflow: hidden;
+}
+
+.kuhn-login-link::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 0;
+  height: 0;
+  background: rgba(255, 255, 255, 0.3);
+  border-radius: 50%;
+  transform: translate(-50%, -50%);
+  transition: width 0.6s ease, height 0.6s ease;
+}
+
+.kuhn-login-link:hover::after {
+  width: 300px;
+  height: 300px;
+}
+
+.kuhn-login-link:hover {
+  background: linear-gradient(135deg, #FF8C42, #FFA726);
+  transform: translateY(-4px) scale(1.08);
+  box-shadow: 
+    0 12px 30px rgba(255, 107, 53, 0.4),
+    0 0 30px rgba(255, 107, 53, 0.3);
+}
+
+/* ===== EFEITOS DE HOVER NOS TEXTOS ===== */
+.nav-text {
+  position: relative;
+  z-index: 2;
+  transition: all 0.3s ease;
+}
+
+.kuhn-premium-nav-link:hover .nav-text {
+  text-shadow: 
+    0 0 15px rgba(255, 255, 255, 0.8),
+    0 2px 4px rgba(0, 0, 0, 0.3);
+  transform: translateY(-1px);
+}
+
+/* ===== LAYOUT MELHORADO DO CABEÇALHO ===== */
+nav .max-w-7xl {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+  gap: 2rem;
+}
+
+/* ===== SEÇÃO ESQUERDA - LOGO E TÍTULOS ===== */
+nav .flex.items-center.space-x-4 {
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+  flex: 1;
+  justify-content: flex-start;
+}
+
+.kuhn-premium-logo-container {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  flex-shrink: 0;
+  min-width: 0; /* Permite que o container encolha se necessário */
+}
+
+.kuhn-system-name {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  min-width: 0; /* Permite que o texto quebre se necessário */
+}
+
+/* ===== SEÇÃO DIREITA - NAVEGAÇÃO ===== */
+nav .flex.items-center.gap-2 {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  flex-shrink: 0;
+  justify-content: flex-end;
+}
+
+/* ===== RESPONSIVIDADE MELHORADA ===== */
+@media (max-width: 768px) {
+  nav {
+    padding: 0.5rem 0;
+  }
+  
+  nav .max-w-7xl {
+    flex-direction: column;
+    gap: 1rem;
+    align-items: center;
+  }
+  
+  nav .flex.items-center.space-x-4 {
+    justify-content: center;
+    gap: 1rem;
+  }
+  
+  nav .flex.items-center.gap-2 {
+    justify-content: center;
+    flex-wrap: wrap;
+  }
+  
+  .kuhn-premium-nav-link {
+    padding: 0.75rem 1rem;
+    font-size: 0.9rem;
+  }
+  
+  .kuhn-premium-nav-link:hover {
+    transform: translateY(-2px) scale(1.03);
+  }
+}
+
+@media (max-width: 480px) {
+  nav {
+    padding: 0.25rem 0;
+  }
+  
+  nav .max-w-7xl {
+    gap: 0.75rem;
+    padding: 0 0.5rem;
+  }
+  
+  .kuhn-premium-logo-container {
+    gap: 0.5rem;
+  }
+  
+  .kuhn-system-name {
+    gap: 0.125rem;
+  }
+  
+  .system-title {
+    font-size: 0.8rem;
+  }
+  
+  .company-name {
+    font-size: 0.75rem;
+  }
+  
+  .kuhn-premium-nav-link {
+    padding: 0.5rem 0.75rem;
+    font-size: 0.8rem;
+  }
+  
+  .nav-text {
+    font-size: 0.75rem;
+  }
+}
+
+/* ===== EFEITOS DE ENTRADA ===== */
+/* Removidas animações de entrada para melhor performance na navegação */

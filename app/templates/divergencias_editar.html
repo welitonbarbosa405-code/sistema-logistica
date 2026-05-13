@@ -1,0 +1,353 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="bg-gradient-to-br from-slate-50 via-slate-100 to-gray-100 min-h-screen py-8 px-4">
+  <!-- Header -->
+  <div class="max-w-4xl mx-auto mb-8">
+    <div class="flex items-center gap-3">
+      <div class="inline-flex items-center justify-center w-12 h-12 bg-blue-500/20 rounded-lg">
+        <svg class="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
+        </svg>
+      </div>
+      <div>
+        <h1 class="text-3xl font-bold text-gray-800">Editar Divergência</h1>
+        <p class="text-sm text-gray-600">NF: <span class="font-semibold">{{ divergencia.nota_fiscal }}</span></p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Mensagens Flash -->
+  {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+      {% for category, message in messages %}
+        <div class="max-w-4xl mx-auto mb-4">
+          <div class="alert alert-{{ 'success' if category == 'success' else 'danger' }} p-4 rounded-lg flex items-center gap-3 {{ 'bg-green-50 border border-green-200' if category == 'success' else 'bg-red-50 border border-red-200' }}">
+            <span class="{{ 'text-green-700' if category == 'success' else 'text-red-700' }}">{{ message }}</span>
+          </div>
+        </div>
+      {% endfor %}
+    {% endif %}
+  {% endwith %}
+  <!-- Formulário -->
+  <div class="max-w-4xl mx-auto">
+    <div class="bg-white rounded-lg shadow-lg p-8">      <form method="POST" class="space-y-6">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+        
+        <!-- Linha 1: Data e Nota Fiscal -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div>
+            <label for="data" class="block text-sm font-semibold text-gray-700 mb-2">Data *</label>
+            <input 
+              type="date" 
+              id="data" 
+              name="data" 
+              value="{{ divergencia.data }}"
+              required
+              class="w-full px-4 py-2 border-2 border-gray-300 rounded-lg focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all duration-300"
+            >
+          </div>
+          
+          <div>
+            <label for="nota_fiscal" class="block text-sm font-semibold text-gray-700 mb-2">Nota Fiscal *</label>
+            <input 
+              type="text" 
+              id="nota_fiscal" 
+              name="nota_fiscal" 
+              value="{{ divergencia.nota_fiscal }}"
+              required
+              class="w-full px-4 py-2 border-2 border-gray-300 rounded-lg focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all duration-300"
+            >
+          </div>
+        </div>
+
+        <!-- Linha 2: Fornecedor e Ordem de Compra -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div>
+            <label for="fornecedor" class="block text-sm font-semibold text-gray-700 mb-2">Fornecedor *</label>
+            <input 
+              type="text" 
+              id="fornecedor" 
+              name="fornecedor" 
+              value="{{ divergencia.fornecedor }}"
+              required
+              class="w-full px-4 py-2 border-2 border-gray-300 rounded-lg focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all duration-300"
+            >
+          </div>
+          
+          <div>
+            <label for="ordem_compra" class="block text-sm font-semibold text-gray-700 mb-2">Ordem de Compra</label>
+            <input 
+              type="text" 
+              id="ordem_compra" 
+              name="ordem_compra" 
+              value="{{ divergencia.ordem_compra or '' }}"
+              class="w-full px-4 py-2 border-2 border-gray-300 rounded-lg focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all duration-300"
+            >
+          </div>
+        </div>
+
+        <!-- Linha 3: Item e Comprador -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div>
+            <label for="item" class="block text-sm font-semibold text-gray-700 mb-2">Item</label>
+            <input 
+              type="text" 
+              id="item" 
+              name="item" 
+              value="{{ divergencia.item or '' }}"
+              class="w-full px-4 py-2 border-2 border-gray-300 rounded-lg focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all duration-300"
+            >
+          </div>
+          
+          <div>
+            <label for="comprador" class="block text-sm font-semibold text-gray-700 mb-2">Comprador</label>
+            <input 
+              type="text" 
+              id="comprador" 
+              name="comprador" 
+              value="{{ divergencia.comprador or '' }}"
+              class="w-full px-4 py-2 border-2 border-gray-300 rounded-lg focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all duration-300"
+            >
+          </div>
+        </div>
+
+        <!-- Linha 4: Provider e Email -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div>
+            <label for="provider" class="block text-sm font-semibold text-gray-700 mb-2">Provider</label>
+            <input 
+              type="text" 
+              id="provider" 
+              name="provider" 
+              value="{{ divergencia.provider or '' }}"
+              class="w-full px-4 py-2 border-2 border-gray-300 rounded-lg focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all duration-300"
+            >
+          </div>
+          
+          <div>
+            <label for="email_provider" class="block text-sm font-semibold text-gray-700 mb-2">Email Provider</label>
+            <input 
+              type="email" 
+              id="email_provider" 
+              name="email_provider" 
+              value="{{ divergencia.email_provider or '' }}"
+              class="w-full px-4 py-2 border-2 border-gray-300 rounded-lg focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all duration-300"
+            >
+          </div>
+        </div>
+
+        <!-- Divergência (full width) -->
+        <div>
+          <label for="divergencia" class="block text-sm font-semibold text-gray-700 mb-2">Divergência *</label>
+          <textarea 
+            id="divergencia" 
+            name="divergencia" 
+            rows="5"
+            required
+            class="w-full px-4 py-2 border-2 border-gray-300 rounded-lg focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all duration-300 resize-none"
+          >{{ divergencia.divergencia }}</textarea>
+        </div>
+
+        <!-- Botões de ação -->
+        <div class="flex gap-4 pt-4">
+          <button 
+            type="submit" 
+            class="flex-1 px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-lg shadow-lg transform hover:scale-105 transition-all duration-300 flex items-center justify-center gap-2"
+          >
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+            </svg>
+            Atualizar Divergência
+          </button>
+          <a 
+            href="{{ url_for('divergencias.index') }}" 
+            class="flex-1 px-6 py-3 bg-gray-500 hover:bg-gray-600 text-white font-semibold rounded-lg shadow-lg transform hover:scale-105 transition-all duration-300 flex items-center justify-center gap-2"
+          >
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+            </svg>
+            Cancelar
+          </a>
+        </div>        <p class="text-xs text-gray-500 text-center">Os campos marcados com * são obrigatórios</p>
+      </form>
+    </div>
+  </div>
+</div>
+
+<script>
+  // Validação de email em tempo real
+  const emailInput = document.getElementById('email_provider');
+  emailInput.addEventListener('input', function() {
+    const email = this.value;
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    
+    if (email && !emailRegex.test(email)) {
+      this.style.borderColor = '#EF4444';
+      this.style.backgroundColor = '#FEE2E2';
+    } else {
+      this.style.borderColor = '#D1D5DB';
+      this.style.backgroundColor = '#FFFFFF';
+    }
+  });
+
+  // Interceptar submit do formulário para processar email
+  document.querySelector('form').addEventListener('submit', function(e) {
+    e.preventDefault();
+    
+    const formData = new FormData(this);
+    const emailProvider = formData.get('email_provider')?.trim();
+    const divergencia = formData.get('divergencia')?.trim();
+    
+    // Verificar se campos obrigatórios estão preenchidos
+    if (!divergencia) {
+      mostrarNotificacao('Por favor, preencha a descrição da divergência!', 'error');
+      return;
+    }
+    
+    // Se email do provider está preenchido, processar email
+    if (emailProvider) {
+      processarEmailESubmit(formData);
+    } else {
+      // Submeter normalmente se não há email
+      submeterFormulario(formData);
+    }
+  });
+
+  function processarEmailESubmit(formData) {
+    // Mostrar loading
+    const submitBtn = document.querySelector('button[type="submit"]');
+    const originalText = submitBtn.innerHTML;
+    submitBtn.innerHTML = '<div class="spinner-border spinner-border-sm me-2"></div>Processando...';
+    submitBtn.disabled = true;
+    
+    // Enviar dados para processar email
+    fetch('{{ url_for("divergencias.enviar_email") }}', {
+      method: 'POST',
+      body: formData
+    })
+    .then(response => response.json())
+    .then(data => {
+      if (data.success) {
+        // Abrir Outlook com os dados do email
+        abrirOutlook(data.email_data);
+        
+        // Aguardar um pouco e depois submeter o formulário normalmente
+        setTimeout(() => {
+          submeterFormulario(formData, '{{ url_for("divergencias.editar", id=divergencia.id) }}');
+        }, 1000);
+      } else {
+        mostrarNotificacao(data.message || 'Erro ao processar email', 'error');
+        submitBtn.innerHTML = originalText;
+        submitBtn.disabled = false;
+      }
+    })
+    .catch(error => {
+      console.error('Erro:', error);
+      mostrarNotificacao('Erro ao processar email', 'error');
+      submitBtn.innerHTML = originalText;
+      submitBtn.disabled = false;
+    });
+  }
+
+  function submeterFormulario(formData, url = null) {
+    // Submeter o formulário normalmente para salvar no banco
+    const submitUrl = url || '{{ url_for("divergencias.editar", id=divergencia.id) }}';
+    
+    fetch(submitUrl, {
+      method: 'POST',
+      body: formData
+    })
+    .then(response => {
+      if (response.ok) {
+        mostrarNotificacao('Divergência atualizada com sucesso!', 'success');
+        setTimeout(() => {
+          window.location.href = '{{ url_for("divergencias.index") }}';
+        }, 1500);
+      } else {
+        return response.text().then(text => {
+          mostrarNotificacao('Erro ao salvar divergência', 'error');
+        });
+      }
+    })
+    .catch(error => {
+      console.error('Erro:', error);
+      mostrarNotificacao('Erro ao salvar divergência', 'error');
+    });
+  }
+
+  function abrirOutlook(emailData) {
+    try {
+      // URL para abrir Outlook web
+      const outlookUrl = `https://outlook.live.com/mail/0/deeplink/compose?to=${encodeURIComponent(emailData.to)}&subject=${encodeURIComponent(emailData.subject)}&body=${encodeURIComponent(emailData.body)}`;
+      
+      // Abrir em nova aba
+      window.open(outlookUrl, '_blank');
+      
+      // Tentar também abrir cliente desktop via mailto
+      const mailtoUrl = `mailto:${emailData.to}?subject=${encodeURIComponent(emailData.subject)}&body=${encodeURIComponent(emailData.body)}`;
+      
+      // Usar setTimeout para não bloquear
+      setTimeout(() => {
+        try {
+          window.location.href = mailtoUrl;
+        } catch (e) {
+          console.log('Mailto não disponível, Outlook web foi aberto');
+        }
+      }, 500);
+      
+      mostrarNotificacao('📧 Outlook aberto! Email preparado para envio.', 'success');
+    } catch (error) {
+      console.error('Erro ao abrir Outlook:', error);
+      mostrarNotificacao('❌ Erro ao abrir Outlook', 'error');
+    }
+  }
+
+  function mostrarNotificacao(message, type = 'info') {
+    // Remover notificação existente se houver
+    const existingNotification = document.querySelector('.notification');
+    if (existingNotification) {
+      existingNotification.remove();
+    }
+    
+    // Criar nova notificação
+    const notification = document.createElement('div');
+    notification.className = `notification fixed top-4 right-4 z-50 px-6 py-3 rounded-lg shadow-lg max-w-sm transition-all duration-300 transform translate-x-full opacity-0`;
+    
+    // Definir cores baseadas no tipo
+    if (type === 'success') {
+      notification.className += ' bg-green-500 text-white';
+    } else if (type === 'error') {
+      notification.className += ' bg-red-500 text-white';
+    } else {
+      notification.className += ' bg-blue-500 text-white';
+    }
+    
+    notification.innerHTML = `
+      <div class="flex items-center justify-between">
+        <span class="font-medium">${message}</span>
+        <button onclick="this.parentElement.parentElement.remove()" class="ml-3 text-white hover:text-gray-200">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+          </svg>
+        </button>
+      </div>
+    `;
+    
+    document.body.appendChild(notification);
+    
+    // Animar entrada
+    setTimeout(() => {
+      notification.classList.remove('translate-x-full', 'opacity-0');
+    }, 100);
+    
+    // Auto remover após 5 segundos
+    setTimeout(() => {
+      if (notification.parentElement) {
+        notification.classList.add('translate-x-full', 'opacity-0');
+        setTimeout(() => notification.remove(), 300);
+      }
+    }, 5000);
+  }
+</script>
+{% endblock %}

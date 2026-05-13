@@ -1,0 +1,423 @@
+{% extends 'base.html' %}
+{% block extra_css %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/portaria.css') }}?v=1.0">
+{% endblock %}
+
+{% block body_class %}portaria-system{% endblock %}
+{% set full_width = True %}
+
+{% block content %}
+<div class="portaria-container">
+    <!-- ABA DE USUÁRIOS -->
+    <div id="usuarios" class="tab-content active">
+        <div class="form-container">
+            <h2>👥 Gerenciamento de Usuários</h2>
+            <form id="formUsuario" method="post" novalidate>
+                {{ form.hidden_tag() }}
+                
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="emailUsuario">Email *</label>
+                        {{ form.email(class="form-control", id="emailUsuario", placeholder="usuario@exemplo.com") }}
+                        {% if form.email.errors %}
+                            <p class="text-sm text-kuhn-red mt-1">{{ form.email.errors[0] }}</p>
+                        {% endif %}
+                    </div>
+                    <div class="form-group">
+                        <label for="senhaUsuario">Senha <span id="senhaObrigatoria">*</span></label>
+                        {{ form.password(class="form-control", id="senhaUsuario", placeholder="Digite a senha") }}
+                        <small style="color: #4A4A4A; font-size: 0.9em;">Mínimo 8 caracteres, com maiúscula, minúscula, número e símbolo.</small>
+                        {% if form.password.errors %}
+                            <p class="text-sm text-kuhn-red mt-1">{{ form.password.errors[0] }}</p>
+                        {% endif %}
+                    </div>
+                </div>
+                
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="perfilUsuario">Perfil *</label>
+                        <select id="perfilUsuario" name="role" required onchange="aplicarPermissoesPadrao()">
+                            <option value="user">Usuário</option>
+                            <option value="admin">Administrador</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <!-- Espaço reservado para futuras expansões -->
+                    </div>
+                </div>
+                
+                <!-- Seção de Permissões -->
+                <div class="permissoes-container">
+                    <h3>🔐 Permissões do Usuário</h3>
+                    
+                    <div class="permissoes-grid">
+                        <!-- Permissões de Cadastros -->
+                        <div class="permissoes-grupo">
+                            <h4>📝 Cadastros</h4>
+                            <label class="checkbox-label">
+                                <input type="checkbox" id="perm_cadastro_criar" name="perm_cadastro_criar">
+                                <span>Criar Cadastros</span>
+                            </label>
+                            <label class="checkbox-label">
+                                <input type="checkbox" id="perm_cadastro_editar" name="perm_cadastro_editar">
+                                <span>Editar Cadastros</span>
+                            </label>
+                            <label class="checkbox-label">
+                                <input type="checkbox" id="perm_cadastro_excluir" name="perm_cadastro_excluir">
+                                <span>Excluir Cadastros</span>
+                            </label>
+                        </div>
+                        
+                        <!-- Permissões de Entradas -->
+                        <div class="permissoes-grupo">
+                            <h4>🚚 Entradas/Saídas</h4>
+                            <label class="checkbox-label">
+                                <input type="checkbox" id="perm_entrada_criar" name="perm_entrada_criar">
+                                <span>Criar Entradas</span>
+                            </label>
+                            <label class="checkbox-label">
+                                <input type="checkbox" id="perm_entrada_editar" name="perm_entrada_editar">
+                                <span>Editar Entradas</span>
+                            </label>
+                            <label class="checkbox-label">
+                                <input type="checkbox" id="perm_entrada_excluir" name="perm_entrada_excluir">
+                                <span>Excluir Entradas</span>
+                            </label>
+                            <label class="checkbox-label">
+                                <input type="checkbox" id="perm_entrada_registrar_saida" name="perm_entrada_registrar_saida">
+                                <span>Registrar Saída</span>
+                            </label>
+                        </div>
+                        
+                        <!-- Permissões de Janelas -->
+                        <div class="permissoes-grupo">
+                            <h4>🕐 Janelas</h4>
+                            <label class="checkbox-label">
+                                <input type="checkbox" id="perm_janela_criar" name="perm_janela_criar">
+                                <span>Criar Janelas</span>
+                            </label>
+                            <label class="checkbox-label">
+                                <input type="checkbox" id="perm_janela_editar" name="perm_janela_editar">
+                                <span>Editar Janelas</span>
+                            </label>
+                            <label class="checkbox-label">
+                                <input type="checkbox" id="perm_janela_excluir" name="perm_janela_excluir">
+                                <span>Excluir Janelas</span>
+                            </label>
+                        </div>
+                        
+                        <!-- Permissões Gerais -->
+                        <div class="permissoes-grupo">
+                            <h4>📊 Outras</h4>
+                            <label class="checkbox-label">
+                                <input type="checkbox" id="perm_dashboard_visualizar" name="perm_dashboard_visualizar">
+                                <span>Visualizar Dashboard</span>
+                            </label>
+                            <label class="checkbox-label">
+                                <input type="checkbox" id="perm_usuarios_gerenciar" name="perm_usuarios_gerenciar">
+                                <span>Gerenciar Usuários</span>
+                            </label>
+                        </div>
+                    </div>
+                    
+                    <div style="margin-top: 20px; display: flex; gap: 10px;">
+                        <button type="button" class="btn btn-secondary" onclick="aplicarPermissoesPadrao()" style="padding: 10px 20px; font-size: 0.9em;">🔄 Aplicar Permissões Padrão do Perfil</button>
+                        <button type="button" class="btn btn-secondary" onclick="marcarTodasPermissoes()" style="padding: 10px 20px; font-size: 0.9em;">✅ Marcar Todas</button>
+                        <button type="button" class="btn btn-secondary" onclick="desmarcarTodasPermissoes()" style="padding: 10px 20px; font-size: 0.9em;">❌ Desmarcar Todas</button>
+                    </div>
+                </div>
+                
+                <div class="form-actions">
+                    <button type="submit" class="btn btn-primary">✅ Salvar</button>
+                    <button type="button" class="btn btn-secondary" onclick="limparFormUsuario()">🗑️ Limpar</button>
+                </div>
+            </form>
+        </div>
+
+        <div class="table-container">
+            <h2>📋 Usuários Cadastrados</h2>
+            <div class="search-box">
+                <input type="text" id="searchUsuario" placeholder="Buscar por Nome ou Email..." onkeyup="filtrarUsuarios()">
+            </div>
+            <table id="tabelaUsuarios">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Nome</th>
+                        <th>Email</th>
+                        <th>Perfil</th>
+                        <th>Data de Criação</th>
+                        <th>Ações</th>
+                    </tr>
+                </thead>
+                <tbody id="tbodyUsuarios">
+                    {% for user in users %}
+                    <tr>
+                        <td>{{ user.id }}</td>
+                        <td>{{ user.email.split('@')[0]|title }}</td>
+                        <td>{{ user.email }}</td>
+                        <td>
+                            {% if user.role == 'admin' %}
+                                <span class="status-badge" style="background: #ED1C24; color: white; font-weight: 700;">ADMINISTRADOR</span>
+                            {% else %}
+                                <span class="status-badge" style="background: #2E3440; color: white; font-weight: 700;">USUÁRIO</span>
+                            {% endif %}
+                        </td>
+                        <td>{{ user.created_at.strftime('%d/%m/%Y') if user.created_at else '-' }}</td>
+                        <td>
+                            <div class="action-buttons">
+                                <button class="btn btn-warning" onclick="editarUsuario('{{ user.id }}')">Editar</button>
+                                <button class="btn btn-danger" onclick="deletarUsuario('{{ user.id }}')">Excluir</button>
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Mensagem de feedback -->
+    <div id="mensagem" class="mensagem"></div>
+</div>
+
+<script>
+// Funções JavaScript para o sistema de portaria
+function aplicarPermissoesPadrao() {
+    const perfil = document.getElementById('perfilUsuario')?.value || 'user';
+    
+    const permissoesPadrao = {
+        'user': {
+            perm_cadastro_criar: true,
+            perm_cadastro_editar: false,
+            perm_cadastro_excluir: false,
+            perm_entrada_criar: true,
+            perm_entrada_editar: false,
+            perm_entrada_excluir: false,
+            perm_entrada_registrar_saida: true,
+            perm_janela_criar: false,
+            perm_janela_editar: false,
+            perm_janela_excluir: false,
+            perm_dashboard_visualizar: true,
+            perm_usuarios_gerenciar: false
+        },
+        'admin': {
+            perm_cadastro_criar: true,
+            perm_cadastro_editar: true,
+            perm_cadastro_excluir: true,
+            perm_entrada_criar: true,
+            perm_entrada_editar: true,
+            perm_entrada_excluir: true,
+            perm_entrada_registrar_saida: true,
+            perm_janela_criar: true,
+            perm_janela_editar: true,
+            perm_janela_excluir: true,
+            perm_dashboard_visualizar: true,
+            perm_usuarios_gerenciar: true
+        }
+    };
+    
+    const permissoes = permissoesPadrao[perfil] || permissoesPadrao['user'];
+    
+    for (const [key, value] of Object.entries(permissoes)) {
+        const checkbox = document.getElementById(key);
+        if (checkbox) {
+            checkbox.checked = value;
+        }
+    }
+}
+
+function marcarTodasPermissoes() {
+    const checkboxes = document.querySelectorAll('#formUsuario input[type="checkbox"][id^="perm_"]');
+    checkboxes.forEach(checkbox => {
+        checkbox.checked = true;
+    });
+}
+
+function desmarcarTodasPermissoes() {
+    const checkboxes = document.querySelectorAll('#formUsuario input[type="checkbox"][id^="perm_"]');
+    checkboxes.forEach(checkbox => {
+        checkbox.checked = false;
+    });
+}
+
+function limparFormUsuario() {
+    document.getElementById('formUsuario').reset();
+    const senhaInput = document.getElementById('senhaUsuario');
+    if (senhaInput) {
+        senhaInput.required = true;
+        senhaInput.placeholder = 'Digite a senha';
+    }
+    const senhaObrigatoria = document.getElementById('senhaObrigatoria');
+    if (senhaObrigatoria) {
+        senhaObrigatoria.style.display = 'inline';
+    }
+    // Remover ID do usuário (sair do modo edição)
+    const hiddenId = document.getElementById('usuarioId');
+    if (hiddenId) {
+        hiddenId.remove();
+    }
+    aplicarPermissoesPadrao();
+}
+
+function filtrarUsuarios() {
+    const searchTerm = document.getElementById('searchUsuario')?.value.toLowerCase() || '';
+    const rows = document.querySelectorAll('#tbodyUsuarios tr');
+    
+    rows.forEach(row => {
+        const text = row.textContent.toLowerCase();
+        row.style.display = text.includes(searchTerm) ? '' : 'none';
+    });
+}
+
+function editarUsuario(id) {
+    // Buscar dados do usuário
+    fetch(`/auth/usuario/${id}`)
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                const user = data.user;
+                
+                // Preencher o formulário
+                document.getElementById('emailUsuario').value = user.email;
+                document.getElementById('perfilUsuario').value = user.role;
+                
+                // Limpar campo de senha (não obrigatório na edição)
+                const senhaInput = document.getElementById('senhaUsuario');
+                senhaInput.value = '';
+                senhaInput.required = false;
+                senhaInput.placeholder = 'Deixe em branco para manter a senha atual';
+                
+                const senhaObrigatoria = document.getElementById('senhaObrigatoria');
+                if (senhaObrigatoria) {
+                    senhaObrigatoria.style.display = 'none';
+                }
+                
+                // Aplicar permissões padrão do perfil
+                aplicarPermissoesPadrao();
+                
+                // Adicionar campo hidden com ID do usuário
+                let hiddenId = document.getElementById('usuarioId');
+                if (!hiddenId) {
+                    hiddenId = document.createElement('input');
+                    hiddenId.type = 'hidden';
+                    hiddenId.id = 'usuarioId';
+                    hiddenId.name = 'usuario_id';
+                    document.getElementById('formUsuario').appendChild(hiddenId);
+                }
+                hiddenId.value = id;
+                
+                // Scroll para o formulário
+                document.getElementById('formUsuario').scrollIntoView({ behavior: 'smooth' });
+                
+                mostrarMensagem('Editando usuário: ' + user.email, 'info');
+            } else {
+                mostrarMensagem(data.error || 'Erro ao carregar usuário', 'error');
+            }
+        })
+        .catch(error => {
+            console.error('Erro:', error);
+            mostrarMensagem('Erro ao carregar dados do usuário', 'error');
+        });
+}
+
+function deletarUsuario(id) {
+    if (!confirm('Deseja realmente excluir este usuário?\n\nEsta ação não pode ser desfeita!')) {
+        return;
+    }
+    
+    // Obter CSRF token
+    const csrfToken = document.querySelector('input[name="csrf_token"]')?.value;
+    
+    fetch(`/auth/usuario/${id}/excluir`, {
+        method: 'DELETE',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': csrfToken
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            mostrarMensagem(data.message, 'success');
+            // Remover linha da tabela
+            const rows = document.querySelectorAll('#tbodyUsuarios tr');
+            rows.forEach(row => {
+                if (row.cells[0] && row.cells[0].textContent == id) {
+                    row.remove();
+                }
+            });
+        } else {
+            mostrarMensagem(data.error || 'Erro ao excluir usuário', 'error');
+        }
+    })
+    .catch(error => {
+        console.error('Erro:', error);
+        mostrarMensagem('Erro ao excluir usuário', 'error');
+    });
+}
+
+function mostrarMensagem(texto, tipo) {
+    const msgDiv = document.getElementById('mensagem');
+    if (msgDiv) {
+        msgDiv.textContent = texto;
+        msgDiv.className = 'mensagem ' + tipo;
+        msgDiv.style.display = 'block';
+        
+        // Ocultar após 5 segundos
+        setTimeout(() => {
+            msgDiv.style.display = 'none';
+        }, 5000);
+    }
+}
+
+// Modificar o submit do formulário para lidar com edição
+document.getElementById('formUsuario')?.addEventListener('submit', function(e) {
+    const usuarioId = document.getElementById('usuarioId')?.value;
+    
+    if (usuarioId) {
+        e.preventDefault();
+        
+        const formData = {
+            email: document.getElementById('emailUsuario').value,
+            role: document.getElementById('perfilUsuario').value,
+            password: document.getElementById('senhaUsuario').value
+        };
+        
+        const csrfToken = document.querySelector('input[name="csrf_token"]')?.value;
+        
+        fetch(`/auth/usuario/${usuarioId}/editar`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': csrfToken
+            },
+            body: JSON.stringify(formData)
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                mostrarMensagem(data.message, 'success');
+                // Recarregar a página para atualizar a lista
+                setTimeout(() => {
+                    window.location.reload();
+                }, 1500);
+            } else {
+                mostrarMensagem(data.error || 'Erro ao atualizar usuário', 'error');
+            }
+        })
+        .catch(error => {
+            console.error('Erro:', error);
+            mostrarMensagem('Erro ao atualizar usuário', 'error');
+        });
+    }
+    // Se não houver usuarioId, deixa o form submeter normalmente (criação)
+});
+
+// Aplicar permissões padrão ao carregar
+document.addEventListener('DOMContentLoaded', () => {
+    aplicarPermissoesPadrao();
+});
+</script>
+{% endblock %}
+

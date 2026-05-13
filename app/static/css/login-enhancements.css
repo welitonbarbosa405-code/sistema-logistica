@@ -1,0 +1,444 @@
+/**
+ * Melhorias Impressionantes para Login Kuhn
+ * Animações, Glassmorphism e Efeitos Modernos
+ */
+
+/* ===== ANIMAÇÕES ESPETACULARES ===== */
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(50px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes slideInFromLeft {
+  from {
+    opacity: 0;
+    transform: translateX(-100px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes slideInFromRight {
+  from {
+    opacity: 0;
+    transform: translateX(100px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes pulse {
+  0%, 100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.05);
+  }
+}
+
+@keyframes shimmer {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
+}
+
+@keyframes float {
+  0%, 100% {
+    transform: translateY(0px);
+  }
+  50% {
+    transform: translateY(-10px);
+  }
+}
+
+@keyframes glow {
+  0%, 100% {
+    box-shadow: 0 0 20px rgba(237, 28, 36, 0.3);
+  }
+  50% {
+    box-shadow: 0 0 40px rgba(237, 28, 36, 0.6);
+  }
+}
+
+/* ===== CONTAINER PRINCIPAL COM ANIMAÇÃO ===== */
+.login-container-simple {
+  animation: fadeInUp 1s ease-out;
+  min-height: calc(100vh - 200px); /* Garantir espaço para o rodapé */
+  padding-bottom: 2rem; /* Espaço extra na parte inferior */
+}
+
+/* ===== GLASSMORPHISM NO MODAL ===== */
+.login-card-simple {
+  background: rgba(255, 255, 255, 0.15);
+  backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  box-shadow: 
+    0 8px 32px rgba(0, 0, 0, 0.3),
+    inset 0 1px 0 rgba(255, 255, 255, 0.2);
+  animation: slideInFromLeft 0.8s ease-out;
+  position: relative;
+  overflow: hidden;
+}
+
+.login-card-simple::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(255, 255, 255, 0.1),
+    transparent
+  );
+  animation: shimmer 3s infinite;
+}
+
+/* ===== COLUNA DE INFORMAÇÕES COM ANIMAÇÃO ===== */
+.login-info-column-simple {
+  animation: slideInFromLeft 0.8s ease-out 0.2s both;
+}
+
+/* ===== COLUNA DE FORMULÁRIO COM ANIMAÇÃO ===== */
+.login-form-column-simple {
+  animation: slideInFromRight 0.8s ease-out 0.4s both;
+}
+
+/* ===== RECURSOS COM EFEITOS FLUTUANTES ===== */
+.feature-item-simple {
+  transition: all 0.3s ease;
+  animation: float 3s ease-in-out infinite;
+}
+
+.feature-item-simple:nth-child(1) {
+  animation-delay: 0s;
+}
+
+.feature-item-simple:nth-child(2) {
+  animation-delay: 0.5s;
+}
+
+.feature-item-simple:nth-child(3) {
+  animation-delay: 1s;
+}
+
+.feature-item-simple:hover {
+  transform: translateY(-5px) scale(1.02);
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
+  padding: 1rem;
+  backdrop-filter: blur(10px);
+}
+
+/* ===== CAMPOS DE INPUT COM EFEITOS MODERNOS ===== */
+.input-field-simple {
+  transition: all 0.3s ease;
+  position: relative;
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  backdrop-filter: blur(10px);
+}
+
+.input-field-simple:focus {
+  background: rgba(255, 255, 255, 0.15);
+  border-color: rgba(237, 28, 36, 0.5);
+  box-shadow: 
+    0 0 20px rgba(237, 28, 36, 0.3),
+    inset 0 1px 0 rgba(255, 255, 255, 0.1);
+  transform: translateY(-2px);
+}
+
+.input-field-simple:hover {
+  background: rgba(255, 255, 255, 0.12);
+  border-color: rgba(237, 28, 36, 0.3);
+}
+
+/* ===== BOTÃO COM EFEITOS ESPECIAIS ===== */
+.login-button-simple {
+  transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
+  background: linear-gradient(135deg, #ED1C24 0%, #ff4757 100%);
+  border: none;
+  box-shadow: 0 4px 15px rgba(237, 28, 36, 0.3);
+}
+
+.login-button-simple:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 8px 25px rgba(237, 28, 36, 0.4);
+  animation: glow 2s infinite;
+}
+
+.login-button-simple:active {
+  transform: translateY(-1px);
+}
+
+.login-button-simple::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(255, 255, 255, 0.2),
+    transparent
+  );
+  transition: left 0.5s;
+}
+
+.login-button-simple:hover::before {
+  left: 100%;
+}
+
+/* ===== SLIDESHOW MELHORADO ===== */
+.kuhn-gallery-simple {
+  animation: fadeInUp 1.2s ease-out;
+}
+
+.slide-simple {
+  transition: all 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.slide-image-simple {
+  transition: transform 0.8s ease;
+}
+
+.slide-simple.active .slide-image-simple {
+  transform: scale(1.05);
+}
+
+/* ===== INDICADORES COM EFEITOS ===== */
+.indicator-simple {
+  transition: all 0.3s ease;
+  background: rgba(255, 255, 255, 0.3);
+  backdrop-filter: blur(5px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.indicator-simple:hover {
+  background: rgba(237, 28, 36, 0.6);
+  transform: scale(1.2);
+  box-shadow: 0 4px 15px rgba(237, 28, 36, 0.4);
+}
+
+.indicator-simple.active {
+  background: rgba(237, 28, 36, 0.8);
+  animation: pulse 2s infinite;
+}
+
+/* ===== EFEITOS DE LOADING ===== */
+.loading-spinner {
+  display: inline-block;
+  width: 20px;
+  height: 20px;
+  border: 3px solid rgba(255, 255, 255, 0.3);
+  border-radius: 50%;
+  border-top-color: #ED1C24;
+  animation: spin 1s ease-in-out infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* ===== RESPONSIVIDADE MELHORADA ===== */
+@media (max-width: 768px) {
+  .login-container-simple {
+    min-height: calc(100vh - 150px);
+    padding: 1rem;
+    padding-bottom: 4rem; /* Mais espaço para o rodapé no mobile */
+  }
+  
+  .login-card-simple {
+    margin: 0.5rem;
+    backdrop-filter: blur(15px);
+    max-height: calc(100vh - 200px); /* Limitar altura no mobile */
+    overflow-y: auto;
+  }
+  
+  .feature-item-simple:hover {
+    transform: translateY(-3px) scale(1.01);
+  }
+  
+  .input-field-simple:focus {
+    transform: translateY(-1px);
+  }
+  
+  .login-button-simple:hover {
+    transform: translateY(-2px);
+  }
+}
+
+/* ===== RESPONSIVIDADE PARA TELAS PEQUENAS ===== */
+@media (max-width: 480px) {
+  .login-container-simple {
+    min-height: calc(100vh - 120px);
+    padding: 0.5rem;
+    padding-bottom: 5rem; /* Espaço extra para rodapé */
+  }
+  
+  .login-card-simple {
+    margin: 0.25rem;
+    padding: 1rem;
+    max-height: calc(100vh - 150px);
+  }
+  
+  .kuhn-gallery-simple {
+    height: 100vh; /* Manter altura total da galeria */
+    min-height: 100vh;
+  }
+}
+
+/* ===== RESPONSIVIDADE PARA ALTURAS PEQUENAS ===== */
+@media (max-height: 700px) {
+  .login-container-simple {
+    min-height: calc(100vh - 100px);
+    padding-bottom: 3rem;
+  }
+  
+  .kuhn-gallery-simple {
+    height: 100vh;
+    min-height: 100vh;
+  }
+  
+  .login-card-simple {
+    max-height: calc(100vh - 120px);
+    overflow-y: auto;
+  }
+}
+
+@media (max-height: 600px) {
+  .login-container-simple {
+    min-height: calc(100vh - 80px);
+    padding-bottom: 2rem;
+  }
+  
+  .kuhn-gallery-simple {
+    height: 100vh;
+    min-height: 100vh;
+  }
+  
+  .login-card-simple {
+    max-height: calc(100vh - 100px);
+  }
+}
+
+/* ===== MODO ESCURO COMPATÍVEL ===== */
+[data-theme="dark"] .login-card-simple {
+  background: rgba(0, 0, 0, 0.3);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+[data-theme="dark"] .input-field-simple {
+  background: rgba(0, 0, 0, 0.2);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+[data-theme="dark"] .input-field-simple:focus {
+  background: rgba(0, 0, 0, 0.3);
+  border-color: rgba(237, 28, 36, 0.5);
+}
+
+/* ===== EFEITOS DE PARTÍCULAS (OPCIONAL) ===== */
+.particles {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: 1;
+}
+
+.particle {
+  position: absolute;
+  width: 4px;
+  height: 4px;
+  background: rgba(237, 28, 36, 0.6);
+  border-radius: 50%;
+  animation: float 6s ease-in-out infinite;
+}
+
+.particle:nth-child(odd) {
+  animation-delay: 0s;
+  animation-duration: 8s;
+}
+
+.particle:nth-child(even) {
+  animation-delay: 2s;
+  animation-duration: 6s;
+}
+
+/* ===== MICRO-INTERAÇÕES ===== */
+.register-link-simple {
+  transition: all 0.3s ease;
+  position: relative;
+}
+
+.register-link-simple::after {
+  content: '';
+  position: absolute;
+  bottom: -2px;
+  left: 0;
+  width: 0;
+  height: 2px;
+  background: #ED1C24;
+  transition: width 0.3s ease;
+}
+
+.register-link-simple:hover::after {
+  width: 100%;
+}
+
+/* ===== EFEITO DE DIGITAÇÃO ===== */
+.typing-effect {
+  overflow: hidden;
+  border-right: 2px solid #ED1C24;
+  white-space: nowrap;
+  animation: typing 3s steps(40, end), blink-caret 0.75s step-end infinite;
+}
+
+@keyframes typing {
+  from {
+    width: 0;
+  }
+  to {
+    width: 100%;
+  }
+}
+
+@keyframes blink-caret {
+  from, to {
+    border-color: transparent;
+  }
+  50% {
+    border-color: #ED1C24;
+  }
+}
+
+/* ===== MELHORIAS NO TÍTULO ===== */
+.login-title-simple {
+  color: #ED1C24;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.7);
+  animation: fadeInUp 1s ease-out 0.6s both;
+}

@@ -1,0 +1,74 @@
+/**
+ * CSS para Alternativas de Texto
+ * Teste de legibilidade com diferentes cores
+ */
+
+/* ===== ALTERNATIVA COM TEXTO PRETO ===== */
+.text-black-alternative .login-subtitle-simple,
+.text-black-alternative .feature-text-simple h4,
+.text-black-alternative .feature-text-simple p,
+.text-black-alternative .field-text-simple,
+.text-black-alternative .register-text-simple {
+  color: #000000 !important;
+  text-shadow: 
+    0 2px 4px rgba(255, 255, 255, 0.8),
+    0 0 8px rgba(255, 255, 255, 0.6),
+    2px 2px 4px rgba(255, 255, 255, 0.9);
+}
+
+/* ===== ALTERNATIVA COM TEXTO COM CONTORNO ===== */
+.text-outline-alternative .login-subtitle-simple,
+.text-outline-alternative .feature-text-simple h4,
+.text-outline-alternative .feature-text-simple p,
+.text-outline-alternative .field-text-simple,
+.text-outline-alternative .register-text-simple {
+  color: #ffffff !important;
+  text-shadow: 
+    -2px -2px 0 #000000,
+    2px -2px 0 #000000,
+    -2px 2px 0 #000000,
+    2px 2px 0 #000000,
+    0 0 8px rgba(0, 0, 0, 0.8);
+}
+
+/* ===== ALTERNATIVA COM BACKGROUND SEMITRANSPARENTE ===== */
+.text-background-alternative .login-subtitle-simple,
+.text-background-alternative .feature-text-simple h4,
+.text-background-alternative .feature-text-simple p,
+.text-background-alternative .field-text-simple,
+.text-background-alternative .register-text-simple {
+  color: #ffffff !important;
+  background: rgba(0, 0, 0, 0.6);
+  padding: 0.25rem 0.5rem;
+  border-radius: 4px;
+  text-shadow: none;
+}
+
+/* ===== ALTERNATIVA COM GRADIENTE ===== */
+.text-gradient-alternative .login-subtitle-simple,
+.text-gradient-alternative .feature-text-simple h4,
+.text-gradient-alternative .feature-text-simple p,
+.text-gradient-alternative .field-text-simple,
+.text-gradient-alternative .register-text-simple {
+  background: linear-gradient(45deg, #ffffff, #f0f0f0, #ffffff);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  text-shadow: 
+    0 2px 4px rgba(0, 0, 0, 0.8),
+    0 0 8px rgba(0, 0, 0, 0.6);
+}
+
+/* ===== ALTERNATIVA COM SOMBRA DUPLA ===== */
+.text-double-shadow-alternative .login-subtitle-simple,
+.text-double-shadow-alternative .feature-text-simple h4,
+.text-double-shadow-alternative .feature-text-simple p,
+.text-double-shadow-alternative .field-text-simple,
+.text-double-shadow-alternative .register-text-simple {
+  color: #ffffff !important;
+  text-shadow: 
+    0 0 10px rgba(0, 0, 0, 0.9),
+    0 0 20px rgba(0, 0, 0, 0.7),
+    0 0 30px rgba(0, 0, 0, 0.5),
+    2px 2px 4px rgba(0, 0, 0, 0.9);
+}

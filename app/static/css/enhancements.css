@@ -1,0 +1,449 @@
+
+
+/* ========================================
+   ENHANCEMENTS CSS - Cidades Atendidas
+   Melhorias Visuais e Dark Mode
+   ======================================== */
+
+/* ===== CORES KUHN PERSONALIZADAS ===== */
+.kuhn-red-text {
+  color: #ED1C24 !important;
+}
+
+.kuhn-red-text:hover {
+  color: #FF2D3A !important;
+}
+
+/* ===== HEADER KUHN ===== */
+.kuhn-header {
+  background: linear-gradient(135deg, #FFFFFF 0%, #F8F9FA 50%, #E8E8E8 100%);
+  position: relative;
+  overflow: hidden;
+  border-bottom: 3px solid #ED1C24;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.kuhn-header::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-image: 
+    radial-gradient(circle at 25% 25%, rgba(237, 28, 36, 0.05) 1px, transparent 1px),
+    radial-gradient(circle at 75% 75%, rgba(237, 28, 36, 0.03) 1px, transparent 1px);
+  background-size: 40px 40px, 60px 60px;
+  animation: kuhnPattern 20s linear infinite;
+}
+
+@keyframes kuhnPattern {
+  0% { transform: translate(0, 0); }
+  100% { transform: translate(40px, 40px); }
+}
+
+.kuhn-header-content {
+  position: relative;
+  z-index: 10;
+  color: #2E3440;
+}
+
+.kuhn-header-content h1 {
+  color: #ED1C24 !important;
+}
+
+.kuhn-header-content p {
+  color: #4A4A4A !important;
+}
+
+.kuhn-glass-effect {
+  background: rgba(237, 28, 36, 0.1);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(237, 28, 36, 0.2);
+  color: #ED1C24;
+}
+
+.kuhn-glass-effect:hover {
+  background: rgba(237, 28, 36, 0.15);
+  transform: translateY(-1px);
+  border-color: rgba(237, 28, 36, 0.3);
+}
+
+/* ===== DARK MODE ===== */
+.dark {
+  color-scheme: dark;
+}
+
+.dark .bg-white {
+  @apply bg-gray-900;
+}
+
+.dark .bg-gray-50 {
+  @apply bg-gray-800;
+}
+
+.dark .bg-gray-100 {
+  @apply bg-gray-700;
+}
+
+.dark .text-gray-800 {
+  @apply text-gray-200;
+}
+
+.dark .text-gray-700 {
+  @apply text-gray-300;
+}
+
+.dark .text-gray-600 {
+  @apply text-gray-400;
+}
+
+.dark .text-gray-500 {
+  @apply text-gray-500;
+}
+
+.dark .border-gray-200 {
+  @apply border-gray-600;
+}
+
+.dark .border-gray-300 {
+  @apply border-gray-500;
+}
+
+.dark .bg-gray-200 {
+  @apply bg-gray-600;
+}
+
+.dark .hover\:bg-gray-50:hover {
+  @apply hover:bg-gray-700;
+}
+
+.dark .hover\:bg-gray-100:hover {
+  @apply hover:bg-gray-600;
+}
+
+/* ===== TOOLTIPS ===== */
+[data-tooltip] {
+  position: relative;
+}
+
+[data-tooltip]:hover::after {
+  content: attr(data-tooltip);
+  position: absolute;
+  bottom: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  background: rgba(0, 0, 0, 0.9);
+  color: white;
+  padding: 8px 12px;
+  border-radius: 6px;
+  font-size: 12px;
+  white-space: nowrap;
+  z-index: 1000;
+  pointer-events: none;
+  opacity: 0;
+  animation: tooltipFadeIn 0.2s ease-out forwards;
+}
+
+[data-tooltip]:hover::before {
+  content: '';
+  position: absolute;
+  bottom: 100%;
+  left: 50%;
+  transform: translateX(-50%) translateY(100%);
+  border: 5px solid transparent;
+  border-top-color: rgba(0, 0, 0, 0.9);
+  z-index: 1000;
+  pointer-events: none;
+  opacity: 0;
+  animation: tooltipFadeIn 0.2s ease-out forwards;
+}
+
+@keyframes tooltipFadeIn {
+  to {
+    opacity: 1;
+  }
+}
+
+/* ===== MICRO-ANIMAÇÕES ===== */
+
+/* Hover effects para KPIs */
+.kpi-card {
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.kpi-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+}
+
+/* Animação de entrada para elementos */
+.fade-in {
+  animation: fadeIn 0.5s ease-out;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Animação de loading para botões */
+.btn-loading {
+  position: relative;
+  color: transparent;
+}
+
+.btn-loading::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 16px;
+  height: 16px;
+  border: 2px solid transparent;
+  border-top: 2px solid currentColor;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: translate(-50%, -50%) rotate(360deg);
+  }
+}
+
+/* Animação de pulse para elementos importantes */
+.pulse-glow {
+  animation: pulseGlow 2s ease-in-out infinite;
+}
+
+@keyframes pulseGlow {
+  0%, 100% {
+    box-shadow: 0 0 0 0 rgba(237, 28, 36, 0.4);
+  }
+  50% {
+    box-shadow: 0 0 0 10px rgba(237, 28, 36, 0);
+  }
+}
+
+/* ===== MELHORIAS DE SCROLL ===== */
+.custom-scrollbar {
+  scrollbar-width: thin;
+  scrollbar-color: #cbd5e0 #f7fafc;
+  position: relative;
+}
+
+.custom-scrollbar::-webkit-scrollbar {
+  width: 8px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: #f7fafc;
+  border-radius: 4px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: #cbd5e0;
+  border-radius: 4px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: #a0aec0;
+}
+
+/* Efeito de fade para indicar scroll */
+.custom-scrollbar::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 20px;
+  background: linear-gradient(to bottom, rgba(255,255,255,1) 0%, rgba(255,255,255,0) 100%);
+  pointer-events: none;
+  z-index: 10;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.custom-scrollbar::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 20px;
+  background: linear-gradient(to top, rgba(255,255,255,1) 0%, rgba(255,255,255,0) 100%);
+  pointer-events: none;
+  z-index: 10;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.custom-scrollbar.scroll-top::before {
+  opacity: 1;
+}
+
+.custom-scrollbar.scroll-bottom::after {
+  opacity: 1;
+}
+
+.dark .custom-scrollbar {
+  scrollbar-color: #4a5568 #2d3748;
+}
+
+.dark .custom-scrollbar::-webkit-scrollbar-track {
+  background: #2d3748;
+}
+
+.dark .custom-scrollbar::-webkit-scrollbar-thumb {
+  background: #4a5568;
+}
+
+.dark .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: #718096;
+}
+
+.dark .custom-scrollbar::before {
+  background: linear-gradient(to bottom, rgba(31,41,55,1) 0%, rgba(31,41,55,0) 100%);
+}
+
+.dark .custom-scrollbar::after {
+  background: linear-gradient(to top, rgba(31,41,55,1) 0%, rgba(31,41,55,0) 100%);
+}
+
+/* ===== MELHORIAS DE TABELA ===== */
+.table-row-hover {
+  transition: all 0.2s ease;
+}
+
+.table-row-hover:hover {
+  background: linear-gradient(90deg, rgba(247, 250, 252, 0.8) 0%, transparent 100%);
+  transform: scale(1.01);
+}
+
+.dark .table-row-hover:hover {
+  background: linear-gradient(90deg, rgba(45, 55, 72, 0.8) 0%, transparent 100%);
+}
+
+/* ===== ANIMAÇÕES DE ENTRADA ===== */
+.stagger-animation > * {
+  animation: staggerIn 0.6s ease-out forwards;
+  opacity: 0;
+  transform: translateY(20px);
+}
+
+.stagger-animation > *:nth-child(1) { animation-delay: 0.1s; }
+.stagger-animation > *:nth-child(2) { animation-delay: 0.2s; }
+.stagger-animation > *:nth-child(3) { animation-delay: 0.3s; }
+.stagger-animation > *:nth-child(4) { animation-delay: 0.4s; }
+
+@keyframes staggerIn {
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* ===== MELHORIAS DE FILTROS ===== */
+.filter-input {
+  transition: all 0.3s ease;
+}
+
+.filter-input:focus {
+  transform: scale(1.02);
+  box-shadow: 0 0 0 3px rgba(237, 28, 36, 0.1);
+}
+
+/* ===== BADGES E CHIPS ===== */
+.badge-animated {
+  transition: all 0.2s ease;
+}
+
+.badge-animated:hover {
+  transform: scale(1.05);
+}
+
+/* ===== GRÁFICOS ===== */
+.chart-container {
+  transition: all 0.3s ease;
+}
+
+.chart-container:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1);
+}
+
+/* ===== RESPONSIVIDADE MELHORADA ===== */
+@media (max-width: 768px) {
+  .kpi-card:hover {
+    transform: none;
+  }
+  
+  .table-row-hover:hover {
+    transform: none;
+  }
+  
+  .chart-container:hover {
+    transform: none;
+  }
+}
+
+/* ===== MELHORIAS DE ACESSIBILIDADE ===== */
+.focus-visible {
+  outline: 2px solid #ed1c24;
+  outline-offset: 2px;
+}
+
+/* ===== ANIMAÇÕES DE CARREGAMENTO ===== */
+.skeleton-shimmer {
+  background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite;
+}
+
+@keyframes shimmer {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
+}
+
+.dark .skeleton-shimmer {
+  background: linear-gradient(90deg, #374151 25%, #4b5563 50%, #374151 75%);
+  background-size: 200% 100%;
+}
+
+/* ===== MELHORIAS DE PERFORMANCE ===== */
+.gpu-accelerated {
+  transform: translateZ(0);
+  will-change: transform;
+}
+
+/* ===== ESTADOS DE CARREGAMENTO ===== */
+.loading-state {
+  pointer-events: none;
+  opacity: 0.6;
+}
+
+.loading-state * {
+  animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+@keyframes pulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.5;
+  }
+}

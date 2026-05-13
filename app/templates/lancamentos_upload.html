@@ -1,0 +1,647 @@
+{% extends 'base.html' %}
+{% block content %}
+
+<!-- Toast Notifications -->
+<div id="toast-container" class="fixed top-4 right-4 z-50 flex flex-col gap-2">
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            {% for category, message in messages %}
+            <div class="toast-notification {{ 'bg-green-500' if category == 'success' else 'bg-red-500' if category == 'danger' else 'bg-blue-500' }} text-white px-6 py-4 rounded-lg shadow-2xl flex items-center gap-3 transform transition-all duration-500 animate-slide-in">
+                <span class="text-xl">{{ '✅' if category == 'success' else '❌' if category == 'danger' else 'ℹ️' }}</span>
+                <span class="font-medium">{{ message }}</span>
+                <button onclick="this.parentElement.remove()" class="ml-4 text-white hover:text-gray-200 text-xl font-bold">&times;</button>
+            </div>
+            {% endfor %}
+        {% endif %}
+    {% endwith %}
+</div>
+
+<style>
+    @keyframes slideIn {
+        from { transform: translateX(100%); opacity: 0; }
+        to { transform: translateX(0); opacity: 1; }
+    }
+    @keyframes slideOut {
+        from { transform: translateX(0); opacity: 1; }
+        to { transform: translateX(100%); opacity: 0; }
+    }
+    @keyframes pulse {
+        0%, 100% { opacity: 1; }
+        50% { opacity: 0.5; }
+    }
+    .animate-slide-in { animation: slideIn 0.4s ease-out; }
+    .animate-slide-out { animation: slideOut 0.4s ease-out forwards; }
+    .animate-pulse-slow { animation: pulse 2s ease-in-out infinite; }
+    .upload-zone { transition: all 0.3s ease; }
+    .upload-zone:hover { border-color: #c81e2b; background-color: #fef2f2; }
+    .upload-zone.dragover { border-color: #c81e2b; background-color: #fee2e2; transform: scale(1.02); }
+    .upload-zone.has-file { border-color: #22c55e; background-color: #f0fdf4; }    .input-valid { border-color: #22c55e !important; }
+    .input-valid:focus { border-color: #22c55e !important; box-shadow: 0 0 0 2px rgba(34, 197, 94, 0.2); }
+    .input-error { border-color: #ef4444 !important; }
+    .autocomplete-list { max-height: 200px; overflow-y: auto; }
+    .autocomplete-item:hover { background-color: #fef2f2; }
+    .autocomplete-item.selected { background-color: #fee2e2; }
+    .step-indicator { transition: all 0.3s ease; }
+    .step-indicator.active { background-color: #c81e2b; color: white; }
+    .step-indicator.completed { background-color: #22c55e; color: white; }
+</style>
+
+<div class="container mx-auto px-6 py-6 max-w-5xl">    <!-- Cabeçalho -->
+    <div class="mb-6">
+        <a href="{{ url_for('lancamentos.lista_lancamentos') }}" class="text-kuhn-red hover:text-kuhn-red-dark flex items-center gap-2 mb-3 font-semibold transition text-base">
+            <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M9.707 16.707a1 1 0 01-1.414 0l-6-6a1 1 0 010-1.414l6-6a1 1 0 011.414 1.414L5.414 9H17a1 1 0 110 2H5.414l4.293 4.293a1 1 0 010 1.414z" clip-rule="evenodd"></path></svg>
+            Voltar para lista
+        </a>
+        <h2 class="text-3xl font-bold text-kuhn-red flex items-center gap-4">
+            <div class="bg-kuhn-red bg-opacity-10 p-3 rounded-xl">
+                <svg class="w-8 h-8 text-kuhn-red" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M3 17a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zM6.293 6.707a1 1 0 010-1.414l3-3a1 1 0 011.414 0l3 3a1 1 0 01-1.414 1.414L11 5.414V13a1 1 0 11-2 0V5.414L7.707 6.707a1 1 0 01-1.414 0z" clip-rule="evenodd"></path></svg>
+            </div>
+            Nova Fatura Fiscal
+        </h2>
+    </div><!-- Indicador de Progresso -->
+    <div class="mb-6">
+        <div class="flex items-center justify-between">
+            <div class="flex items-center gap-3">
+                <div id="step1" class="step-indicator w-10 h-10 rounded-full flex items-center justify-center text-base font-bold bg-gray-200 text-gray-600">1</div>
+                <span class="text-base font-semibold text-gray-600">Arquivo</span>
+            </div>
+            <div class="flex-1 h-1.5 mx-4 bg-gray-200 rounded-full">
+                <div id="progress1" class="h-full bg-kuhn-red rounded-full transition-all duration-300" style="width: 0%"></div>
+            </div>
+            <div class="flex items-center gap-3">
+                <div id="step2" class="step-indicator w-10 h-10 rounded-full flex items-center justify-center text-base font-bold bg-gray-200 text-gray-600">2</div>
+                <span class="text-base font-semibold text-gray-600">Dados</span>
+            </div>
+            <div class="flex-1 h-1.5 mx-4 bg-gray-200 rounded-full">
+                <div id="progress2" class="h-full bg-kuhn-red rounded-full transition-all duration-300" style="width: 0%"></div>
+            </div>
+            <div class="flex items-center gap-3">
+                <div id="step3" class="step-indicator w-10 h-10 rounded-full flex items-center justify-center text-base font-bold bg-gray-200 text-gray-600">3</div>
+                <span class="text-base font-semibold text-gray-600">Enviar</span>
+            </div>
+        </div>
+    </div><!-- Formulário -->
+    <div class="bg-white rounded-2xl shadow-xl p-6">
+        <form method="post" enctype="multipart/form-data" id="uploadForm">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+              <!-- Upload de arquivo -->
+            <div class="mb-5">
+                <label class="block text-base font-semibold text-kuhn-dark-gray mb-2">
+                    Arquivo PDF <span class="text-red-500">*</span>
+                </label>
+                <div id="uploadZone" class="upload-zone border-2 border-dashed border-gray-300 rounded-xl p-6 text-center cursor-pointer" onclick="document.getElementById('arquivo').click()">
+                    <div id="uploadContent">
+                        <div id="uploadIcon" class="inline-flex items-center justify-center w-14 h-14 bg-gray-100 rounded-full mb-3">
+                            <svg class="w-7 h-7 text-gray-400" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M3 17a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zM6.293 6.707a1 1 0 010-1.414l3-3a1 1 0 011.414 0l3 3a1 1 0 01-1.414 1.414L11 5.414V13a1 1 0 11-2 0V5.414L7.707 6.707a1 1 0 01-1.414 0z" clip-rule="evenodd"></path></svg>
+                        </div>
+                        <p id="uploadText" class="text-gray-600 font-semibold text-base mb-1">Clique para selecionar ou arraste o arquivo</p>
+                        <p class="text-sm text-gray-400">Apenas arquivos PDF (máx. 10MB)</p>
+                    </div>
+                    <!-- Preview do arquivo -->
+                    <div id="filePreview" class="hidden">
+                        <div class="flex items-center justify-center gap-4">
+                            <div class="bg-red-100 p-3 rounded-xl">
+                                <svg class="w-10 h-10 text-red-600" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M4 4a2 2 0 012-2h4.586A2 2 0 0112 2.586L15.414 6A2 2 0 0116 7.414V16a2 2 0 01-2 2H6a2 2 0 01-2-2V4z" clip-rule="evenodd"></path></svg>
+                            </div>
+                            <div class="text-left">
+                                <p id="fileName" class="font-bold text-gray-800 text-base truncate max-w-md"></p>
+                                <p id="fileSize" class="text-sm text-gray-500"></p>
+                                <button type="button" onclick="event.stopPropagation(); removerArquivo();" class="text-red-500 hover:text-red-700 text-sm font-semibold mt-1 flex items-center gap-1">
+                                    <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd"></path></svg>
+                                    Remover
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    <input type="file" 
+                           class="hidden" 
+                           id="arquivo" 
+                           name="arquivo" 
+                           accept="application/pdf" 
+                           required
+                           onchange="handleFileSelect(this)">
+                </div>
+            </div>            <!-- Transportadora com Autocomplete -->
+            <div class="mb-5 relative">
+                <label for="transportadora" class="block text-base font-semibold text-kuhn-dark-gray mb-2">
+                    Transportadora <span class="text-red-500">*</span>
+                </label>
+                <div class="relative">
+                    <div class="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400">
+                        <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20"><path d="M8 16.5a1.5 1.5 0 11-3 0 1.5 1.5 0 013 0zM15 16.5a1.5 1.5 0 11-3 0 1.5 1.5 0 013 0zM3 4h1l1.68 8.39A2 2 0 007.65 14h4.7a2 2 0 001.97-1.61L16 6H5"></path></svg>
+                    </div>
+                    <input type="text" 
+                           class="w-full border-2 border-gray-300 rounded-xl pl-12 pr-12 py-3 text-base focus:ring-2 focus:ring-kuhn-red focus:border-kuhn-red transition" 
+                           id="transportadora" 
+                           name="transportadora" 
+                           placeholder="Digite o nome da transportadora..."
+                           autocomplete="off"
+                           required
+                           oninput="filterTransportadoras(this.value)"
+                           onfocus="showAutocomplete()"
+                           onblur="setTimeout(() => hideAutocomplete(), 200)">
+                    <div id="transportadoraCheck" class="absolute right-4 top-1/2 transform -translate-y-1/2 hidden">
+                        <svg class="w-5 h-5 text-green-500" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path></svg>
+                    </div>
+                </div>
+                <!-- Lista de Autocomplete -->
+                <div id="autocompleteList" class="absolute z-10 w-full bg-white border-2 border-gray-200 rounded-xl shadow-xl mt-1 hidden autocomplete-list">
+                    <!-- Transportadoras recentes -->
+                    <div id="recentTransportadoras" class="border-b border-gray-100 p-2">
+                        <p class="text-xs text-gray-500 px-2 py-1 font-medium">Recentes</p>
+                    </div>
+                    <!-- Todas as transportadoras -->
+                    <div id="allTransportadoras" class="p-2">
+                        <p class="text-xs text-gray-500 px-2 py-1 font-medium">Todas</p>
+                    </div>
+                </div>
+            </div>            <!-- Número da Fatura -->
+            <div class="mb-5">
+                <label for="numero_fatura" class="block text-base font-semibold text-kuhn-dark-gray mb-2">
+                    Número da Fatura <span class="text-red-500">*</span>
+                </label>
+                <div class="relative">
+                    <div class="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400">
+                        <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M4 4a2 2 0 012-2h4.586A2 2 0 0112 2.586L15.414 6A2 2 0 0116 7.414V16a2 2 0 01-2 2H6a2 2 0 01-2-2V4zm2 6a1 1 0 011-1h6a1 1 0 110 2H7a1 1 0 01-1-1zm1 3a1 1 0 100 2h6a1 1 0 100-2H7z" clip-rule="evenodd"></path></svg>
+                    </div>
+                    <input type="text" 
+                           class="w-full border-2 border-gray-300 rounded-xl pl-12 pr-12 py-3 text-base focus:ring-2 focus:ring-kuhn-red focus:border-kuhn-red transition" 
+                           id="numero_fatura" 
+                           name="numero_fatura" 
+                           placeholder="Ex: FAT-123456"
+                           required
+                           oninput="validateField(this)">
+                    <div id="numeroFaturaCheck" class="absolute right-4 top-1/2 transform -translate-y-1/2 hidden">
+                        <svg class="w-5 h-5 text-green-500" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path></svg>
+                    </div>
+                </div>
+            </div>            <!-- Valor e Data em linha -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-5 mb-5">
+                <div>
+                    <label for="valor_fatura" class="block text-base font-semibold text-kuhn-dark-gray mb-2">
+                        Valor da Fatura
+                    </label>
+                    <div class="relative">
+                        <span class="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-500 font-bold text-base">R$</span>
+                        <input type="text" 
+                               class="w-full border-2 border-gray-300 rounded-xl pl-12 pr-4 py-3 text-base focus:ring-2 focus:ring-kuhn-red focus:border-kuhn-red transition" 
+                               id="valor_fatura_display" 
+                               placeholder="0,00"
+                               oninput="formatarMoeda(this)"
+                               onblur="validarValor()">
+                        <input type="hidden" id="valor_fatura" name="valor_fatura">
+                    </div>
+                    <p class="text-xs text-gray-400 mt-1">Opcional</p>
+                </div>                <div>
+                    <label for="data_vencimento" class="block text-base font-semibold text-kuhn-dark-gray mb-2">
+                        Data de Vencimento
+                    </label>
+                    <div class="relative">
+                        <div class="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400">
+                            <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M6 2a1 1 0 00-1 1v1H4a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V6a2 2 0 00-2-2h-1V3a1 1 0 10-2 0v1H7V3a1 1 0 00-1-1zm0 5a1 1 0 000 2h8a1 1 0 100-2H6z" clip-rule="evenodd"></path></svg>
+                        </div>
+                        <input type="date" 
+                               class="w-full border-2 border-gray-300 rounded-xl pl-12 pr-4 py-3 text-base focus:ring-2 focus:ring-kuhn-red focus:border-kuhn-red transition" 
+                               id="data_vencimento" 
+                               name="data_vencimento">
+                    </div>
+                    <p class="text-xs text-gray-400 mt-1">Opcional</p>
+                </div>
+            </div><!-- Resumo antes de enviar -->
+            <div id="resumo" class="mb-5 p-4 bg-gradient-to-r from-gray-50 to-gray-100 rounded-xl border border-gray-200 hidden">
+                <h4 class="font-bold text-gray-700 mb-3 flex items-center gap-2 text-base">
+                    <svg class="w-5 h-5 text-kuhn-red" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path></svg>
+                    Resumo da Fatura
+                </h4>
+                <div class="grid grid-cols-2 md:grid-cols-4 gap-3 text-sm">
+                    <div>
+                        <span class="text-gray-500">Arquivo:</span>
+                        <span id="resumoArquivo" class="font-semibold text-gray-800 block truncate"></span>
+                    </div>
+                    <div>
+                        <span class="text-gray-500">Transportadora:</span>
+                        <span id="resumoTransportadora" class="font-semibold text-gray-800 block"></span>
+                    </div>
+                    <div>
+                        <span class="text-gray-500">Nº Fatura:</span>
+                        <span id="resumoNumero" class="font-semibold text-gray-800 block"></span>
+                    </div>
+                    <div>
+                        <span class="text-gray-500">Valor:</span>
+                        <span id="resumoValor" class="font-semibold text-green-600 block"></span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Botão de enviar -->
+            <button type="submit" id="btnSubmit" disabled class="w-full bg-gray-300 text-gray-500 font-bold py-4 px-6 rounded-xl shadow-lg transition transform flex items-center justify-center gap-2 cursor-not-allowed text-base">
+                <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M3 17a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zM6.293 6.707a1 1 0 010-1.414l3-3a1 1 0 011.414 0l3 3a1 1 0 01-1.414 1.414L11 5.414V13a1 1 0 11-2 0V5.414L7.707 6.707a1 1 0 01-1.414 0z" clip-rule="evenodd"></path></svg>
+                Preencha os campos obrigatórios
+            </button>
+        </form>    </div>
+</div>
+
+<script>
+// Lista de transportadoras do backend
+const transportadorasExistentes = {{ transportadoras|tojson|safe if transportadoras else '[]' }};
+let selectedAutocompleteIndex = -1;
+
+// ===== GERENCIAMENTO DE ARQUIVO =====
+function handleFileSelect(input) {
+    const uploadZone = document.getElementById('uploadZone');
+    const uploadContent = document.getElementById('uploadContent');
+    const filePreview = document.getElementById('filePreview');
+    const fileName = document.getElementById('fileName');
+    const fileSize = document.getElementById('fileSize');
+    
+    if (input.files.length > 0) {
+        const file = input.files[0];
+        
+        // Validar tamanho (10MB)
+        if (file.size > 10 * 1024 * 1024) {
+            showToast('O arquivo é muito grande. Máximo permitido: 10MB', 'danger');
+            input.value = '';
+            return;
+        }
+        
+        // Validar tipo
+        if (file.type !== 'application/pdf') {
+            showToast('Apenas arquivos PDF são aceitos', 'danger');
+            input.value = '';
+            return;
+        }
+        
+        uploadZone.classList.add('has-file');
+        uploadContent.classList.add('hidden');
+        filePreview.classList.remove('hidden');
+        fileName.textContent = file.name;
+        fileSize.textContent = formatFileSize(file.size);
+        
+        updateProgress();
+        updateSubmitButton();
+        updateResumo();
+    }
+}
+
+function removerArquivo() {
+    const input = document.getElementById('arquivo');
+    const uploadZone = document.getElementById('uploadZone');
+    const uploadContent = document.getElementById('uploadContent');
+    const filePreview = document.getElementById('filePreview');
+    
+    input.value = '';
+    uploadZone.classList.remove('has-file');
+    uploadContent.classList.remove('hidden');
+    filePreview.classList.add('hidden');
+    
+    updateProgress();
+    updateSubmitButton();
+    updateResumo();
+}
+
+function formatFileSize(bytes) {
+    if (bytes === 0) return '0 Bytes';
+    const k = 1024;
+    const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+    const i = Math.floor(Math.log(bytes) / Math.log(k));
+    return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+}
+
+// ===== AUTOCOMPLETE DE TRANSPORTADORAS =====
+function showAutocomplete() {
+    const list = document.getElementById('autocompleteList');
+    populateAutocomplete('');
+    list.classList.remove('hidden');
+}
+
+function hideAutocomplete() {
+    document.getElementById('autocompleteList').classList.add('hidden');
+    selectedAutocompleteIndex = -1;
+}
+
+function filterTransportadoras(value) {
+    populateAutocomplete(value);
+    validateField(document.getElementById('transportadora'));
+    updateResumo();
+}
+
+function populateAutocomplete(filter) {
+    const allContainer = document.getElementById('allTransportadoras');
+    const recentContainer = document.getElementById('recentTransportadoras');
+    
+    // Limpar containers
+    allContainer.innerHTML = '<p class="text-xs text-gray-500 px-2 py-1 font-medium">Sugestões</p>';
+    
+    // Recentes do localStorage
+    const recentes = JSON.parse(localStorage.getItem('transportadorasRecentes') || '[]');
+    
+    if (recentes.length > 0) {
+        recentContainer.innerHTML = '<p class="text-xs text-gray-500 px-2 py-1 font-medium">Recentes</p>';
+        recentContainer.classList.remove('hidden');
+        recentes.filter(t => t.toLowerCase().includes(filter.toLowerCase())).slice(0, 3).forEach(t => {
+            const item = createAutocompleteItem(t, true);
+            recentContainer.appendChild(item);
+        });
+    } else {
+        recentContainer.classList.add('hidden');
+    }
+    
+    // Todas as transportadoras filtradas
+    const filtered = transportadorasExistentes.filter(t => 
+        t && t.toLowerCase().includes(filter.toLowerCase()) && !recentes.includes(t)
+    );
+    
+    filtered.slice(0, 5).forEach(t => {
+        const item = createAutocompleteItem(t, false);
+        allContainer.appendChild(item);
+    });
+    
+    // Se não encontrou e tem texto, mostrar opção de criar nova
+    if (filter.length > 0 && filtered.length === 0 && !recentes.some(r => r.toLowerCase() === filter.toLowerCase())) {
+        const newItem = document.createElement('div');
+        newItem.className = 'autocomplete-item px-3 py-2 cursor-pointer rounded flex items-center gap-2 text-kuhn-red';
+        newItem.innerHTML = `
+            <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" clip-rule="evenodd"></path></svg>
+            Adicionar "${filter}" como nova transportadora
+        `;
+        newItem.onclick = () => selectTransportadora(filter);
+        allContainer.appendChild(newItem);
+    }
+}
+
+function createAutocompleteItem(text, isRecent) {
+    const item = document.createElement('div');
+    item.className = 'autocomplete-item px-3 py-2 cursor-pointer rounded flex items-center gap-2';
+    item.innerHTML = `
+        ${isRecent ? '<svg class="w-4 h-4 text-gray-400" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z" clip-rule="evenodd"></path></svg>' : '<svg class="w-4 h-4 text-gray-400" fill="currentColor" viewBox="0 0 20 20"><path d="M8 16.5a1.5 1.5 0 11-3 0 1.5 1.5 0 013 0zM15 16.5a1.5 1.5 0 11-3 0 1.5 1.5 0 013 0z"></path></svg>'}
+        <span>${text}</span>
+    `;
+    item.onclick = () => selectTransportadora(text);
+    return item;
+}
+
+function selectTransportadora(value) {
+    const input = document.getElementById('transportadora');
+    input.value = value;
+    hideAutocomplete();
+    validateField(input);
+    updateResumo();
+    
+    // Salvar nos recentes
+    let recentes = JSON.parse(localStorage.getItem('transportadorasRecentes') || '[]');
+    recentes = recentes.filter(t => t !== value);
+    recentes.unshift(value);
+    recentes = recentes.slice(0, 5);
+    localStorage.setItem('transportadorasRecentes', JSON.stringify(recentes));
+}
+
+// ===== FORMATAÇÃO DE MOEDA =====
+function formatarMoeda(input) {
+    let value = input.value.replace(/\D/g, '');
+    
+    if (value === '') {
+        input.value = '';
+        document.getElementById('valor_fatura').value = '';
+        return;
+    }
+    
+    // Converter para número com 2 casas decimais
+    value = (parseInt(value) / 100).toFixed(2);
+    
+    // Formatar para exibição
+    const parts = value.split('.');
+    parts[0] = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+    input.value = parts.join(',');
+    
+    // Salvar valor real no campo hidden
+    document.getElementById('valor_fatura').value = value;
+    updateResumo();
+}
+
+function validarValor() {
+    const display = document.getElementById('valor_fatura_display');
+    const hidden = document.getElementById('valor_fatura');
+    
+    if (display.value === '') {
+        hidden.value = '';
+    }
+}
+
+// ===== VALIDAÇÃO DE CAMPOS =====
+function validateField(input) {
+    const checkIcon = document.getElementById(input.id + 'Check') || 
+                      document.getElementById(input.id.replace('_', '') + 'Check');
+    
+    if (input.value.trim().length > 0) {
+        input.classList.add('input-valid');
+        input.classList.remove('input-error');
+        if (checkIcon) checkIcon.classList.remove('hidden');
+    } else {
+        input.classList.remove('input-valid');
+        if (checkIcon) checkIcon.classList.add('hidden');
+    }
+    
+    updateProgress();
+    updateSubmitButton();
+}
+
+// ===== ATUALIZAÇÃO DE PROGRESSO =====
+function updateProgress() {
+    const hasFile = document.getElementById('arquivo').files.length > 0;
+    const hasTransportadora = document.getElementById('transportadora').value.trim().length > 0;
+    const hasNumero = document.getElementById('numero_fatura').value.trim().length > 0;
+    
+    const step1 = document.getElementById('step1');
+    const step2 = document.getElementById('step2');
+    const step3 = document.getElementById('step3');
+    const progress1 = document.getElementById('progress1');
+    const progress2 = document.getElementById('progress2');
+    
+    // Step 1 - Arquivo
+    if (hasFile) {
+        step1.classList.add('completed');
+        step1.classList.remove('active');
+        step1.innerHTML = '<svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"></path></svg>';
+        progress1.style.width = '100%';
+    } else {
+        step1.classList.remove('completed');
+        step1.classList.add('active');
+        step1.textContent = '1';
+        progress1.style.width = '0%';
+    }
+    
+    // Step 2 - Dados
+    if (hasFile && hasTransportadora && hasNumero) {
+        step2.classList.add('completed');
+        step2.classList.remove('active');
+        step2.innerHTML = '<svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"></path></svg>';
+        progress2.style.width = '100%';
+    } else if (hasFile) {
+        step2.classList.remove('completed');
+        step2.classList.add('active');
+        step2.textContent = '2';
+        progress2.style.width = hasTransportadora || hasNumero ? '50%' : '0%';
+    } else {
+        step2.classList.remove('completed', 'active');
+        step2.textContent = '2';
+        progress2.style.width = '0%';
+    }
+    
+    // Step 3 - Enviar
+    if (hasFile && hasTransportadora && hasNumero) {
+        step3.classList.add('active');
+        step3.classList.remove('completed');
+    } else {
+        step3.classList.remove('active', 'completed');
+    }
+}
+
+// ===== ATUALIZAÇÃO DO BOTÃO DE ENVIO =====
+function updateSubmitButton() {
+    const btn = document.getElementById('btnSubmit');
+    const hasFile = document.getElementById('arquivo').files.length > 0;
+    const hasTransportadora = document.getElementById('transportadora').value.trim().length > 0;
+    const hasNumero = document.getElementById('numero_fatura').value.trim().length > 0;
+    
+    if (hasFile && hasTransportadora && hasNumero) {
+        btn.disabled = false;
+        btn.className = 'w-full bg-kuhn-red hover:bg-kuhn-red-dark text-white font-bold py-4 px-6 rounded-xl shadow-lg transition transform hover:scale-[1.02] flex items-center justify-center gap-2 cursor-pointer text-base';
+        btn.innerHTML = `
+            <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M3 17a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zM6.293 6.707a1 1 0 010-1.414l3-3a1 1 0 011.414 0l3 3a1 1 0 01-1.414 1.414L11 5.414V13a1 1 0 11-2 0V5.414L7.707 6.707a1 1 0 01-1.414 0z" clip-rule="evenodd"></path></svg>
+            Enviar Fatura
+        `;
+    } else {
+        btn.disabled = true;
+        btn.className = 'w-full bg-gray-300 text-gray-500 font-bold py-4 px-6 rounded-xl shadow-lg transition flex items-center justify-center gap-2 cursor-not-allowed text-base';
+        
+        if (!hasFile) {
+            btn.innerHTML = `<svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M3 17a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zM6.293 6.707a1 1 0 010-1.414l3-3a1 1 0 011.414 0l3 3a1 1 0 01-1.414 1.414L11 5.414V13a1 1 0 11-2 0V5.414L7.707 6.707a1 1 0 01-1.414 0z" clip-rule="evenodd"></path></svg> Selecione um arquivo PDF`;
+        } else if (!hasTransportadora) {
+            btn.innerHTML = `<svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M3 17a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zM6.293 6.707a1 1 0 010-1.414l3-3a1 1 0 011.414 0l3 3a1 1 0 01-1.414 1.414L11 5.414V13a1 1 0 11-2 0V5.414L7.707 6.707a1 1 0 01-1.414 0z" clip-rule="evenodd"></path></svg> Informe a transportadora`;
+        } else {
+            btn.innerHTML = `<svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M3 17a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zM6.293 6.707a1 1 0 010-1.414l3-3a1 1 0 011.414 0l3 3a1 1 0 01-1.414 1.414L11 5.414V13a1 1 0 11-2 0V5.414L7.707 6.707a1 1 0 01-1.414 0z" clip-rule="evenodd"></path></svg> Informe o número da fatura`;
+        }
+    }
+}
+
+// ===== RESUMO =====
+function updateResumo() {
+    const resumo = document.getElementById('resumo');
+    const hasFile = document.getElementById('arquivo').files.length > 0;
+    const hasTransportadora = document.getElementById('transportadora').value.trim().length > 0;
+    const hasNumero = document.getElementById('numero_fatura').value.trim().length > 0;
+    
+    if (hasFile && hasTransportadora && hasNumero) {
+        resumo.classList.remove('hidden');
+        
+        document.getElementById('resumoArquivo').textContent = document.getElementById('arquivo').files[0].name;
+        document.getElementById('resumoTransportadora').textContent = document.getElementById('transportadora').value;
+        document.getElementById('resumoNumero').textContent = document.getElementById('numero_fatura').value;
+        
+        const valor = document.getElementById('valor_fatura_display').value;
+        document.getElementById('resumoValor').textContent = valor ? 'R$ ' + valor : 'Não informado';
+    } else {
+        resumo.classList.add('hidden');
+    }
+}
+
+// ===== TOAST =====
+function showToast(message, type) {
+    const container = document.getElementById('toast-container');
+    const toast = document.createElement('div');
+    toast.className = `toast-notification ${type === 'success' ? 'bg-green-500' : 'bg-red-500'} text-white px-6 py-4 rounded-lg shadow-2xl flex items-center gap-3 transform transition-all duration-500 animate-slide-in`;
+    toast.innerHTML = `
+        <span class="text-xl">${type === 'success' ? '✅' : '❌'}</span>
+        <span class="font-medium">${message}</span>
+        <button onclick="this.parentElement.remove()" class="ml-4 text-white hover:text-gray-200 text-xl font-bold">&times;</button>
+    `;
+    container.appendChild(toast);
+    
+    setTimeout(() => {
+        toast.classList.add('animate-slide-out');
+        setTimeout(() => toast.remove(), 400);
+    }, 5000);
+}
+
+// ===== DRAG AND DROP =====
+const uploadZone = document.getElementById('uploadZone');
+
+uploadZone.addEventListener('dragover', function(e) {
+    e.preventDefault();
+    this.classList.add('dragover');
+});
+
+uploadZone.addEventListener('dragleave', function(e) {
+    e.preventDefault();
+    this.classList.remove('dragover');
+});
+
+uploadZone.addEventListener('drop', function(e) {
+    e.preventDefault();
+    this.classList.remove('dragover');
+    const files = e.dataTransfer.files;
+    if (files.length > 0) {
+        document.getElementById('arquivo').files = files;
+        handleFileSelect(document.getElementById('arquivo'));
+    }
+});
+
+// ===== LISTENERS =====
+document.getElementById('transportadora').addEventListener('input', function() {
+    validateField(this);
+});
+
+document.getElementById('numero_fatura').addEventListener('input', function() {
+    validateField(this);
+    updateResumo();
+});
+
+// Navegação com teclado no autocomplete
+document.getElementById('transportadora').addEventListener('keydown', function(e) {
+    const list = document.getElementById('autocompleteList');
+    const items = list.querySelectorAll('.autocomplete-item');
+    
+    if (e.key === 'ArrowDown') {
+        e.preventDefault();
+        selectedAutocompleteIndex = Math.min(selectedAutocompleteIndex + 1, items.length - 1);
+        updateAutocompleteSelection(items);
+    } else if (e.key === 'ArrowUp') {
+        e.preventDefault();
+        selectedAutocompleteIndex = Math.max(selectedAutocompleteIndex - 1, 0);
+        updateAutocompleteSelection(items);
+    } else if (e.key === 'Enter' && selectedAutocompleteIndex >= 0) {
+        e.preventDefault();
+        items[selectedAutocompleteIndex].click();
+    }
+});
+
+function updateAutocompleteSelection(items) {
+    items.forEach((item, index) => {
+        if (index === selectedAutocompleteIndex) {
+            item.classList.add('selected');
+        } else {
+            item.classList.remove('selected');
+        }
+    });
+}
+
+// Loading state on submit
+document.getElementById('uploadForm').addEventListener('submit', function() {
+    const btn = document.getElementById('btnSubmit');
+    btn.disabled = true;
+    btn.innerHTML = '<svg class="animate-spin w-5 h-5" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg> Enviando...';
+});
+
+// Auto-hide toast notifications
+document.querySelectorAll('.toast-notification').forEach(toast => {
+    setTimeout(() => {
+        toast.classList.add('animate-slide-out');
+        setTimeout(() => toast.remove(), 400);
+    }, 5000);
+});
+
+// Inicialização
+updateProgress();
+updateSubmitButton();
+</script>
+{% endblock %}

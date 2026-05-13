@@ -1,0 +1,206 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="bg-gradient-to-br from-slate-50 via-slate-100 to-gray-100 min-h-screen py-8 px-4">
+  <!-- Header -->
+  <div class="max-w-3xl mx-auto mb-8">
+    <div class="flex items-center gap-3">
+      <a href="{{ url_for('feiras.gestao_modelos') }}" class="inline-flex items-center justify-center w-10 h-10 bg-gray-200 hover:bg-gray-300 rounded-lg transition-colors duration-200">
+        <svg class="w-5 h-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
+        </svg>
+      </a>
+      <div class="flex items-center gap-3">
+        <div class="inline-flex items-center justify-center w-12 h-12 bg-blue-500/20 rounded-lg">
+          <svg class="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
+          </svg>
+        </div>
+        <div>
+          <h1 class="text-3xl font-bold text-gray-800">Editar Modelo</h1>
+          <p class="text-sm text-gray-600">{{ modelo.nome_modelo }}</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Mensagens Flash -->
+  {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+      {% for category, message in messages %}
+        <div class="max-w-3xl mx-auto mb-4">
+          <div class="p-4 rounded-lg flex items-center gap-3 {{ 'bg-green-50 border border-green-200' if category == 'success' else 'bg-red-50 border border-red-200' }}">
+            <svg class="w-5 h-5 {{ 'text-green-600' if category == 'success' else 'text-red-600' }}" fill="currentColor" viewBox="0 0 20 20">
+              {% if category == 'success' %}
+              <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
+              {% else %}
+              <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd"></path>
+              {% endif %}
+            </svg>
+            <span class="{{ 'text-green-700' if category == 'success' else 'text-red-700' }}">{{ message }}</span>
+          </div>
+        </div>
+      {% endfor %}
+    {% endif %}
+  {% endwith %}
+
+  <!-- Formulário -->
+  <div class="max-w-3xl mx-auto">
+    <div class="bg-white rounded-lg shadow-lg p-8">
+      <form method="POST" action="{{ url_for('feiras.editar_modelo', id=modelo.id) }}" id="formModelo">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+        
+        <!-- Seção: Dados do Modelo -->
+        <div class="mb-8">
+          <h3 class="text-lg font-semibold text-gray-800 mb-4 flex items-center gap-2">
+            <svg class="w-5 h-5 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z"></path>
+            </svg>
+            Dados do Modelo
+          </h3>
+          
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <!-- Nome do Modelo -->
+            <div class="md:col-span-2">
+              <label for="nome_modelo" class="block text-sm font-semibold text-gray-700 mb-2">
+                Nome do Modelo <span class="text-red-500">*</span>
+              </label>
+              <input type="text" id="nome_modelo" name="nome_modelo" required
+                value="{{ modelo.nome_modelo }}"
+                class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors duration-200"
+                placeholder="Ex: PLANTADORA GA 8000">
+            </div>
+
+            <!-- Valor -->
+            <div>
+              <label for="valor" class="block text-sm font-semibold text-gray-700 mb-2">
+                Valor Padrão (R$)
+              </label>
+              <input type="text" id="valor" name="valor"
+                value="{{ '{:,.2f}'.format(modelo.valor).replace(',', 'X').replace('.', ',').replace('X', '.') if modelo.valor else '' }}"
+                class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors duration-200"
+                placeholder="0,00">
+            </div>
+
+            <!-- Unidade -->
+            <div>
+              <label for="unidade" class="block text-sm font-semibold text-gray-700 mb-2">
+                Unidade
+              </label>
+              <input type="text" id="unidade" name="unidade"
+                value="{{ modelo.unidade or '' }}"
+                class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors duration-200"
+                placeholder="Ex: KBR, KMB, KMT">
+            </div>
+
+            <!-- Especificação -->
+            <div class="md:col-span-2">
+              <label for="especificacao" class="block text-sm font-semibold text-gray-700 mb-2">
+                Especificação Padrão
+              </label>
+              <textarea id="especificacao" name="especificacao" rows="3"
+                class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors duration-200"
+                placeholder="Especificações técnicas padrão do modelo...">{{ modelo.especificacao or '' }}</textarea>
+            </div>
+          </div>
+        </div>
+
+        <!-- Seção: Valores Padrão de Logística -->
+        <div class="mb-8">
+          <h3 class="text-lg font-semibold text-gray-800 mb-4 flex items-center gap-2">
+            <svg class="w-5 h-5 text-teal-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4"></path>
+            </svg>
+            Valores Padrão de Logística
+          </h3>
+          
+          <div class="bg-teal-50 p-4 rounded-lg border border-teal-200">
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+              <!-- Transportadora Padrão -->
+              <div>
+                <label for="transportadora_padrao" class="block text-sm font-semibold text-gray-700 mb-2">
+                  Transportadora Padrão
+                </label>
+                <input type="text" id="transportadora_padrao" name="transportadora_padrao" list="listaTransportadoras"
+                  value="{{ modelo.transportadora_padrao or '' }}"
+                  class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-teal-500 transition-colors duration-200 bg-white"
+                  placeholder="Selecione ou digite...">
+                <datalist id="listaTransportadoras">
+                  {% for t in transportadoras %}
+                    <option value="{{ t.nome }}">{{ t.cidade }}/{{ t.uf }}</option>
+                  {% endfor %}
+                </datalist>
+              </div>
+
+              <!-- Valor Frete Padrão -->
+              <div>
+                <label for="valor_frete_padrao" class="block text-sm font-semibold text-gray-700 mb-2">
+                  Valor do Frete Padrão (R$)
+                </label>
+                <input type="text" id="valor_frete_padrao" name="valor_frete_padrao"
+                  value="{{ '{:,.2f}'.format(modelo.valor_frete_padrao).replace(',', 'X').replace('.', ',').replace('X', '.') if modelo.valor_frete_padrao else '' }}"
+                  class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-teal-500 transition-colors duration-200 bg-white"
+                  placeholder="0,00">
+              </div>
+
+              <!-- Local de Embarque Padrão -->
+              <div>
+                <label for="local_embarque_padrao" class="block text-sm font-semibold text-gray-700 mb-2">
+                  Local de Embarque Padrão
+                </label>
+                <input type="text" id="local_embarque_padrao" name="local_embarque_padrao"
+                  value="{{ modelo.local_embarque_padrao or '' }}"
+                  class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-teal-500 transition-colors duration-200 bg-white"
+                  placeholder="Ex: Fábrica São Paulo">
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Botões -->
+        <div class="flex justify-end gap-4 pt-6 border-t">
+          <a href="{{ url_for('feiras.gestao_modelos') }}" 
+            class="px-6 py-3 bg-gray-500 hover:bg-gray-600 text-white font-semibold rounded-lg transition-colors duration-200">
+            Cancelar
+          </a>
+          <button type="submit" 
+            class="px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-lg transition-colors duration-200 flex items-center gap-2">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+            </svg>
+            Salvar Alterações
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+  // Máscara para campos monetários
+  const camposMonetarios = ['valor', 'valor_frete_padrao'];
+  camposMonetarios.forEach(campoId => {
+    const campo = document.getElementById(campoId);
+    if (campo) {
+      campo.addEventListener('blur', function() {
+        const valor = parseFloat(this.value.replace(/\./g, '').replace(',', '.')) || 0;
+        if (valor > 0) {
+          this.value = valor.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+        }
+      });
+    }
+  });
+  
+  // Converter valor monetário para número antes de enviar
+  document.getElementById('formModelo').addEventListener('submit', function(e) {
+    camposMonetarios.forEach(campoId => {
+      const campo = document.getElementById(campoId);
+      if (campo && campo.value) {
+        campo.value = campo.value.replace(/\./g, '').replace(',', '.');
+      }
+    });
+  });
+});
+</script>
+{% endblock %}

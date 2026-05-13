@@ -1,0 +1,619 @@
+{% extends "base.html" %}
+{% block content %}
+
+<!-- Toast Notifications -->
+<div id="toast-container" class="fixed top-4 right-4 z-50 flex flex-col gap-2">
+  {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+      {% for category, message in messages %}
+      <div class="toast-notification {{ 'bg-green-500' if category == 'success' else 'bg-red-500' }} text-white px-6 py-4 rounded-lg shadow-2xl flex items-center gap-3 transform transition-all duration-500 animate-slide-in">
+        <span class="font-medium">{{ message }}</span>
+        <button onclick="this.parentElement.remove()" class="ml-4 text-white hover:text-gray-200 text-xl font-bold">&times;</button>
+      </div>
+      {% endfor %}
+    {% endif %}
+  {% endwith %}
+</div>
+
+<style>
+  @keyframes slideIn  { from { transform: translateX(100%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+  @keyframes fadeInUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+  .animate-slide-in   { animation: slideIn 0.4s ease-out; }
+  .animate-fade-in-up { animation: fadeInUp 0.5s ease-out; }
+
+  .stat-card { transition: all 0.4s cubic-bezier(0.175,0.885,0.32,1.275); position: relative; overflow: hidden; }
+  .stat-card:hover { transform: translateY(-6px) scale(1.02); box-shadow: 0 20px 40px rgba(0,0,0,0.12); }
+  .stat-value { transition: transform 0.3s ease; }
+  .stat-card:hover .stat-value { transform: scale(1.05); }
+
+  .view-toggle { display: flex; background: #f3f4f6; border-radius: 6px; padding: 2px; }
+  .view-toggle button { padding: 6px 10px; border-radius: 4px; transition: all 0.3s ease; color: #4A4A4A; border: 1px solid transparent; cursor: pointer; font-weight: 500; display: flex; align-items: center; }
+  .view-toggle button:hover { background: #e5e7eb; color: #ED1C24; }
+  .view-toggle button.active { background: #ED1C24; color: white; box-shadow: 0 4px 12px rgba(237,28,36,0.3); border-color: #ED1C24; }
+  .view-toggle button.active:hover { background: #C41E3A; }
+
+  .table-row-animate { transition: all 0.2s ease; }
+  .table-row-animate:hover { background-color: #FEF2F2; }
+
+  .div-card { transition: all 0.3s ease; }
+  .div-card:hover { transform: translateY(-4px); box-shadow: 0 12px 24px rgba(0,0,0,0.1); }
+
+  .filter-badge {
+    display: inline-flex; align-items: center; gap: 6px;
+    background: linear-gradient(135deg, #ED1C24 0%, #C41E3A 100%);
+    color: white; padding: 4px 12px; border-radius: 20px;
+    font-size: 11px; font-weight: 600;
+    box-shadow: 0 4px 12px rgba(237,28,36,0.25);
+  }
+</style>
+
+<!-- Chart.js -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<div class="container mx-auto px-4 py-3">
+
+  <!-- Cabeçalho -->
+  <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-3 gap-2">
+    <div>
+      <h2 class="text-xl font-bold text-kuhn-red flex items-center gap-2">
+        <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 20 20">
+          <path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd"></path>
+        </svg>
+        Divergências de Notas
+      </h2>
+      <p class="text-kuhn-dark-gray text-xs">Gerenciamento de divergências e inconsistências</p>
+    </div>
+  </div>
+
+  <!-- Cards de estatísticas -->
+  <div class="grid grid-cols-2 md:grid-cols-4 gap-2 mb-3">
+    <div class="stat-card bg-white rounded-lg shadow-sm p-3 border-l-4 border-kuhn-red">
+      <p class="text-gray-500 text-[10px] font-medium uppercase">Total</p>
+      <p class="text-2xl font-bold text-kuhn-navy stat-value">{{ dashboard_data.get('total', 0) }}</p>
+    </div>
+    <div class="stat-card bg-white rounded-lg shadow-sm p-3 border-l-4 border-blue-500">
+      <p class="text-gray-500 text-[10px] font-medium uppercase">Fornecedores</p>
+      <p class="text-2xl font-bold text-kuhn-navy stat-value">{{ dashboard_data.get('total_fornecedores', 0) }}</p>
+    </div>
+    <div class="stat-card bg-white rounded-lg shadow-sm p-3 border-l-4 border-green-500">
+      <p class="text-gray-500 text-[10px] font-medium uppercase">Compradores</p>
+      <p class="text-2xl font-bold text-kuhn-navy stat-value">{{ dashboard_data.get('total_compradores', 0) }}</p>
+    </div>
+    <div class="stat-card bg-white rounded-lg shadow-sm p-3 border-l-4 border-kuhn-gold">
+      <p class="text-gray-500 text-[10px] font-medium uppercase">Mês Atual</p>
+      <p class="text-2xl font-bold text-kuhn-navy stat-value">{{ dashboard_data.get('meses_dados', [0])[-1] if dashboard_data.get('meses_dados') else 0 }}</p>
+    </div>
+  </div>
+
+  <!-- Barra filtros + toggle -->
+  <div class="bg-white rounded-lg shadow mb-3 p-3">
+    <form method="GET" id="formFiltros" class="flex flex-wrap items-center gap-2">
+      <input type="hidden" name="view" value="{{ visualizacao }}">
+
+      <!-- Toggle de visualização -->
+      <div class="view-toggle">
+        <button type="button" onclick="alternarVisualizacao('tabela')"
+                class="{{ 'active' if visualizacao == 'tabela' else '' }}" title="Tabela"
+                style="border-radius: 4px 0 0 4px;">
+          <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M5 4a3 3 0 00-3 3v6a3 3 0 003 3h10a3 3 0 003-3V7a3 3 0 00-3-3H5zm-1 9v-1h5v2H5a1 1 0 01-1-1zm7 1h4a1 1 0 001-1v-1h-5v2zm0-4h5V8h-5v2zM9 8H4v2h5V8z" clip-rule="evenodd"></path></svg>
+        </button>
+        <button type="button" onclick="alternarVisualizacao('cards')"
+                class="{{ 'active' if visualizacao == 'cards' else '' }}" title="Cards">
+          <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20"><path d="M5 3a2 2 0 00-2 2v2a2 2 0 002 2h2a2 2 0 002-2V5a2 2 0 00-2-2H5zM5 11a2 2 0 00-2 2v2a2 2 0 002 2h2a2 2 0 002-2v-2a2 2 0 00-2-2H5zM11 5a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V5zM11 13a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"></path></svg>
+        </button>
+        <button type="button" onclick="alternarVisualizacao('dashboard')"
+                class="{{ 'active' if visualizacao == 'dashboard' else '' }}" title="Dashboard">
+          <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20"><path d="M2 11a1 1 0 011-1h2a1 1 0 011 1v5a1 1 0 01-1 1H3a1 1 0 01-1-1v-5zM8 7a1 1 0 011-1h2a1 1 0 011 1v9a1 1 0 01-1 1H9a1 1 0 01-1-1V7zM14 4a1 1 0 011-1h2a1 1 0 011 1v12a1 1 0 01-1 1h-2a1 1 0 01-1-1V4z"></path></svg>
+        </button>
+        <button type="button" onclick="alternarVisualizacao('cadastrar')"
+                class="{{ 'active' if visualizacao == 'cadastrar' else '' }}" title="Cadastrar"
+                style="border-radius: 0 4px 4px 0;">
+          <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" clip-rule="evenodd"></path></svg>
+        </button>
+      </div>
+
+      <!-- Busca rápida -->
+      <input type="text" name="busca" id="busca" value="{{ busca }}" placeholder="🔍 Buscar..."
+             class="border border-gray-300 rounded px-2 py-1.5 text-xs focus:ring-2 focus:ring-kuhn-red focus:border-kuhn-red hover:border-kuhn-red transition"
+             style="min-width: 160px;">
+
+      <!-- Filtro Fornecedor -->
+      <select name="fornecedor" id="filtro_fornecedor"
+              class="border border-gray-300 rounded px-2 py-1.5 text-xs focus:ring-2 focus:ring-kuhn-red focus:border-kuhn-red bg-white hover:border-kuhn-red transition"
+              style="min-width: 140px;">
+        <option value="">Fornecedor</option>
+        {% for f in lista_fornecedores %}
+        <option value="{{ f }}" {{ 'selected' if filtro_fornecedor == f }}>{{ f }}</option>
+        {% endfor %}
+      </select>
+
+      <!-- Filtro Comprador -->
+      <select name="comprador" id="filtro_comprador"
+              class="border border-gray-300 rounded px-2 py-1.5 text-xs focus:ring-2 focus:ring-kuhn-red focus:border-kuhn-red bg-white hover:border-kuhn-red transition"
+              style="min-width: 130px;">
+        <option value="">Comprador</option>
+        {% for c in lista_compradores %}
+        <option value="{{ c }}" {{ 'selected' if filtro_comprador == c }}>{{ c }}</option>
+        {% endfor %}
+      </select>
+
+      <!-- Data início -->
+      <input type="date" name="data_inicio" id="filtro_data_inicio" value="{{ filtro_data_inicio }}"
+             class="border border-gray-300 rounded px-2 py-1.5 text-xs focus:ring-2 focus:ring-kuhn-red focus:border-kuhn-red hover:border-kuhn-red transition">
+
+      <!-- Data fim -->
+      <input type="date" name="data_fim" id="filtro_data_fim" value="{{ filtro_data_fim }}"
+             class="border border-gray-300 rounded px-2 py-1.5 text-xs focus:ring-2 focus:ring-kuhn-red focus:border-kuhn-red hover:border-kuhn-red transition">
+
+      <!-- Badge filtros ativos -->
+      {% if filtros_ativos %}
+      <span class="filter-badge ml-auto">
+        <svg class="w-3 h-3" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M3 3a1 1 0 011-1h12a1 1 0 011 1v3a1 1 0 01-.293.707L12 11.414V15a1 1 0 01-.553.894l-4 2A1 1 0 016 17v-5.586L3.293 6.707A1 1 0 013 6V3z" clip-rule="evenodd"></path></svg>
+        {{ qtd_filtros }}
+      </span>
+      <a href="{{ url_for('divergencias.index') }}?view={{ visualizacao }}"
+         class="text-xs text-gray-500 hover:text-kuhn-red underline transition">Limpar</a>
+      {% endif %}
+    </form>
+  </div>
+
+  <!-- ==================== DASHBOARD VIEW ==================== -->
+  <div id="dashboardView" class="{{ 'hidden' if visualizacao != 'dashboard' else '' }} mb-3">
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
+
+      <div class="bg-white rounded-lg shadow p-4">
+        <h3 class="text-sm font-semibold text-kuhn-navy mb-3 flex items-center gap-2">
+          <svg class="w-4 h-4 text-kuhn-red" fill="currentColor" viewBox="0 0 20 20"><path d="M2 11a1 1 0 011-1h2a1 1 0 011 1v5a1 1 0 01-1 1H3a1 1 0 01-1-1v-5zM8 7a1 1 0 011-1h2a1 1 0 011 1v9a1 1 0 01-1 1H9a1 1 0 01-1-1V7zM14 4a1 1 0 011-1h2a1 1 0 011 1v12a1 1 0 01-1 1h-2a1 1 0 01-1-1V4z"></path></svg>
+          Divergências por Mês (Últimos 6 meses)
+        </h3>
+        <div class="relative" style="height: 200px;">
+          <canvas id="chartMes"></canvas>
+        </div>
+      </div>
+
+      <div class="bg-white rounded-lg shadow p-4">
+        <h3 class="text-sm font-semibold text-kuhn-navy mb-3 flex items-center gap-2">
+          <svg class="w-4 h-4 text-blue-500" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M4 4a2 2 0 012-2h8a2 2 0 012 2v12a1 1 0 110 2h-3a1 1 0 01-1-1v-2a1 1 0 00-1-1H9a1 1 0 00-1 1v2a1 1 0 01-1 1H4a1 1 0 110-2V4zm3 1h2v2H7V5zm2 4H7v2h2V9zm2-4h2v2h-2V5zm2 4h-2v2h2V9z" clip-rule="evenodd"></path></svg>
+          Top 5 Fornecedores
+        </h3>
+        <div class="relative" style="height: 200px;">
+          <canvas id="chartFornecedores"></canvas>
+        </div>
+      </div>
+
+      <div class="bg-white rounded-lg shadow p-4">
+        <h3 class="text-sm font-semibold text-kuhn-navy mb-3 flex items-center gap-2">
+          <svg class="w-4 h-4 text-green-500" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clip-rule="evenodd"></path></svg>
+          Distribuição por Comprador
+        </h3>
+        <div class="relative" style="height: 200px;">
+          <canvas id="chartCompradores"></canvas>
+        </div>
+      </div>
+
+      <div class="bg-white rounded-lg shadow p-4">
+        <h3 class="text-sm font-semibold text-kuhn-navy mb-3 flex items-center gap-2">
+          <svg class="w-4 h-4 text-kuhn-gold" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M3 3a1 1 0 000 2v8a2 2 0 002 2h2.586l-1.293 1.293a1 1 0 101.414 1.414L10 15.414l2.293 2.293a1 1 0 001.414-1.414L12.414 15H15a2 2 0 002-2V5a1 1 0 100-2H3zm11 4a1 1 0 10-2 0v4a1 1 0 102 0V7zm-3 1a1 1 0 10-2 0v3a1 1 0 102 0V8zM8 9a1 1 0 00-2 0v2a1 1 0 102 0V9z" clip-rule="evenodd"></path></svg>
+          Evolução Mensal (Linha)
+        </h3>
+        <div class="relative" style="height: 200px;">
+          <canvas id="chartLinha"></canvas>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ==================== CARDS VIEW ==================== -->
+  <div id="cardsView" class="{{ 'hidden' if visualizacao != 'cards' else '' }} mb-3">
+    {% if divergencias %}
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+      {% for d in divergencias %}
+      <div class="div-card bg-white rounded-lg shadow p-4 border-l-4 border-kuhn-red">
+        <div class="flex justify-between items-start mb-2">
+          <div>
+            <span class="bg-blue-100 text-blue-800 text-xs font-semibold px-2 py-0.5 rounded">NF {{ d.nota_fiscal }}</span>
+            <p class="text-xs text-gray-500 mt-1">{{ d.data }}</p>
+          </div>
+          <div class="flex gap-1">
+            <a href="{{ url_for('divergencias.editar', id=d.id) }}" class="bg-blue-500 hover:bg-blue-600 text-white p-1.5 rounded transition" title="Editar">
+              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path></svg>
+            </a>
+            <form method="POST" action="{{ url_for('divergencias.deletar', id=d.id) }}" class="form-delete" data-nf="{{ d.nota_fiscal }}" data-fornecedor="{{ d.fornecedor }}">
+              <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+              <button type="submit" class="bg-kuhn-red hover:bg-kuhn-red-dark text-white p-1.5 rounded transition" title="Deletar">
+                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
+              </button>
+            </form>
+          </div>
+        </div>
+        <p class="font-semibold text-kuhn-navy text-sm truncate mb-1" title="{{ d.fornecedor }}">{{ d.fornecedor }}</p>
+        <p class="text-xs text-kuhn-dark-gray line-clamp-2 mb-2" title="{{ d.divergencia }}">{{ d.divergencia }}</p>
+        <div class="flex flex-wrap gap-1 text-[10px]">
+          {% if d.comprador %}<span class="bg-gray-100 text-kuhn-dark-gray px-1.5 py-0.5 rounded">{{ d.comprador }}</span>{% endif %}
+          {% if d.ordem_compra %}<span class="bg-purple-100 text-purple-700 px-1.5 py-0.5 rounded">OC: {{ d.ordem_compra }}</span>{% endif %}
+          {% if d.provider %}<span class="bg-green-100 text-green-700 px-1.5 py-0.5 rounded">{{ d.provider }}</span>{% endif %}
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+    {% else %}
+    <div class="bg-white rounded-lg shadow flex flex-col items-center justify-center py-16 text-gray-500">
+      <svg class="w-12 h-12 mb-3 opacity-30" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
+      <p class="font-medium">Nenhuma divergência encontrada</p>
+    </div>
+    {% endif %}
+  </div>
+
+  <!-- ==================== TABELA VIEW ==================== -->
+  <div id="tabelaView" class="{{ 'hidden' if visualizacao != 'tabela' else '' }}">
+    <div class="bg-white rounded-lg shadow overflow-hidden">
+      {% if divergencias %}
+      <div class="overflow-x-auto">
+        <table class="w-full text-sm">
+          <thead class="text-white text-xs" style="background-color: #2F2F2F;">
+            <tr>
+              <th class="px-4 py-3 text-left">Data</th>
+              <th class="px-4 py-3 text-left">Nota Fiscal</th>
+              <th class="px-4 py-3 text-left">Fornecedor</th>
+              <th class="px-4 py-3 text-left">Divergência</th>
+              <th class="px-4 py-3 text-left">OC</th>
+              <th class="px-4 py-3 text-left">Item</th>
+              <th class="px-4 py-3 text-left">Comprador</th>
+              <th class="px-4 py-3 text-left">Provider</th>
+              <th class="px-4 py-3 text-center">Ações</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for d in divergencias %}
+            <tr class="table-row-animate border-b">
+              <td class="px-4 py-3 text-kuhn-dark-gray text-xs">{{ d.data }}</td>
+              <td class="px-4 py-3">
+                <span class="bg-blue-100 text-blue-800 px-2 py-0.5 rounded text-xs font-semibold">{{ d.nota_fiscal }}</span>
+              </td>
+              <td class="px-4 py-3 text-kuhn-dark-gray text-xs max-w-xs truncate" title="{{ d.fornecedor }}">{{ d.fornecedor }}</td>
+              <td class="px-4 py-3 text-kuhn-dark-gray text-xs max-w-sm">
+                <span class="inline-block max-w-xs truncate" title="{{ d.divergencia }}">{{ d.divergencia }}</span>
+              </td>
+              <td class="px-4 py-3 text-kuhn-dark-gray text-xs">{{ d.ordem_compra or '-' }}</td>
+              <td class="px-4 py-3 text-kuhn-dark-gray text-xs">{{ d.item or '-' }}</td>
+              <td class="px-4 py-3 text-kuhn-dark-gray text-xs">{{ d.comprador or '-' }}</td>
+              <td class="px-4 py-3 text-kuhn-dark-gray text-xs truncate" title="{{ d.provider }}">{{ d.provider or '-' }}</td>
+              <td class="px-4 py-3">
+                <div class="flex items-center justify-center gap-1">
+                  <a href="{{ url_for('divergencias.editar', id=d.id) }}" class="bg-blue-500 hover:bg-blue-600 text-white p-1.5 rounded transition" title="Editar">
+                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path></svg>
+                  </a>
+                  <form method="POST" action="{{ url_for('divergencias.deletar', id=d.id) }}" class="form-delete" data-nf="{{ d.nota_fiscal }}" data-fornecedor="{{ d.fornecedor }}">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+                    <button type="submit" class="bg-kuhn-red hover:bg-kuhn-red-dark text-white p-1.5 rounded transition" title="Deletar">
+                      <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
+                    </button>
+                  </form>
+                </div>
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+      {% else %}
+      <div class="flex flex-col items-center justify-center py-16 text-gray-500">
+        <svg class="w-12 h-12 mb-3 opacity-30" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4"></path></svg>
+        <p class="font-medium mb-3">Nenhuma divergência encontrada</p>
+        {% if not filtros_ativos %}
+        <button onclick="alternarVisualizacao('cadastrar')" class="inline-flex items-center gap-2 px-4 py-2 bg-kuhn-red hover:bg-kuhn-red-dark text-white font-semibold rounded-lg transition text-sm">
+          <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" clip-rule="evenodd"></path></svg>
+          Cadastrar Agora
+        </button>
+        {% endif %}
+      </div>
+      {% endif %}
+    </div>
+  </div>
+
+  <!-- ==================== CADASTRAR VIEW ==================== -->
+  <div id="cadastrarView" class="{{ 'hidden' if visualizacao != 'cadastrar' else '' }}">
+    <div class="bg-white rounded-lg shadow p-6 max-w-4xl">
+      <h3 class="text-base font-bold text-kuhn-navy mb-4 flex items-center gap-2">
+        <svg class="w-5 h-5 text-kuhn-red" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
+        Nova Divergência
+      </h3>
+      <form method="POST" action="{{ url_for('divergencias.cadastrar') }}" id="formCadastro" class="space-y-4">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div>
+            <label class="block text-xs font-semibold text-kuhn-dark-gray mb-1">Data *</label>
+            <input type="date" name="data" id="data" required
+                   class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:border-kuhn-red focus:ring-2 focus:ring-red-100 transition">
+          </div>
+          <div>
+            <label class="block text-xs font-semibold text-kuhn-dark-gray mb-1">Nota Fiscal *</label>
+            <input type="text" name="nota_fiscal" placeholder="Ex: 216061" required
+                   class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:border-kuhn-red focus:ring-2 focus:ring-red-100 transition">
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div>
+            <label class="block text-xs font-semibold text-kuhn-dark-gray mb-1">Fornecedor *</label>
+            <input type="text" name="fornecedor" placeholder="Ex: KUHN DO BRASIL S/A" required
+                   class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:border-kuhn-red focus:ring-2 focus:ring-red-100 transition">
+          </div>
+          <div>
+            <label class="block text-xs font-semibold text-kuhn-dark-gray mb-1">Ordem de Compra</label>
+            <input type="text" name="ordem_compra" placeholder="Ex: OC-12345"
+                   class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:border-kuhn-red focus:ring-2 focus:ring-red-100 transition">
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div>
+            <label class="block text-xs font-semibold text-kuhn-dark-gray mb-1">Item</label>
+            <input type="text" name="item" placeholder="Ex: 001"
+                   class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:border-kuhn-red focus:ring-2 focus:ring-red-100 transition">
+          </div>
+          <div>
+            <label class="block text-xs font-semibold text-kuhn-dark-gray mb-1">Comprador</label>
+            <input type="text" name="comprador" placeholder="Ex: João Silva"
+                   class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:border-kuhn-red focus:ring-2 focus:ring-red-100 transition">
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div>
+            <label class="block text-xs font-semibold text-kuhn-dark-gray mb-1">Provider</label>
+            <input type="text" name="provider" placeholder="Ex: Transportadora XYZ"
+                   class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:border-kuhn-red focus:ring-2 focus:ring-red-100 transition">
+          </div>
+          <div>
+            <label class="block text-xs font-semibold text-kuhn-dark-gray mb-1">Email Provider</label>
+            <input type="email" name="email_provider" id="email_provider" placeholder="Ex: contato@provider.com"
+                   class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:border-kuhn-red focus:ring-2 focus:ring-red-100 transition">
+          </div>
+        </div>
+
+        <div>
+          <label class="block text-xs font-semibold text-kuhn-dark-gray mb-1">Divergência *</label>
+          <textarea name="divergencia" rows="4" placeholder="Descreva a divergência encontrada..." required
+                    class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:border-kuhn-red focus:ring-2 focus:ring-red-100 transition resize-none"></textarea>
+        </div>
+
+        <div class="flex gap-3 pt-2">
+          <button type="submit"
+                  class="flex-1 px-4 py-2.5 bg-kuhn-red hover:bg-kuhn-red-dark text-white font-semibold rounded-lg shadow transition flex items-center justify-center gap-2 text-sm">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
+            Salvar Divergência
+          </button>
+          <button type="button" onclick="alternarVisualizacao('tabela')"
+                  class="flex-1 px-4 py-2.5 bg-kuhn-navy hover:bg-kuhn-navy-dark text-white font-semibold rounded-lg shadow transition flex items-center justify-center gap-2 text-sm">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+            Cancelar
+          </button>
+        </div>
+        <p class="text-xs text-gray-400 text-center">* campos obrigatórios</p>
+      </form>
+    </div>
+  </div>
+
+</div>
+
+<!-- Modal Confirmação de Exclusão -->
+<div id="modalConfirmDelete" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 hidden">
+  <div class="bg-white rounded-xl p-8 max-w-md mx-4 shadow-2xl transform scale-95 opacity-0 transition-all duration-300" id="modalDeleteContent">
+    <div class="text-center">
+      <div class="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
+        <svg class="w-8 h-8 text-kuhn-red" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.732-.833-2.5 0L4.268 15.5c-.77.833.192 2.5 1.732 2.5z"></path></svg>
+      </div>
+      <h3 class="text-xl font-bold text-kuhn-navy mb-2">Confirmar Exclusão</h3>
+      <p class="text-kuhn-dark-gray mb-2">Tem certeza que deseja excluir esta divergência?</p>
+      <p class="text-sm text-gray-500 mb-6"><strong>NF:</strong> <span id="deleteNF"></span><br><strong>Fornecedor:</strong> <span id="deleteFornecedor"></span></p>
+      <div class="flex gap-3">
+        <button onclick="cancelarExclusao()" class="flex-1 px-6 py-3 bg-kuhn-navy hover:bg-kuhn-navy-dark text-white font-semibold rounded-lg transition">Cancelar</button>
+        <button onclick="confirmarExclusao()" class="flex-1 px-6 py-3 bg-kuhn-red hover:bg-kuhn-red-dark text-white font-semibold rounded-lg transition">Excluir</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+// ---- Paleta de cores do projeto ----
+const CORES = {
+  red:      '#ED1C24',
+  redDark:  '#C41E3A',
+  redLight: '#FF4757',
+  navy:     '#2E3440',
+  gold:     '#D0B580',
+  goldDark: '#B8A066',
+  darkGray: '#4A4A4A',
+  gray:     '#E8E8E8',
+};
+const CORES_MULTI  = [CORES.red, CORES.navy, CORES.gold, CORES.darkGray, CORES.redLight];
+const CORES_ALPHA  = 'rgba(237,28,36,0.12)';
+
+// ---- Dados do dashboard ----
+const dashboardData = {
+  mesesLabels:        {{ dashboard_data.get('meses_labels', []) | tojson }},
+  mesesDados:         {{ dashboard_data.get('meses_dados',  []) | tojson }},
+  fornecedoresLabels: {{ dashboard_data.get('top_fornecedores_labels', []) | tojson }},
+  fornecedoresDados:  {{ dashboard_data.get('top_fornecedores_dados',  []) | tojson }},
+  compradoresLabels:  {{ dashboard_data.get('top_compradores_labels',  []) | tojson }},
+  compradoresDados:   {{ dashboard_data.get('top_compradores_dados',   []) | tojson }},
+};
+
+// ---- Toggle de visualização ----
+function alternarVisualizacao(tipo) {
+  const url = new URL(window.location.href);
+  url.searchParams.set('view', tipo);
+  // Manter filtros ativos ao trocar de view
+  window.location.href = url.toString();
+}
+
+// ---- Submissão automática dos filtros ----
+document.addEventListener('DOMContentLoaded', function() {
+  ['filtro_fornecedor', 'filtro_comprador', 'filtro_data_inicio', 'filtro_data_fim'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.addEventListener('change', () => document.getElementById('formFiltros').submit());
+  });
+
+  // Busca com debounce
+  let debounce;
+  const buscaInput = document.getElementById('busca');
+  if (buscaInput) {
+    buscaInput.addEventListener('input', function() {
+      clearTimeout(debounce);
+      debounce = setTimeout(() => document.getElementById('formFiltros').submit(), 400);
+    });
+  }
+
+  // Data default no form de cadastro
+  const dataInput = document.getElementById('data');
+  if (dataInput) dataInput.valueAsDate = new Date();
+
+  // Modal de exclusão
+  document.querySelectorAll('.form-delete').forEach(form => {
+    form.addEventListener('submit', function(e) {
+      e.preventDefault();
+      formParaExcluir = this;
+      document.getElementById('deleteNF').textContent = this.dataset.nf || 'N/A';
+      document.getElementById('deleteFornecedor').textContent = this.dataset.fornecedor || 'N/A';
+      const modal = document.getElementById('modalConfirmDelete');
+      const content = document.getElementById('modalDeleteContent');
+      modal.classList.remove('hidden');
+      setTimeout(() => { content.classList.remove('scale-95','opacity-0'); content.classList.add('scale-100','opacity-100'); }, 10);
+    });
+  });
+
+  // Carregar gráficos se dashboard visível
+  const dv = document.getElementById('dashboardView');
+  if (dv && !dv.classList.contains('hidden')) carregarGraficos();
+});
+
+// ---- Email provider validação ----
+const emailProviderInput = document.getElementById('email_provider');
+if (emailProviderInput) {
+  emailProviderInput.addEventListener('input', function() {
+    const ok = !this.value || /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(this.value);
+    this.style.borderColor = ok ? '' : '#ED1C24';
+  });
+}
+
+// ---- Submit form cadastro com email ----
+const formCadastro = document.getElementById('formCadastro');
+if (formCadastro) {
+  formCadastro.addEventListener('submit', function(e) {
+    const emailProvider = this.email_provider?.value?.trim();
+    if (emailProvider) {
+      e.preventDefault();
+      processarEmailESubmit(new FormData(this));
+    }
+  });
+}
+
+function processarEmailESubmit(formData) {
+  const btn = formCadastro.querySelector('button[type="submit"]');
+  const orig = btn.innerHTML;
+  btn.innerHTML = 'Processando...'; btn.disabled = true;
+  fetch('{{ url_for("divergencias.enviar_email") }}', { method: 'POST', body: formData })
+    .then(r => r.json())
+    .then(data => {
+      if (data.success) {
+        const d = data.email_data;
+        window.location.href = `mailto:${d.to}?subject=${encodeURIComponent(d.subject)}&body=${encodeURIComponent(d.body)}`;
+        setTimeout(() => submeterFormulario(formData), 1000);
+      } else {
+        mostrarToast(data.message || 'Erro ao processar email', 'error');
+        btn.innerHTML = orig; btn.disabled = false;
+      }
+    })
+    .catch(() => submeterFormulario(formData));
+}
+
+function submeterFormulario(formData) {
+  fetch('{{ url_for("divergencias.cadastrar") }}', { method: 'POST', body: formData })
+    .then(r => {
+      if (r.ok) {
+        mostrarToast('Divergência cadastrada com sucesso!', 'success');
+        setTimeout(() => { window.location.href = '{{ url_for("divergencias.index") }}?view=tabela'; }, 1200);
+      } else {
+        mostrarToast('Erro ao salvar divergência', 'error');
+      }
+    })
+    .catch(() => mostrarToast('Erro ao salvar divergência', 'error'));
+}
+
+function mostrarToast(msg, tipo) {
+  const tc = document.getElementById('toast-container');
+  const el = document.createElement('div');
+  el.className = `toast-notification ${tipo === 'success' ? 'bg-green-500' : 'bg-red-500'} text-white px-6 py-4 rounded-lg shadow-2xl flex items-center gap-3 animate-slide-in`;
+  el.innerHTML = `<span class="font-medium">${msg}</span><button onclick="this.parentElement.remove()" class="ml-4 text-white text-xl">&times;</button>`;
+  tc.appendChild(el);
+  setTimeout(() => el.remove(), 5000);
+}
+
+// ---- Modal exclusão ----
+let formParaExcluir = null;
+
+function cancelarExclusao() {
+  const modal = document.getElementById('modalConfirmDelete');
+  const content = document.getElementById('modalDeleteContent');
+  content.classList.remove('scale-100','opacity-100');
+  content.classList.add('scale-95','opacity-0');
+  setTimeout(() => { modal.classList.add('hidden'); formParaExcluir = null; }, 300);
+}
+function confirmarExclusao() { if (formParaExcluir) formParaExcluir.submit(); }
+document.getElementById('modalConfirmDelete').addEventListener('click', function(e) { if (e.target === this) cancelarExclusao(); });
+
+// ---- Chart.js com paleta do projeto ----
+let graficosCarregados = false;
+function carregarGraficos() {
+  if (graficosCarregados) return;
+  graficosCarregados = true;
+
+  // 1 - Barras por mês
+  const ctxMes = document.getElementById('chartMes');
+  if (ctxMes) new Chart(ctxMes, {
+    type: 'bar',
+    data: {
+      labels: dashboardData.mesesLabels,
+      datasets: [{ label: 'Divergências', data: dashboardData.mesesDados, backgroundColor: CORES.red, borderColor: CORES.redDark, borderWidth: 1, borderRadius: 4 }]
+    },
+    options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true, ticks: { stepSize: 1, color: CORES.darkGray }, grid: { color: '#f0f0f0' } }, x: { ticks: { color: CORES.darkGray } } } }
+  });
+
+  // 2 - Top fornecedores horizontal
+  const ctxForn = document.getElementById('chartFornecedores');
+  if (ctxForn) new Chart(ctxForn, {
+    type: 'bar',
+    data: {
+      labels: dashboardData.fornecedoresLabels,
+      datasets: [{ label: 'Qtd', data: dashboardData.fornecedoresDados, backgroundColor: CORES_MULTI, borderRadius: 4 }]
+    },
+    options: { indexAxis: 'y', responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { x: { beginAtZero: true, ticks: { stepSize: 1, color: CORES.darkGray }, grid: { color: '#f0f0f0' } }, y: { ticks: { color: CORES.navy, font: { weight: '600' } } } } }
+  });
+
+  // 3 - Donut compradores
+  const ctxComp = document.getElementById('chartCompradores');
+  if (ctxComp) new Chart(ctxComp, {
+    type: 'doughnut',
+    data: {
+      labels: dashboardData.compradoresLabels.length ? dashboardData.compradoresLabels : ['Sem dados'],
+      datasets: [{ data: dashboardData.compradoresDados.length ? dashboardData.compradoresDados : [1], backgroundColor: CORES_MULTI, borderWidth: 2, borderColor: '#fff' }]
+    },
+    options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom', labels: { font: { size: 10 }, color: CORES.navy, padding: 10 } } } }
+  });
+
+  // 4 - Linha evolução
+  const ctxLinha = document.getElementById('chartLinha');
+  if (ctxLinha) new Chart(ctxLinha, {
+    type: 'line',
+    data: {
+      labels: dashboardData.mesesLabels,
+      datasets: [{ label: 'Divergências', data: dashboardData.mesesDados, borderColor: CORES.red, backgroundColor: CORES_ALPHA, fill: true, tension: 0.4, pointBackgroundColor: CORES.red, pointBorderColor: '#fff', pointBorderWidth: 2, pointRadius: 5 }]
+    },
+    options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true, ticks: { stepSize: 1, color: CORES.darkGray }, grid: { color: '#f0f0f0' } }, x: { ticks: { color: CORES.darkGray } } } }
+  });
+}
+</script>
+{% endblock %}

@@ -1,0 +1,532 @@
+{% extends "base.html" %}
+
+{% block content %}
+<!-- CSS Premium para efeitos avançados -->
+<link rel="stylesheet" href="{{ url_for('static', filename='css/tracking-premium.css') }}?v=1.0">
+
+<!-- Adiciona Leaflet CSS para o mapa -->
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-sA+e2tu6p+U6Gk+g1Q+5QbQ4Q4Q4Q4Q4Q=" crossorigin=""/>
+
+<!-- Estilos inline para melhorias de UX -->
+<style>
+  /* Transições suaves globais */
+  * {
+    transition-property: color, background-color, border-color, fill, stroke, opacity, box-shadow, transform, filter;
+    transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+    transition-duration: 200ms;
+  }
+
+  /* Desabilita transição para scroll */
+  html {
+    scroll-behavior: smooth;
+  }
+
+  /* Efeito de entrada suave */
+  .rastreamento-page {
+    animation: fadeIn 0.6s ease-out;
+  }
+
+  @keyframes fadeIn {
+    from {
+      opacity: 0;
+    }
+    to {
+      opacity: 1;
+    }
+  }
+
+  /* Melhorias de acessibilidade */
+  button:focus-visible {
+    outline: 2px solid #ED1C24;
+    outline-offset: 2px;
+  }
+
+  input:focus-visible {
+    outline: 2px solid #ED1C24;
+    outline-offset: 2px;
+  }
+
+  /* Remove outline padrão em favor de box-shadow */
+  button:focus,
+  input:focus {
+    outline: none;
+  }
+</style>
+
+<!-- 🚀 INTERFACE TAILWIND CSS - LAYOUT FULL-WIDTH 3 COLUNAS -->
+<div class="rastreamento-page bg-gradient-to-br from-slate-50 via-slate-100 to-gray-100 relative overflow-hidden min-h-screen flex flex-col">
+  <!-- Padrão de fundo sofisticado -->
+  <div class="absolute inset-0 overflow-hidden pointer-events-none">
+    <!-- Blobs animados -->
+    <div class="absolute top-0 -left-40 w-80 h-80 bg-red-200 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-blob"></div>
+    <div class="absolute top-0 -right-40 w-80 h-80 bg-blue-200 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-blob animation-delay-2000"></div>
+    <div class="absolute -bottom-8 left-20 w-80 h-80 bg-purple-200 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-blob animation-delay-4000"></div>
+  </div>
+
+  <!-- Cabeçalho do Rastreamento de Notas Fiscais -->
+  <div class="w-full flex items-center justify-between bg-gradient-to-r from-[#E8B8B8] via-[#FFFFFF] to-[#D0B580] rounded-xl shadow p-6 mb-8">
+    <div class="flex items-center gap-3">
+      <div class="inline-flex items-center justify-center w-10 h-10 bg-[#D0B580]/20 rounded-lg">
+        <svg class="w-6 h-6 text-[#2E3440]" fill="currentColor" viewBox="0 0 20 20">
+          <path fill-rule="evenodd" d="M4 4a2 2 0 012-2h4.586A2 2 0 0112 2.586L15.414 6A2 2 0 0116 7.414V16a2 2 0 01-2 2H6a2 2 0 01-2-2V4z" clip-rule="evenodd"></path>
+        </svg>
+      </div>
+      <div>
+        <h1 class="text-2xl font-bold text-[#2E3440]">Rastreamento de Notas Fiscais</h1>
+        <p class="text-sm text-[#4A4A4A]">Tempo real por número de NF</p>
+      </div>
+    </div>
+    <div class="inline-flex items-center gap-1.5 bg-[#D0B580]/20 rounded-full px-3 py-1.5 border border-[#D0B580]/40">
+      <div class="w-2 h-2 rounded-full animate-pulse" style="background-color:#10B981;"></div>
+      <span class="text-xs font-semibold text-[#2E3440]">Online</span>
+    </div>
+  </div>
+
+  <!-- Container 3 Colunas - Full Width com Height Completo -->
+  <div class="relative z-10 flex flex-1 overflow-hidden gap-4 p-4 md:p-6" style="height: calc(100vh - 120px);">
+    <style>
+      /* Largura das colunas - sempre lado a lado no desktop */
+      .coluna-esquerda { width: 28%; min-width: 320px; max-width: 400px; flex-shrink: 0; }
+      .coluna-central { flex: 1 1 0%; min-width: 0; }
+      .coluna-direita { width: 32%; min-width: 340px; max-width: 480px; flex-shrink: 0; }
+
+      /* Garante que as colunas nunca empilham no desktop */
+      .flex.flex-1 { flex-direction: row !important; align-items: stretch; }
+
+      /* Tablet: esconde central e direita */
+      @media (max-width: 1200px) {
+        .coluna-esquerda { width: 100%; max-width: none; }
+        .coluna-central, .coluna-direita { display: none !important; }
+      }
+      /* Mobile: esconde tudo (pode customizar para stack se quiser) */
+      @media (max-width: 768px) {
+        .coluna-esquerda,
+        .coluna-central,
+        .coluna-direita {
+          display: none !important;
+        }
+      }
+    </style>    
+    <!-- COLUNA ESQUERDA (30%) - Formulário e Transportadoras -->
+    <div class="hidden lg:flex flex-col coluna-esquerda overflow-y-auto">
+      <div class="bg-white rounded-2xl shadow-lg p-5 space-y-4 flex-shrink-0">
+        <!-- Header com gradiente dinâmico -->
+        <div class="relative bg-gradient-to-r from-[#2E3440] via-[#D0B580] to-[#E8B8B8] p-6 md:p-7 overflow-hidden rounded-xl">
+          <!-- Efeito de ondas animadas -->
+          <div class="absolute inset-0 opacity-15">
+            <div class="absolute top-0 left-0 w-full h-full bg-gradient-to-r from-transparent via-white/20 to-transparent transform -skew-x-12 animate-pulse"></div>
+            <div class="absolute top-0 left-0 w-full h-full bg-gradient-to-l from-transparent via-yellow-400/10 to-transparent transform skew-x-12 animate-pulse" style="animation-delay: 2s;"></div>
+          </div>
+          
+          <!-- Conteúdo do header -->
+          <div class="relative z-10">
+            <div class="flex items-center gap-2">
+              <!-- Ícone de documento -->
+              <div class="inline-flex items-center justify-center w-10 h-10 bg-white/20 rounded-lg transform hover:rotate-6 transition-transform duration-300 backdrop-blur-sm">
+                <svg class="w-5 h-5 text-white" fill="currentColor" viewBox="0 0 20 20">
+                  <path fill-rule="evenodd" d="M4 4a2 2 0 012-2h4.586A2 2 0 0112 2.586L15.414 6A2 2 0 0116 7.414V16a2 2 0 01-2 2H6a2 2 0 01-2-2V4z" clip-rule="evenodd"></path>
+                </svg>
+              </div>
+              
+              <!-- Título -->
+              <div>
+                <h2 class="text-lg font-bold" style="color:#FFFFFF;">Buscar Rastreamento</h2>
+                <p class="text-xs" style="color:#E8D4B8;">Consulte sua NF agora</p>
+              </div>
+            </div>
+          </div>
+        </div>        
+        
+        <!-- Corpo principal - Premium Design -->
+        <div class="p-5 bg-gradient-to-br from-[#FFFFFF] via-[#E8B8B8] to-[#D0B580] relative rounded-xl">
+          <!-- Elemento decorativo sutil -->
+          <div class="absolute inset-0 opacity-3 pointer-events-none rounded-xl">
+            <div class="absolute top-0 right-0 w-64 h-64 bg-red-400 rounded-full blur-3xl"></div>
+            <div class="absolute bottom-0 left-0 w-48 h-48 bg-blue-400 rounded-full blur-3xl"></div>
+          </div>
+          
+          <!-- Formulário de rastreamento -->
+          <div class="rastreamento-form relative z-10 space-y-4">
+            <form id="trackingForm" class="space-y-4">
+              <!-- Campo de entrada com label -->
+              <div class="space-y-2">
+                <label class="flex items-center gap-2">
+                  <svg class="w-4 h-4 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20" style="color:#2E3440;">
+                    <path fill-rule="evenodd" d="M4 4a2 2 0 012-2h4.586A2 2 0 0112 2.586L15.414 6A2 2 0 0116 7.414V16a2 2 0 01-2 2H6a2 2 0 01-2-2V4z" clip-rule="evenodd"></path>
+                  </svg>
+                  <span class="text-sm font-semibold text-[#2E3440]">Número da NF</span>
+                </label>
+                
+                <!-- Input premium com ícone integrado -->
+                <div class="relative group">
+                  <input 
+                    type="text" 
+                    id="codigoRastreamento" 
+                    name="codigo" 
+                    placeholder="Ex: 210108" 
+                    class="w-full px-3 py-2 text-sm font-medium bg-white border-2 border-gray-200 rounded-lg focus:ring-4 focus:ring-red-100 transition-all duration-300 shadow-sm hover:border-gray-300 focus:border-red-500"
+                    required
+                    autocomplete="off"
+                    spellcheck="false"
+                  >
+                  
+                  <!-- Ícone de busca dentro do input -->
+                  <div class="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 group-focus-within:text-red-500 transition-colors duration-300 pointer-events-none">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+                    </svg>
+                  </div>
+                </div>
+                
+                <!-- Texto de ajuda com exemplos -->
+                <p class="text-xs text-gray-500 px-1">
+                  Exemplos: 210108, 210800, 123456
+                </p>
+              </div>              
+              
+              <!-- Botão de rastreamento com efeitos premium -->
+              <div class="flex justify-center pt-2">
+                <button 
+                  type="button" 
+                  id="btnRastrear" 
+                  class="group relative w-full px-6 py-2 text-[#2E3440] font-bold text-sm rounded-lg shadow-lg transform hover:scale-105 hover:-translate-y-0.5 transition-all duration-300 focus:outline-none overflow-hidden border-2 border-[#D0B580] bg-[#FFFFFF] hover:bg-[#D0B580] hover:text-[#2E3440]"
+                >
+                  <!-- Conteúdo do botão -->
+                  <div class="flex items-center justify-center gap-2">
+                    <svg class="w-4 h-4 group-hover:rotate-12 transition-transform duration-300" fill="none" stroke="#2E3440" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+                    </svg>
+                    <span>Rastrear</span>
+                  </div>
+                  
+                  <!-- Efeito de ripple -->
+                  <div class="absolute inset-0 rounded-lg bg-[#D0B580]/20 opacity-0 group-hover:opacity-100 group-hover:scale-110 transition-all duration-300"></div>
+                </button>
+              </div>
+            </form>            
+            
+            <!-- Informações adicionais - Cartões Interativos -->
+            <div class="mt-4 grid grid-cols-2 gap-2 text-center">
+              <div class="transportadora-card bg-[#FFFFFF] border-2 border-[#D0B580] rounded-lg p-3 shadow-md cursor-pointer hover:shadow-lg">
+                <div class="emoji text-2xl mb-1">🚛</div>
+                <h3 class="font-semibold text-xs mb-0.5" style="color:#2E3440;">Rodonaves</h3>
+                <p class="text-xs" style="color:#4A4A4A;">Nacional</p>
+              </div>
+              <div class="transportadora-card bg-[#FFFFFF] border-2 border-[#D0B580] rounded-lg p-3 shadow-md cursor-pointer hover:shadow-lg">
+                <div class="emoji text-2xl mb-1">📦</div>
+                <h3 class="font-semibold text-xs mb-0.5" style="color:#2E3440;">Carvalima</h3>
+                <p class="text-xs" style="color:#4A4A4A;">Rápida</p>
+              </div>
+              <div class="transportadora-card bg-[#FFFFFF] border-2 border-[#D0B580] rounded-lg p-3 shadow-md cursor-pointer hover:shadow-lg">
+                <div class="emoji text-2xl mb-1">⚡</div>
+                <h3 class="font-semibold text-xs mb-0.5" style="color:#2E3440;">São Miguel</h3>
+                <p class="text-xs" style="color:#4A4A4A;">Express</p>
+              </div>
+              <div class="transportadora-card bg-[#FFFFFF] border-2 border-[#D0B580] rounded-lg p-3 shadow-md cursor-pointer hover:shadow-lg">
+                <div class="emoji text-2xl mb-1">✈️</div>
+                <h3 class="font-semibold text-xs mb-0.5" style="color:#2E3440;">Brix Cargo</h3>
+                <p class="text-xs" style="color:#4A4A4A;">Aéreo</p>
+              </div>
+              <div class="transportadora-card bg-[#FFFFFF] border-2 border-[#D0B580] rounded-lg p-3 shadow-md cursor-pointer hover:shadow-lg">
+                <div class="emoji text-2xl mb-1">👑</div>
+                <h3 class="font-semibold text-xs mb-0.5" style="color:#2E3440;">Princesa dos Campos</h3>
+                <p class="text-xs" style="color:#4A4A4A;">Rodoviário</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>    <!-- COLUNA CENTRAL (timeline e detalhes) -->
+    <div class="flex flex-col coluna-central overflow-hidden">
+      <!-- Loading State -->
+      <div id="loadingRastreamento" class="hidden flex flex-col items-center justify-center h-full bg-white rounded-2xl shadow-lg">
+        <div class="text-center space-y-6">
+          <!-- Spinner animado -->
+          <div class="flex justify-center">
+            <div class="relative">
+              <div class="w-16 h-16 border-4 border-red-200 border-t-red-600 rounded-full animate-spin"></div>
+              <div class="absolute inset-0 w-16 h-16 border-4 border-transparent border-r-red-400 rounded-full animate-spin" style="animation-duration: 1.5s; animation-direction: reverse;"></div>
+            </div>
+          </div>
+          
+          <!-- Título do loading -->
+          <div class="space-y-2">
+            <h3 class="text-xl font-bold text-gray-800">Consultando transportadoras...</h3>
+            <p class="text-sm text-gray-600">Verificando Rodonaves, Carvalima, São Miguel e Brix Cargo</p>
+          </div>
+          
+          <!-- Barra de progresso animada -->
+          <div class="w-48 space-y-3">
+            <div class="w-full bg-gray-200 rounded-full h-2 overflow-hidden">
+              <div class="h-full bg-gradient-to-r from-red-500 to-red-600 rounded-full animate-pulse" style="width: 100%;"></div>
+            </div>
+            
+            <!-- Dots animados -->
+            <div class="flex justify-center gap-2">
+              <div class="w-2 h-2 bg-red-500 rounded-full animate-bounce"></div>
+              <div class="w-2 h-2 bg-red-500 rounded-full animate-bounce" style="animation-delay: 0.1s;"></div>
+              <div class="w-2 h-2 bg-red-500 rounded-full animate-bounce" style="animation-delay: 0.2s;"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Resultado - Timeline -->
+      <div id="resultadoRastreamento" class="hidden flex flex-col bg-white rounded-2xl shadow-lg p-6 overflow-y-auto">
+        <!-- Timeline e eventos serão inseridos aqui pelo JS -->
+        <div id="timelineRastreamento"></div>
+      </div>
+
+      <!-- Estado inicial (sem busca) -->
+      <div id="estadoInicial" class="flex flex-col items-center justify-center bg-white rounded-2xl shadow-lg p-8 min-h-[420px]">
+        <div class="flex flex-col items-center justify-center w-full">
+          <!-- Ilustração animada -->
+          <div class="mb-4 flex items-center justify-center animate-clock-in">
+            <span class="relative inline-block w-[100px] h-[100px]">
+              <!-- Círculo externo animado com gradiente -->
+              <svg class="absolute inset-0 w-full h-full animate-spin-smooth" style="animation-duration: 3s;" viewBox="0 0 100 100" fill="none">
+                <defs>
+                  <linearGradient id="clockGrad1" x1="0" y1="0" x2="100" y2="100" gradientUnits="userSpaceOnUse">
+                    <stop stop-color="#D0B580"/>
+                    <stop offset="1" stop-color="#E8B8B8"/>
+                  </linearGradient>
+                </defs>
+                <circle cx="50" cy="50" r="44" stroke="url(#clockGrad1)" stroke-width="5" stroke-dasharray="12 10" stroke-linecap="round"/>
+                <circle cx="50" cy="50" r="39" stroke="#E8B8B8" stroke-width="2" stroke-dasharray="5 7" stroke-linecap="round"/>
+              </svg>
+              <!-- Ponteiro dos segundos (agora vermelho institucional #ED1C24, espesso, glow forte) -->
+              <svg class="absolute left-0 top-0 w-full h-full animate-second-hand z-10" style="animation-duration: 1.5s;" viewBox="0 0 100 100" fill="none">
+                <defs>
+                  <filter id="red-glow" x="-20" y="-20" width="140" height="140" filterUnits="userSpaceOnUse">
+                    <feDropShadow dx="0" dy="0" stdDeviation="2.5" flood-color="#ED1C24" flood-opacity="0.85"/>
+                  </filter>
+                </defs>
+                <rect x="49" y="8" width="2.5" height="48" rx="1.2" fill="#ED1C24" filter="url(#red-glow)"/>
+              </svg>
+              <!-- Ponteiro das horas -->
+              <svg class="absolute left-0 top-0 w-full h-full animate-hour-hand" style="animation-duration: 12s; z-index:1;" viewBox="0 0 100 100" fill="none">
+                <rect x="48" y="28" width="4" height="28" rx="2" fill="#D0B580" filter="url(#shadow1)"/>
+              </svg>
+              <!-- Ponteiro dos minutos -->
+              <svg class="absolute left-0 top-0 w-full h-full animate-minute-hand" style="animation-duration: 3s; z-index:1;" viewBox="0 0 100 100" fill="none">
+                <rect x="49" y="14" width="2" height="40" rx="1" fill="#2E3440"/>
+              </svg>
+              <!-- Glow pulsante no centro -->
+              <span class="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-gradient-to-br from-[#D0B580] via-[#E8B8B8] to-[#fff] opacity-60 blur-[6px] animate-glow"></span>
+              <!-- Centro do relógio -->
+              <span class="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-5 h-5 rounded-full bg-[#D0B580] shadow-xl border-2 border-white"></span>
+              <!-- Overlay glass -->
+              <span class="absolute inset-0 rounded-full bg-white/20 pointer-events-none" style="backdrop-filter: blur(2px);"></span>
+            </span>
+            <style>
+              @keyframes spin-smooth {
+                100% { transform: rotate(360deg); }
+              }
+              .animate-spin-smooth {
+                animation: spin-smooth 3s linear infinite;
+              }
+              @keyframes hour-hand {
+                100% { transform: rotate(360deg); }
+              }
+              .animate-hour-hand {
+                transform-origin: 50px 50px;
+                animation: hour-hand 12s linear infinite;
+              }
+              @keyframes minute-hand {
+                100% { transform: rotate(360deg); }
+              }
+              .animate-minute-hand {
+                transform-origin: 50px 50px;
+                animation: minute-hand 3s linear infinite;
+              }
+              @keyframes second-hand {
+                100% { transform: rotate(360deg); }
+              }
+              .animate-second-hand {
+                transform-origin: 50px 50px;
+                animation: second-hand 1.5s linear infinite;
+              }
+              @keyframes glow {
+                0%, 100% { opacity: 0.5; filter: blur(6px); }
+                50% { opacity: 0.9; filter: blur(12px); }
+              }
+              .animate-glow {
+                animation: glow 2.2s ease-in-out infinite;
+              }
+              @keyframes clock-in {
+                0% { opacity: 0; transform: scale(0.7); }
+                100% { opacity: 1; transform: scale(1); }
+              }
+              .animate-clock-in {
+                animation: clock-in 0.8s cubic-bezier(.68,-0.55,.27,1.55);
+              }
+            </style>
+          </div>
+          <h3 class="text-2xl font-bold text-[#2E3440] mb-2">Bem-vindo ao Rastreamento!</h3>
+          <p class="text-[#4A4A4A] max-w-md text-center mb-2">Digite o número da Nota Fiscal na coluna esquerda e clique em <span class="font-semibold text-[#D0B580]">Rastrear</span> para acompanhar o progresso da sua entrega em tempo real.</p>
+          <span class="inline-block mt-2 px-3 py-1 text-xs rounded-full bg-[#E8B8B8] text-[#2E3440] font-semibold animate-pulse">100% seguro e atualizado</span>
+        </div>
+      </div>
+      <style>
+        @keyframes bounce-slow {
+          0%, 100% { transform: translateY(0); }
+          50% { transform: translateY(-12px); }
+        }
+        .animate-bounce-slow {
+          animation: bounce-slow 2.2s infinite cubic-bezier(.68,-0.55,.27,1.55);
+        }
+      </style>
+    </div>    <!-- COLUNA DIREITA (mapa e botões) -->
+    <div class="hidden lg:flex flex-col coluna-direita overflow-y-auto">
+      <!-- Resultado - Mapa e Ações -->
+      <div id="resultadoMapaAcoes" class="hidden flex flex-col space-y-6 h-full">
+        <!-- Bloco do mapa -->
+        <div class="bg-white rounded-2xl shadow-lg p-5">
+          <h4 class="text-base font-bold text-gray-700 mb-2 flex items-center gap-2">
+            <svg class="w-5 h-5 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 12.414a4 4 0 10-5.657 5.657l4.243 4.243a8 8 0 1011.314-11.314l-4.243 4.243z"></path></svg>
+            Localização e Rota
+          </h4>
+          <div id="mapaRastreamento" class="w-full rounded-xl shadow border border-blue-100" style="height: 320px;"></div>
+          <p class="text-xs text-gray-500 mt-2"><span class="inline-block align-middle">💡</span> Dica: Clique nos marcadores para ver detalhes</p>
+        </div>
+        <!-- Botões de ação -->
+        <div class="bg-white rounded-2xl shadow-lg p-5 flex flex-col gap-3">
+          <button id="btnNovaConsulta" class="w-full px-4 py-2 text-sm font-semibold text-white rounded-lg shadow-md transition-all duration-300 flex items-center justify-center gap-2" style="background-color:#2563eb;">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
+            Nova Consulta
+          </button>
+          <button id="btnCompartilhar" class="w-full px-4 py-2 text-sm font-semibold text-white rounded-lg shadow-md transition-all duration-300 flex items-center justify-center gap-2" style="background-color:#22c55e;">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v10a2 2 0 01-2 2h-2m-4-6l4-4m0 0l4 4m-4-4v12"></path></svg>
+            Compartilhar
+          </button>
+          <button id="btnEmail" class="w-full px-4 py-2 text-sm font-semibold text-white rounded-lg shadow-md transition-all duration-300 flex items-center justify-center gap-2" style="background-color:#a21caf;">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path></svg>
+            Enviar por Email
+          </button>
+          <button id="btnHistorico" class="w-full px-4 py-2 text-sm font-semibold text-white rounded-lg shadow-md transition-all duration-300 flex items-center justify-center gap-2" style="background-color:#6366f1;">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+            Histórico (12)
+          </button>
+        </div>
+      </div>
+      <!-- Estado inicial (sem busca) -->
+      <div id="estadoInicial2" class="flex flex-col items-center justify-center h-full bg-white rounded-2xl shadow-lg p-6">
+        <div class="text-center space-y-4">
+          <div class="inline-flex items-center justify-center w-14 h-14 bg-gray-100 rounded-2xl">
+            <svg class="w-7 h-7 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+            </svg>
+          </div>
+          <h3 class="text-lg font-bold text-gray-800">Informações</h3>
+          <p class="text-xs text-gray-600 max-w-xs">Os detalhes da entrega aparecerão aqui quando você realizar uma busca.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- 🚀 JavaScript avançado para interações -->
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+  const input = document.getElementById('codigoRastreamento');
+  const btnRastrear = document.getElementById('btnRastrear');
+  const loadingDiv = document.getElementById('loadingRastreamento');
+  const resultadoDiv = document.getElementById('resultadoRastreamento');
+  
+  // Efeito de validação em tempo real
+  input.addEventListener('input', function() {
+    const value = this.value.trim();
+    if (value.length >= 3) {
+      this.classList.add('border-green-500', 'ring-green-500/20');
+      this.classList.remove('border-gray-200');
+    } else {
+      this.classList.remove('border-green-500', 'ring-green-500/20');
+      this.classList.add('border-gray-200');
+    }
+  });
+  
+  // Efeito de foco com animação
+  input.addEventListener('focus', function() {
+    this.parentElement.classList.add('scale-105');
+  });
+  
+  input.addEventListener('blur', function() {
+    this.parentElement.classList.remove('scale-105');
+  });
+  
+  // Animação do botão
+  btnRastrear.addEventListener('mouseenter', function() {
+    this.style.transform = 'scale(1.05) translateY(-2px)';
+  });
+  
+  btnRastrear.addEventListener('mouseleave', function() {
+    this.style.transform = 'scale(1) translateY(0)';
+  });
+  
+  // Função de rastreamento (mantém a lógica original)
+  btnRastrear.addEventListener('click', function() {
+    const codigo = input.value.trim();
+    if (!codigo) {
+      // Efeito de shake no input
+      input.classList.add('animate-pulse');
+      input.focus();
+      setTimeout(() => input.classList.remove('animate-pulse'), 500);
+      return;
+    }
+    // Mostrar loading
+    loadingDiv.classList.remove('hidden');
+    resultadoDiv.classList.add('hidden');
+    // Mostrar loading na coluna direita também (opcional)
+    document.getElementById('resultadoMapaAcoes').classList.add('hidden');
+    document.getElementById('estadoInicial2').classList.add('hidden');
+
+    // Simular consulta (mantém a lógica original do JavaScript)
+    setTimeout(function() {
+      // Esconde loading, mostra resultado central e lateral
+      loadingDiv.classList.add('hidden');
+      resultadoDiv.classList.remove('hidden');
+      document.getElementById('resultadoMapaAcoes').classList.remove('hidden');
+      document.getElementById('estadoInicial2').classList.add('hidden');
+      // Exemplo: inicializar mapa (ajuste para sua lógica real)
+      if (typeof mostrarMapaRastreamento === 'function') {
+        mostrarMapaRastreamento(-23.55052, -46.633308); // Exemplo SP
+      }
+    }, 1200); // Simula tempo de consulta
+  });
+  
+  // Atalho de teclado
+  input.addEventListener('keypress', function(e) {
+    if (e.key === 'Enter') {
+      btnRastrear.click();
+    }
+  });
+});
+</script>
+
+<!-- Adiciona Leaflet JS -->
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-o9N1jRVv6bQ4Q4Q4Q4Q4Q4Q4Q=" crossorigin=""></script>
+<script>
+// Inicialização do mapa após mostrar resultado
+function mostrarMapaRastreamento(lat, lng) {
+  var mapaDiv = document.getElementById('mapaRastreamento');
+  if (!mapaDiv) return;
+  // Remove mapa anterior, se houver
+  if (window._mapaRastreamento) {
+    window._mapaRastreamento.remove();
+    window._mapaRastreamento = null;
+  }
+  // Inicializa o mapa
+  var map = L.map('mapaRastreamento').setView([lat, lng], 13);
+  window._mapaRastreamento = map;
+  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    attribution: '© OpenStreetMap',
+    maxZoom: 19,
+  }).addTo(map);
+  L.marker([lat, lng]).addTo(map);
+}
+// Exemplo: chamar mostrarMapaRastreamento(-23.55052, -46.633308) após a busca
+</script>
+
+<!-- 🚀 JavaScript Avançado com Todas as Funcionalidades -->
+<script src="{{ url_for('static', filename='js/rastreamento-enhanced.js') }}?v=4.4"></script>
+{% endblock %}

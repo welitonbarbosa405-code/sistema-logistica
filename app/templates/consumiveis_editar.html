@@ -1,0 +1,260 @@
+{% extends "base.html" %}
+{% block content %}
+
+<!-- Header Kuhn - Compacto -->
+<div class="kuhn-header rounded-xl mb-4 text-white overflow-hidden">
+  <div class="kuhn-header-content p-4">
+    <div class="flex items-center justify-between">
+      <div class="flex-1">
+        <h1 class="text-2xl font-bold mb-1 flex items-center gap-3">
+          <div class="w-10 h-10 kuhn-glass-effect rounded-xl flex items-center justify-center">
+            <span class="text-xl">✏️</span>
+          </div>
+          <span>Editar Consumível</span>
+        </h1>
+        <p class="text-red-100 text-sm">Atualize as informações do consumível</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Formulário de Edição -->
+<div class="bg-white rounded-xl shadow-lg border border-gray-200 p-4 max-w-xl w-full mx-auto">
+  <div class="mb-3">
+    <h2 class="text-xl font-semibold text-gray-800 mb-1">Informações do Consumível</h2>
+    <p class="text-gray-600 text-xs">Atualize os dados abaixo para modificar o consumível</p>
+  </div>
+
+  <form id="formEdicao" class="space-y-2 consumivel-edit-form">
+    <div class="form-content-scroll space-y-3">
+    <!-- Informações Básicas -->
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+      <div class="space-y-1">
+        <label class="block text-sm font-semibold kuhn-red-text">Filial *</label>
+        <input type="text" id="filial" name="filial" required 
+               class="w-full px-3 py-1.5 bg-white border-2 border-gray-200 rounded-lg focus:border-red-500 focus:ring-2 focus:ring-red-100 transition-all duration-300 text-gray-800 text-sm"
+               value="{{ consumivel.filial }}">
+        <p class="text-xs text-gray-500">Identificação da filial onde o consumível será utilizado</p>
+      </div>
+      
+      <div class="space-y-1">
+        <label class="block text-sm font-semibold kuhn-red-text">Código *</label>
+        <input type="text" id="codigo" name="codigo" required 
+               class="w-full px-3 py-1.5 bg-white border-2 border-gray-200 rounded-lg focus:border-red-500 focus:ring-2 focus:ring-red-100 transition-all duration-300 text-gray-800 text-sm"
+               value="{{ consumivel.codigo }}">
+        <p class="text-xs text-gray-500">Código único para identificação do consumível</p>
+      </div>
+    </div>
+    
+    <!-- Descrição -->
+    <div class="space-y-1">
+      <label class="block text-sm font-semibold kuhn-red-text">Descrição *</label>
+      <input type="text" id="descricao" name="descricao" required 
+             class="w-full px-3 py-1.5 bg-white border-2 border-gray-200 rounded-lg focus:border-red-500 focus:ring-2 focus:ring-red-100 transition-all duration-300 text-gray-800 text-sm"
+             value="{{ consumivel.descricao }}">
+      <p class="text-xs text-gray-500">Descrição completa do produto ou material</p>
+    </div>
+
+    <!-- Unidade de Medida -->
+    <div class="space-y-1">
+      <label class="block text-sm font-semibold kuhn-red-text">Unidade de Medida *</label>
+      <input type="text" id="unidade_medida" name="unidade_medida" required maxlength="20" list="listaUnidades"
+             class="w-full px-3 py-1.5 bg-white border-2 border-gray-200 rounded-lg focus:border-red-500 focus:ring-2 focus:ring-red-100 transition-all duration-300 text-gray-800 uppercase text-sm"
+             value="{{ consumivel.unidade_medida }}">
+      <datalist id="listaUnidades">
+        <option value="UN"></option>
+        <option value="KG"></option>
+        <option value="L"></option>
+        <option value="CX"></option>
+        <option value="PC"></option>
+        <option value="M"></option>
+      </datalist>
+      <p class="text-xs text-gray-500">Informe como o item é medido (ex: UN, KG, LITRO)</p>
+    </div>
+    
+    <!-- Controle de Estoque -->
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+      <div class="space-y-1">
+        <label class="block text-sm font-semibold kuhn-red-text">Saldo de Estoque</label>
+        <input type="number" id="saldo_estoque" name="saldo_estoque" min="0"
+               class="w-full px-3 py-1.5 bg-white border-2 border-gray-200 rounded-lg focus:border-red-500 focus:ring-2 focus:ring-red-100 transition-all duration-300 text-gray-800 text-sm"
+               value="{{ consumivel.saldo_estoque }}">
+        <p class="text-xs text-gray-500">Quantidade atual em estoque</p>
+      </div>
+      
+      <div class="space-y-1">
+        <label class="block text-sm font-semibold kuhn-red-text">Estoque Mínimo</label>
+        <input type="number" id="estoque_minimo" name="estoque_minimo" min="0"
+               class="w-full px-3 py-1.5 bg-white border-2 border-gray-200 rounded-lg focus:border-red-500 focus:ring-2 focus:ring-red-100 transition-all duration-300 text-gray-800 text-sm"
+               value="{{ consumivel.estoque_minimo }}">
+        <p class="text-xs text-gray-500">Quantidade mínima para alerta de reposição</p>
+      </div>
+    </div>    <!-- Status Atual -->
+    <div class="bg-gray-50 rounded-lg p-2">
+      <h3 class="text-sm font-semibold text-gray-800 mb-2 flex items-center gap-2">
+        <svg class="w-4 h-4 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+        </svg>
+        Status Atual
+      </h3>
+      <div class="grid grid-cols-3 gap-2">
+        <div class="text-center">
+          <div class="text-lg font-bold text-gray-800">{{ consumivel.saldo_estoque }}</div>
+          <div class="text-xs text-gray-600">Saldo Atual</div>
+        </div>
+        <div class="text-center">
+          <div class="text-lg font-bold text-gray-800">{{ consumivel.estoque_minimo }}</div>
+          <div class="text-xs text-gray-600">Estoque Mínimo</div>
+        </div>
+        <div class="text-center">
+          <div class="text-lg font-bold {% if consumivel.nivel_estoque == 'Normal' %}text-green-600{% elif consumivel.nivel_estoque == 'Baixo' %}text-yellow-600{% elif consumivel.nivel_estoque == 'Crítico' %}text-red-600{% else %}text-gray-600{% endif %}">
+            {{ consumivel.nivel_estoque }}
+          </div>
+          <div class="text-xs text-gray-600">Nível Atual</div>
+        </div>
+      </div>
+    </div>
+    </div>
+    
+    <!-- Botões de Ação -->
+    <div class="flex justify-end gap-3 pt-3 border-t border-gray-200">
+      <a href="{{ url_for('consumiveis.index') }}" 
+         class="px-6 py-2 text-gray-600 hover:text-gray-800 transition-colors font-medium text-sm">
+        Cancelar
+      </a>
+      <button type="submit" 
+              class="px-6 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg transition-all duration-300 font-medium shadow-md hover:shadow-lg text-sm">
+        <span class="flex items-center gap-2">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+          </svg>
+          Salvar Alterações
+        </span>
+      </button>
+    </div>
+  </form>
+</div>
+
+<!-- Toast Notifications Container -->
+<div id="toastContainer" class="fixed top-4 right-4 z-50 space-y-2">
+  <!-- Toasts serão inseridos aqui -->
+</div>
+
+<!-- CSS Enhancements -->
+<link rel="stylesheet" href="{{ url_for('static', filename='css/enhancements.css') }}">
+
+<!-- JavaScript -->
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const form = document.getElementById('formEdicao');
+    
+    form.addEventListener('submit', async function(e) {
+        e.preventDefault();
+        
+        const formData = new FormData(form);
+        const data = Object.fromEntries(formData.entries());
+        
+        // Validações básicas
+        if (!data.filial.trim() || !data.codigo.trim() || !data.descricao.trim()) {
+            showToast('Preencha todos os campos obrigatórios', 'error');
+            return;
+        }
+
+    data.unidade_medida = data.unidade_medida ? data.unidade_medida.trim().toUpperCase() : '';
+    if (!data.unidade_medida) {
+        showToast('Informe a unidade de medida', 'error');
+        return;
+    }
+    if (data.unidade_medida.length > 20) {
+        showToast('Unidade de medida deve ter no máximo 20 caracteres', 'error');
+        return;
+    }
+        
+        if (data.saldo_estoque < 0 || data.estoque_minimo < 0) {
+            showToast('Valores de estoque não podem ser negativos', 'error');
+            return;
+        }
+        
+        try {
+            // Adicionar CSRF token
+            const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content');
+            
+            const response = await fetch(window.location.pathname, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': csrfToken
+                },
+                body: JSON.stringify(data)
+            });
+            
+            const result = await response.json();
+            
+            if (result.success) {
+                showToast(result.message, 'success');
+                setTimeout(() => {
+                    window.location.href = '/consumiveis/';
+                }, 1500);
+            } else {
+                showToast(result.error, 'error');
+            }
+            
+        } catch (error) {
+            console.error('Erro ao editar:', error);
+            showToast('Erro ao editar consumível', 'error');
+        }
+    });
+    
+    function showToast(message, type = 'info') {
+        const toastContainer = document.getElementById('toastContainer') || createToastContainer();
+        
+        const toast = document.createElement('div');
+        toast.className = `transform transition-all duration-300 translate-x-full opacity-0 bg-white border-l-4 p-4 rounded-lg shadow-lg max-w-sm`;
+        
+        const colors = {
+            success: 'border-green-500',
+            error: 'border-red-500',
+            warning: 'border-yellow-500',
+            info: 'border-blue-500'
+        };
+        
+        toast.classList.add(colors[type] || colors.info);
+        
+        toast.innerHTML = `
+            <div class="flex items-center">
+                <div class="flex-1">
+                    <p class="text-sm font-medium text-gray-900">${message}</p>
+                </div>
+                <button onclick="this.parentElement.parentElement.remove()" class="ml-4 text-gray-400 hover:text-gray-600">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                    </svg>
+                </button>
+            </div>
+        `;
+        
+        toastContainer.appendChild(toast);
+        
+        // Animar entrada
+        setTimeout(() => {
+            toast.classList.remove('translate-x-full', 'opacity-0');
+        }, 100);
+        
+        // Remover automaticamente após 5 segundos
+        setTimeout(() => {
+            toast.classList.add('translate-x-full', 'opacity-0');
+            setTimeout(() => toast.remove(), 300);
+        }, 5000);
+    }
+    
+    function createToastContainer() {
+        const container = document.createElement('div');
+        container.id = 'toastContainer';
+        container.className = 'fixed top-4 right-4 z-50 space-y-2';
+        document.body.appendChild(container);
+        return container;
+    }
+});
+</script>
+
+{% endblock %}

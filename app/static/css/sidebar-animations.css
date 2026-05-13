@@ -1,0 +1,424 @@
+/**
+ * CSS Animações Premium da Sidebar - Kuhn Parts Brasil
+ * Efeitos hover modernos e interativos
+ */
+
+/* ===== VARIÁVEIS ===== */
+:root {
+  --sidebar-bg: linear-gradient(180deg, #1a1f2e 0%, #0d1117 100%);
+  --sidebar-hover: rgba(237, 28, 36, 0.15);
+  --sidebar-active: rgba(237, 28, 36, 0.25);
+  --kuhn-red: #ED1C24;
+  --kuhn-red-glow: rgba(237, 28, 36, 0.6);
+  --text-muted: #8b949e;
+  --text-light: #c9d1d9;
+  --transition-smooth: cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* ===== SIDEBAR PRINCIPAL ===== */
+.sidebar {
+  background: var(--sidebar-bg) !important;
+  box-shadow: 
+    4px 0 24px rgba(0, 0, 0, 0.5),
+    inset -1px 0 0 rgba(255, 255, 255, 0.05) !important;
+}
+
+/* ===== LOGO COM PULSE ===== */
+.sidebar-logo {
+  position: relative;
+  transition: all 0.4s var(--transition-smooth);
+  background: linear-gradient(135deg, rgba(237, 28, 36, 0.2) 0%, rgba(237, 28, 36, 0.05) 100%) !important;
+  border: 1px solid rgba(237, 28, 36, 0.3);
+}
+
+.sidebar-logo::before {
+  content: '';
+  position: absolute;
+  inset: -3px;
+  border-radius: 12px;
+  background: linear-gradient(135deg, var(--kuhn-red), transparent);
+  opacity: 0;
+  transition: opacity 0.4s ease;
+  z-index: -1;
+}
+
+.sidebar-header:hover .sidebar-logo::before {
+  opacity: 0.5;
+  animation: pulse-ring 1.5s infinite;
+}
+
+.sidebar-header:hover .sidebar-logo {
+  transform: scale(1.05);
+  box-shadow: 0 0 20px var(--kuhn-red-glow);
+}
+
+.sidebar-header:hover .sidebar-logo img {
+  animation: logo-bounce 0.5s ease;
+}
+
+@keyframes pulse-ring {
+  0% {
+    transform: scale(1);
+    opacity: 0.5;
+  }
+  50% {
+    transform: scale(1.1);
+    opacity: 0.2;
+  }
+  100% {
+    transform: scale(1);
+    opacity: 0.5;
+  }
+}
+
+@keyframes logo-bounce {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.1); }
+}
+
+/* ===== MENU ITEMS - EFEITOS HOVER PREMIUM ===== */
+.sidebar-menu-link {
+  position: relative;
+  overflow: hidden;
+  transition: all 0.3s var(--transition-smooth) !important;
+  border-left: 3px solid transparent !important;
+}
+
+/* Efeito de onda no hover */
+.sidebar-menu-link::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(237, 28, 36, 0.1),
+    rgba(237, 28, 36, 0.2),
+    rgba(237, 28, 36, 0.1),
+    transparent
+  );
+  transition: left 0.5s var(--transition-smooth);
+}
+
+.sidebar-menu-link:hover::before {
+  left: 100%;
+}
+
+/* Linha lateral animada */
+.sidebar-menu-link::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 50%;
+  width: 3px;
+  height: 0;
+  background: linear-gradient(180deg, var(--kuhn-red), #ff6b6b);
+  transition: all 0.3s var(--transition-smooth);
+  transform: translateY(-50%);
+  border-radius: 0 3px 3px 0;
+}
+
+.sidebar-menu-link:hover::after {
+  height: 70%;
+  box-shadow: 0 0 10px var(--kuhn-red-glow);
+}
+
+.sidebar-menu-link:hover {
+  background: var(--sidebar-hover) !important;
+  color: #fff !important;
+  padding-left: 28px !important;
+  border-left-color: transparent !important;
+}
+
+/* ===== ITEM ATIVO ===== */
+.sidebar-menu-link.active {
+  background: var(--sidebar-active) !important;
+  color: #fff !important;
+  border-left-color: transparent !important;
+}
+
+.sidebar-menu-link.active::after {
+  height: 70%;
+  background: linear-gradient(180deg, var(--kuhn-red), #ff4444);
+  box-shadow: 0 0 15px var(--kuhn-red-glow);
+}
+
+/* ===== ÍCONES ANIMADOS ===== */
+.sidebar-menu-icon {
+  transition: all 0.3s var(--transition-smooth);
+  position: relative;
+}
+
+.sidebar-menu-link:hover .sidebar-menu-icon {
+  transform: scale(1.2) rotate(-5deg);
+  filter: drop-shadow(0 0 6px var(--kuhn-red-glow));
+}
+
+.sidebar-menu-link.active .sidebar-menu-icon {
+  transform: scale(1.15);
+  filter: drop-shadow(0 0 8px var(--kuhn-red-glow));
+  animation: icon-glow 2s ease-in-out infinite;
+}
+
+@keyframes icon-glow {
+  0%, 100% {
+    filter: drop-shadow(0 0 8px var(--kuhn-red-glow));
+  }
+  50% {
+    filter: drop-shadow(0 0 15px var(--kuhn-red-glow));
+  }
+}
+
+/* ===== TEXTO DO MENU ===== */
+.sidebar-menu-text {
+  transition: all 0.3s var(--transition-smooth);
+  position: relative;
+}
+
+.sidebar-menu-link:hover .sidebar-menu-text {
+  letter-spacing: 0.5px;
+  text-shadow: 0 0 10px rgba(255, 255, 255, 0.3);
+}
+
+/* ===== DIVIDER ANIMADO ===== */
+.sidebar-divider {
+  position: relative;
+  height: 1px;
+  background: linear-gradient(90deg, 
+    transparent 0%, 
+    rgba(237, 28, 36, 0.5) 50%, 
+    transparent 100%
+  ) !important;
+  margin: 20px 15px !important;
+  overflow: visible;
+}
+
+.sidebar-divider::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 30%;
+  height: 100%;
+  background: linear-gradient(90deg, var(--kuhn-red), transparent);
+  animation: divider-slide 3s ease-in-out infinite;
+}
+
+@keyframes divider-slide {
+  0%, 100% {
+    left: 0;
+    opacity: 0.5;
+  }
+  50% {
+    left: 70%;
+    opacity: 1;
+  }
+}
+
+/* ===== FOOTER DA SIDEBAR ===== */
+.sidebar-footer {
+  background: linear-gradient(180deg, transparent 0%, rgba(0, 0, 0, 0.5) 100%) !important;
+  border-top: 1px solid rgba(237, 28, 36, 0.2) !important;
+  transition: all 0.3s ease;
+}
+
+/* ===== AVATAR DO USUÁRIO ===== */
+.sidebar-user-avatar {
+  position: relative;
+  transition: all 0.4s var(--transition-smooth);
+  background: linear-gradient(135deg, var(--kuhn-red) 0%, #ff6b6b 100%) !important;
+  box-shadow: 0 4px 15px rgba(237, 28, 36, 0.4);
+}
+
+.sidebar-user-avatar::before {
+  content: '';
+  position: absolute;
+  inset: -2px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, var(--kuhn-red), #ff6b6b, var(--kuhn-red));
+  z-index: -1;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  animation: avatar-ring-rotate 3s linear infinite;
+}
+
+.sidebar-user:hover .sidebar-user-avatar::before {
+  opacity: 1;
+}
+
+.sidebar-user:hover .sidebar-user-avatar {
+  transform: scale(1.1);
+  box-shadow: 0 6px 25px rgba(237, 28, 36, 0.6);
+}
+
+@keyframes avatar-ring-rotate {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+/* ===== NOME DO USUÁRIO ===== */
+.sidebar-user-name {
+  transition: all 0.3s ease;
+}
+
+.sidebar-user:hover .sidebar-user-name {
+  color: var(--kuhn-red) !important;
+  text-shadow: 0 0 10px var(--kuhn-red-glow);
+}
+
+/* ===== BOTÃO SAIR ===== */
+.sidebar-logout {
+  position: relative;
+  overflow: hidden;
+  background: linear-gradient(135deg, var(--kuhn-red) 0%, #c41e3a 100%) !important;
+  border: none !important;
+  transition: all 0.4s var(--transition-smooth) !important;
+}
+
+.sidebar-logout::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(255, 255, 255, 0.2),
+    transparent
+  );
+  transition: left 0.5s ease;
+}
+
+.sidebar-logout:hover::before {
+  left: 100%;
+}
+
+.sidebar-logout:hover {
+  transform: translateY(-3px) scale(1.02) !important;
+  box-shadow: 
+    0 8px 25px rgba(237, 28, 36, 0.5),
+    0 0 40px rgba(237, 28, 36, 0.3) !important;
+}
+
+.sidebar-logout:active {
+  transform: translateY(0) scale(0.98) !important;
+}
+
+/* ===== SCROLLBAR PERSONALIZADA ===== */
+.sidebar::-webkit-scrollbar {
+  width: 6px;
+}
+
+.sidebar::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.sidebar::-webkit-scrollbar-thumb {
+  background: linear-gradient(180deg, var(--kuhn-red), #ff6b6b);
+  border-radius: 3px;
+}
+
+.sidebar::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(180deg, #ff4444, var(--kuhn-red));
+}
+
+/* ===== TOOLTIP NOS ÍCONES (quando sidebar colapsada) ===== */
+.sidebar.collapsed .sidebar-menu-link {
+  position: relative;
+}
+
+.sidebar.collapsed .sidebar-menu-link::after {
+  content: attr(data-tooltip);
+  position: absolute;
+  left: calc(100% + 10px);
+  top: 50%;
+  transform: translateY(-50%) scale(0.8);
+  background: var(--kuhn-red);
+  color: white;
+  padding: 8px 12px;
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 600;
+  white-space: nowrap;
+  opacity: 0;
+  visibility: hidden;
+  transition: all 0.3s ease;
+  z-index: 1001;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+}
+
+.sidebar.collapsed .sidebar-menu-link:hover::after {
+  opacity: 1;
+  visibility: visible;
+  transform: translateY(-50%) scale(1);
+}
+
+/* ===== EFEITO DE ENTRADA (ao carregar a página) ===== */
+.sidebar-menu-item {
+  animation: slideInLeft 0.4s var(--transition-smooth) backwards;
+}
+
+.sidebar-menu-item:nth-child(1) { animation-delay: 0.05s; }
+.sidebar-menu-item:nth-child(2) { animation-delay: 0.1s; }
+.sidebar-menu-item:nth-child(3) { animation-delay: 0.15s; }
+.sidebar-menu-item:nth-child(4) { animation-delay: 0.2s; }
+.sidebar-menu-item:nth-child(5) { animation-delay: 0.25s; }
+.sidebar-menu-item:nth-child(6) { animation-delay: 0.3s; }
+.sidebar-menu-item:nth-child(7) { animation-delay: 0.35s; }
+.sidebar-menu-item:nth-child(8) { animation-delay: 0.4s; }
+
+@keyframes slideInLeft {
+  from {
+    opacity: 0;
+    transform: translateX(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+/* ===== BADGE DE NOTIFICAÇÃO ===== */
+.sidebar-badge {
+  position: absolute;
+  right: 15px;
+  top: 50%;
+  transform: translateY(-50%);
+  background: linear-gradient(135deg, #ff4444, var(--kuhn-red));
+  color: white;
+  font-size: 10px;
+  font-weight: 700;
+  padding: 2px 8px;
+  border-radius: 10px;
+  min-width: 20px;
+  text-align: center;
+  box-shadow: 0 2px 8px rgba(255, 68, 68, 0.5);
+  animation: badge-pulse 2s infinite;
+}
+
+@keyframes badge-pulse {
+  0%, 100% {
+    transform: translateY(-50%) scale(1);
+    box-shadow: 0 2px 8px rgba(255, 68, 68, 0.5);
+  }
+  50% {
+    transform: translateY(-50%) scale(1.1);
+    box-shadow: 0 4px 15px rgba(255, 68, 68, 0.7);
+  }
+}
+
+/* ===== RESPONSIVO ===== */
+@media (max-width: 768px) {
+  .sidebar-menu-link:hover {
+    padding-left: 20px !important;
+  }
+  
+  .sidebar-menu-icon {
+    font-size: 18px;
+  }
+}

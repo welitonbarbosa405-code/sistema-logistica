@@ -1,0 +1,184 @@
+{% extends 'base.html' %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/login-portaria.css') }}?v=1.0">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/login-premium.css') }}?v=1.0">
+{% endblock %}
+
+{% block content %}
+{% set messages = get_flashed_messages(with_categories=true) %}
+
+<div class="hero">
+  <div class="hero-background">
+    <img src="{{ url_for('static', filename='img/granprime.jpg') }}" alt="Campo Kuhn Brasil" class="hero-image">
+    <div class="hero-overlay"></div>
+  </div>
+
+  <header class="topbar">
+    <div class="brand-group">
+      <div class="brand-logos">
+        <img src="{{ url_for('static', filename='img/logo_kuhn.png') }}" alt="Logo Kuhn" class="logo-kuhn">
+      </div>
+      <div class="brand-text">
+        <span class="brand-title">SISTEMA DE LOGISTICA</span>
+        <strong>Kuhn Parts Brasil</strong>
+      </div>
+    </div>
+    <div class="welcome-scroller">
+      <div class="welcome-messages">
+        <div class="welcome-item">Seja Bem Vindo</div>
+        <div class="welcome-item">Sistema de Logistica Kuhn Parts Brasil</div>
+        <div class="welcome-item">By: Peças de reposição</div>
+      </div>
+    </div>
+    <nav class="topnav" aria-label="Navegação principal"></nav>
+  </header>
+
+  <main class="content">
+    <section class="login-card glass" aria-labelledby="loginTitle">
+      <div class="login-card__intro">
+        <h1 id="loginTitle">Entrar</h1>
+        <p class="system-name">Sistema de Logistica Kuhn Parts Brasil</p>
+        <ul class="features" aria-label="Benefícios do sistema">
+          <li>
+            <span class="feature-icon" aria-hidden="true">🚚</span>
+            <div>
+              <strong>Rastreamento Avançado</strong>
+              <p>Rastreamento em tempo real de cada entrega.</p>
+            </div>
+          </li>
+          <li>
+            <span class="feature-icon" aria-hidden="true">🗺️</span>
+            <div>
+              <strong>Cobertura Nacional</strong>
+              <p>Atendemos todo o território nacional.</p>
+            </div>
+          </li>
+          <li>
+            <span class="feature-icon" aria-hidden="true">⚡</span>
+            <div>
+              <strong>Eficiência Operacional</strong>
+              <p>Processos integrados que aceleram cada etapa logística.</p>
+            </div>
+          </li>
+        </ul>
+      </div>
+
+      <div class="login-card__form">
+        <form method="post" action="{{ url_for('auth.login') }}" novalidate>
+          {{ form.hidden_tag() }}          <div class="form-group">
+            <label for="{{ form.email.id }}">E-mail</label>
+            {{ form.email(class="form-control", placeholder="exemplo@kuhn.com.br", autocomplete="username", required="required") }}
+            {% if form.email.errors %}
+              <div class="field-error">
+                {{ form.email.errors[0] }}
+              </div>
+            {% endif %}
+          </div>
+
+          <div class="form-group">
+            <label for="{{ form.password.id }}">Senha</label>
+            <div class="input-password-wrapper">
+              {{ form.password(class="form-control", placeholder="Digite sua senha", autocomplete="current-password", required="required") }}
+            </div>
+            {% if form.password.errors %}
+              <div class="field-error">
+                {{ form.password.errors[0] }}
+              </div>
+            {% endif %}
+          </div>
+
+          <div id="loginAlert" class="login-alert{% if messages %} show{% endif %}" role="alert" aria-live="assertive">
+            {% for category, message in messages %}
+              <span>{{ message }}</span>
+            {% endfor %}
+          </div>
+
+          {{ form.submit(class="btn-login") }}
+
+          <p class="signup-hint">Não tem uma conta? <a href="{{ url_for('auth.register') }}">Solicite ao administrador</a></p>
+        </form>
+      </div>
+    </section>
+  </main>
+
+  <footer class="statusbar glass footer-portaria" aria-live="polite">
+    <div class="status-left">
+      <span class="status-user-icon" aria-hidden="true">👤</span>
+      <span class="status-user-text">Usuário: <strong>{% if current_user.is_authenticated %}{{ current_user.email }}{% else %}Visitante{% endif %}</strong></span>
+      <span class="status-badge">ADMINISTRADOR</span>
+    </div>
+    <div class="status-center">
+      <div class="status-date-box">
+        <span>Dia: <strong id="statusDay">--</strong></span>
+      </div>
+      <span class="divider">•</span>
+      <div class="status-date-box">
+        <span>Data: <strong id="statusDate">--/--/----</strong></span>
+      </div>
+      <span class="divider">•</span>
+      <div class="status-date-box status-date-box--highlight">
+        <span>Hora: <strong id="statusTime">--:--:--</strong></span>
+      </div>
+    </div>
+    <div class="status-right">
+      <span class="status-online">● Online</span>
+      <span class="divider">•</span>
+      <span class="status-company">Kuhn Parts Brasil</span>
+      <span class="divider">•</span>
+      <span id="statusYear">© 2025</span>
+    </div>
+  </footer>
+
+  <script>
+  // ========== ATUALIZAR DATA/HORA NO FOOTER ==========
+  (function() {
+    const dayNames = ['Domingo', 'Segunda-feira', 'Terça-feira', 'Quarta-feira', 'Quinta-feira', 'Sexta-feira', 'Sábado'];
+    
+    function updateStatusBar() {
+      const now = new Date();
+      
+      const statusDay = document.getElementById('statusDay');
+      if (statusDay) statusDay.textContent = dayNames[now.getDay()];
+      
+      const statusDate = document.getElementById('statusDate');
+      if (statusDate) statusDate.textContent = now.toLocaleDateString('pt-BR');
+      
+      const statusTime = document.getElementById('statusTime');
+      if (statusTime) statusTime.textContent = now.toLocaleTimeString('pt-BR');
+      
+      const statusYear = document.getElementById('statusYear');
+      if (statusYear) statusYear.textContent = '© ' + now.getFullYear();
+    }
+    
+    // Executar imediatamente e a cada segundo
+    updateStatusBar();
+    setInterval(updateStatusBar, 1000);
+  })();
+  </script>
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// Adicionar classe de login ao body
+document.body.classList.add('page-login');
+// Forçar background da imagem
+document.body.style.background = `
+  linear-gradient(
+    135deg,
+    rgba(0, 0, 0, 0.6) 0%,
+    rgba(0, 0, 0, 0.4) 50%,
+    rgba(237, 28, 36, 0.3) 100%
+  ),
+  url('{{ url_for('static', filename='img/granprime.jpg') }}')
+`;
+document.body.style.backgroundSize = 'cover';
+document.body.style.backgroundPosition = 'center';
+document.body.style.backgroundRepeat = 'no-repeat';
+document.body.style.backgroundAttachment = 'fixed';
+</script>
+<script src="{{ url_for('static', filename='js/login-portaria.js') }}?v=1.0"></script>
+<script src="{{ url_for('static', filename='js/login-premium.js') }}?v=1.0"></script>
+{% endblock %}

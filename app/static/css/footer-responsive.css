@@ -1,0 +1,430 @@
+/**
+ * CSS para Responsividade do Rodapé Kuhn
+ * Garantir que o rodapé sempre seja visível em todos os dispositivos
+ */
+
+/* ===== LAYOUT PRINCIPAL FLEXBOX ===== */
+body {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  overflow-x: hidden;
+  overflow-y: auto;
+}
+
+main {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  padding-bottom: 60px; /* Espaço para footer fixo de 42px + margem */
+}
+
+/* ===== AJUSTES ESPECÍFICOS PARA LOGIN ===== */
+.login-page {
+  min-height: calc(100vh - 200px);
+  padding-bottom: 2rem;
+}
+
+/* ===== RESPONSIVIDADE PARA MOBILE ===== */
+@media (max-width: 768px) {
+  body {
+    min-height: 100vh;
+  }
+  
+  main {
+    flex: 1;
+    min-height: 0;
+  }
+  
+  .login-page {
+    min-height: calc(100vh - 150px);
+    padding-bottom: 3rem;
+  }
+  
+  footer {
+    margin-top: auto;
+    flex-shrink: 0;
+  }
+
+  /* ===== RODAPÉ RESPONSIVO ===== */
+  footer .flex.flex-wrap {
+    flex-direction: column;
+    gap: 1rem;
+    align-items: center;
+  }
+
+  .footer-element {
+    flex-basis: 100%;
+    justify-content: center;
+    width: 100%;
+  }
+
+  .footer-element:nth-child(2) { /* Data e Hora */
+    order: -1; /* Mover para cima */
+  }
+}
+
+/* ===== RESPONSIVIDADE PARA TELAS PEQUENAS ===== */
+@media (max-width: 480px) {
+  .login-page {
+    min-height: calc(100vh - 120px);
+    padding-bottom: 4rem;
+  }
+  
+  footer {
+    padding: 0.5rem 0;
+    font-size: 0.8rem;
+  }
+}
+
+/* ===== RESPONSIVIDADE PARA ALTURAS PEQUENAS ===== */
+@media (max-height: 700px) {
+  .login-page {
+    min-height: calc(100vh - 100px);
+    padding-bottom: 2rem;
+  }
+  
+  footer {
+    padding: 0.5rem 0;
+  }
+}
+
+@media (max-height: 600px) {
+  .login-page {
+    min-height: calc(100vh - 80px);
+    padding-bottom: 1rem;
+  }
+  
+  footer {
+    padding: 0.25rem 0;
+    font-size: 0.75rem;
+  }
+}
+
+/* ===== GARANTIR QUE O RODAPÉ SEMPRE SEJA VISÍVEL ===== */
+footer,
+footer#footer,
+#footer {
+  margin-top: auto;
+  flex-shrink: 0;
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  z-index: 1000;
+  background: linear-gradient(135deg, #000000 0%, #1a1a1a 30%, #2a2a2a 70%, #000000 100%) !important;
+  background-color: #000000 !important;
+  color: #FFFFFF !important;
+  padding: 0.5rem 1.5rem !important;
+  min-height: 42px;
+  height: 42px;
+  max-height: 42px;
+  display: flex;
+  align-items: center;
+  box-shadow: 
+    0 -4px 16px rgba(237, 28, 36, 0.3),
+    0 -2px 8px rgba(237, 28, 36, 0.15) !important;
+  border-top: 2px solid #ED1C24 !important;
+}
+
+/* ===== GARANTIR TEXTO VISÍVEL NO RODAPÉ ===== */
+footer *,
+footer div,
+footer span,
+footer strong,
+footer p,
+#footer *,
+#footer div,
+#footer span,
+#footer strong {
+  color: inherit !important;
+}
+
+footer .text-gray-600,
+footer .text-gray-500,
+footer .text-gray-400,
+#footer .text-gray-600,
+#footer .text-gray-500,
+#footer .text-gray-400 {
+  color: #FFFFFF !important;
+}
+
+/* ===== LAYOUT MELHORADO DO RODAPÉ ===== */
+footer .max-w-7xl {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+  gap: 2rem;
+}
+
+footer .flex.flex-wrap {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+  gap: 2rem;
+}
+
+/* ===== ELEMENTOS DO RODAPÉ MELHORADOS ===== */
+.footer-element {
+  display: flex;
+  align-items: center;
+  flex: 1;
+  justify-content: center;
+  min-width: 0; /* Permite que o elemento encolha */
+}
+
+.footer-element:first-child {
+  justify-content: flex-start;
+}
+
+.footer-element:last-child {
+  justify-content: flex-end;
+}
+
+/* ===== EVITAR QUEBRA DE LINHA NO DIA DA SEMANA ===== */
+#footerDia,
+.footer-day-box {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: fit-content;
+}
+
+/* ===== RODAPÉ RESPONSIVO E DISTRIBUÍDO ===== */
+footer .container {
+  max-width: 100% !important;
+}
+
+/* Telas grandes - layout completo */
+@media (min-width: 1400px) {
+  footer .container {
+    padding-left: 3rem;
+    padding-right: 3rem;
+  }
+}
+
+/* Telas médias - ajuste de espaçamento */
+@media (max-width: 1400px) and (min-width: 1024px) {
+  footer .text-xs {
+    font-size: 0.7rem;
+  }
+  
+  footer .text-sm {
+    font-size: 0.8rem;
+  }
+  
+  .footer-info-box {
+    padding: 0.375rem 0.625rem;
+  }
+  
+  footer .gap-4 {
+    gap: 0.75rem;
+  }
+}
+
+/* Telas pequenas - compactar mais */
+@media (max-width: 1024px) and (min-width: 768px) {
+  footer .text-xs {
+    font-size: 0.65rem;
+  }
+  
+  footer .text-sm {
+    font-size: 0.75rem;
+  }
+  
+  .footer-info-box {
+    padding: 0.25rem 0.5rem;
+  }
+  
+  footer .gap-4 {
+    gap: 0.5rem;
+  }
+  
+  .footer-username {
+    max-width: 150px !important;
+  }
+}
+
+/* ===== AJUSTES PARA DIFERENTES PÁGINAS ===== */
+.page-login {
+  min-height: calc(100vh - 200px);
+  padding-bottom: 2rem;
+}
+
+.page-dashboard {
+  min-height: calc(100vh - 150px);
+  padding-bottom: 1rem;
+}
+
+.page-rastreamento {
+  min-height: calc(100vh - 150px);
+  padding-bottom: 1rem;
+}
+
+/* ===== FALLBACK PARA NAVEGADORES ANTIGOS ===== */
+@supports not (display: flex) {
+  body {
+    min-height: 100vh;
+  }
+  
+  main {
+    min-height: calc(100vh - 200px);
+  }
+  
+  footer {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+  }
+}
+
+/* ===== AJUSTES ESPECÍFICOS PARA O SLIDESHOW ===== */
+.kuhn-gallery-simple {
+  height: 100vh;
+  min-height: 100vh;
+}
+
+.slide-simple,
+.slide-image-simple,
+.slide-overlay-simple {
+  height: 100vh;
+  min-height: 100vh;
+}
+
+@media (max-height: 700px) {
+  .kuhn-gallery-simple {
+    height: 100vh;
+    min-height: 100vh;
+  }
+  
+  .slide-simple,
+  .slide-image-simple,
+  .slide-overlay-simple {
+    height: 100vh;
+    min-height: 100vh;
+  }
+}
+
+@media (max-height: 600px) {
+  .kuhn-gallery-simple {
+    height: 100vh;
+    min-height: 100vh;
+  }
+  
+  .slide-simple,
+  .slide-image-simple,
+  .slide-overlay-simple {
+    height: 100vh;
+    min-height: 100vh;
+  }
+}
+
+/* ===== GARANTIR QUE O CONTEÚDO NÃO SOBREPONHA O RODAPÉ ===== */
+.login-container-simple {
+  position: relative;
+  z-index: 10;
+  margin-bottom: 2rem;
+}
+
+@media (max-width: 768px) {
+  .login-container-simple {
+    margin-bottom: 3rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .login-container-simple {
+    margin-bottom: 4rem;
+  }
+}
+
+/* ===== ESTILOS DO CONTEÚDO DO RODAPÉ ===== */
+.footer-content {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+  font-size: 0.75rem;
+  color: #FFFFFF;
+}
+
+.footer-left {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.footer-right {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.footer-brand {
+  color: #ED1C24 !important;
+  font-weight: 700;
+  font-size: 0.85rem;
+}
+
+.footer-divider {
+  color: #ED1C24 !important;
+  opacity: 0.7;
+}
+
+.footer-subtitle {
+  color: #ff6b6b !important;
+  font-size: 0.7rem;
+}
+
+.footer-item {
+  color: #ff9999 !important;
+  font-size: 0.75rem;
+}
+
+.footer-item strong,
+.footer-item #footerHora {
+  color: #FFFFFF !important;
+  font-weight: 600;
+}
+
+#footerYear {
+  color: #ED1C24 !important;
+  font-weight: 600;
+}
+
+/* Responsivo para mobile */
+@media (max-width: 768px) {
+  .footer-content {
+    flex-direction: column;
+    gap: 10px;
+    text-align: center;
+  }
+  
+  .footer-left,
+  .footer-right {
+    justify-content: center;
+  }
+  
+  .footer-right {
+    gap: 15px;
+    flex-wrap: wrap;
+  }
+}
+
+@media (max-width: 480px) {
+  .footer-content {
+    font-size: 0.75rem;
+  }
+  
+  .footer-brand {
+    font-size: 0.875rem;
+  }
+  
+  .footer-right {
+    gap: 10px;
+  }
+}

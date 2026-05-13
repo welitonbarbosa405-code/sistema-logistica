@@ -1,0 +1,144 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="bg-gradient-to-br from-slate-50 via-slate-100 to-gray-100 min-h-screen py-8 px-4">
+  <!-- Header -->
+  <div class="max-w-xl mx-auto mb-8">
+    <div class="flex items-center gap-3">
+      <a href="{{ url_for('feiras.gestao_transportadoras') }}" class="inline-flex items-center justify-center w-10 h-10 bg-gray-200 hover:bg-gray-300 rounded-lg transition-colors duration-200">
+        <svg class="w-5 h-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
+        </svg>
+      </a>
+      <div class="flex items-center gap-3">
+        <div class="inline-flex items-center justify-center w-12 h-12 bg-blue-500/20 rounded-lg">
+          <svg class="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
+          </svg>
+        </div>
+        <div>
+          <h1 class="text-3xl font-bold text-gray-800">Editar Transportadora</h1>
+          <p class="text-sm text-gray-600">{{ transportadora.nome }}</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Mensagens Flash -->
+  {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+      {% for category, message in messages %}
+        <div class="max-w-xl mx-auto mb-4">
+          <div class="p-4 rounded-lg flex items-center gap-3 {{ 'bg-green-50 border border-green-200' if category == 'success' else 'bg-red-50 border border-red-200' }}">
+            <svg class="w-5 h-5 {{ 'text-green-600' if category == 'success' else 'text-red-600' }}" fill="currentColor" viewBox="0 0 20 20">
+              {% if category == 'success' %}
+              <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
+              {% else %}
+              <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd"></path>
+              {% endif %}
+            </svg>
+            <span class="{{ 'text-green-700' if category == 'success' else 'text-red-700' }}">{{ message }}</span>
+          </div>
+        </div>
+      {% endfor %}
+    {% endif %}
+  {% endwith %}
+
+  <!-- Formulário -->
+  <div class="max-w-xl mx-auto">
+    <div class="bg-white rounded-lg shadow-lg p-8">
+      <form method="POST" action="{{ url_for('feiras.editar_transportadora', id=transportadora.id) }}">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+        
+        <div class="space-y-6">
+          <!-- Nome -->
+          <div>
+            <label for="nome" class="block text-sm font-semibold text-gray-700 mb-2">
+              Nome da Transportadora <span class="text-red-500">*</span>
+            </label>
+            <input type="text" id="nome" name="nome" required
+              value="{{ transportadora.nome }}"
+              class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors duration-200"
+              placeholder="Ex: Transportes ABC">
+          </div>
+
+          <!-- Cidade e UF -->
+          <div class="grid grid-cols-2 gap-4">
+            <div>
+              <label for="cidade" class="block text-sm font-semibold text-gray-700 mb-2">
+                Cidade
+              </label>
+              <input type="text" id="cidade" name="cidade"
+                value="{{ transportadora.cidade or '' }}"
+                class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors duration-200"
+                placeholder="Ex: São Paulo">
+            </div>
+            <div>
+              <label for="uf" class="block text-sm font-semibold text-gray-700 mb-2">
+                UF
+              </label>
+              <select id="uf" name="uf"
+                class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors duration-200">
+                <option value="">Selecione...</option>
+                <option value="AC" {% if transportadora.uf == 'AC' %}selected{% endif %}>AC</option>
+                <option value="AL" {% if transportadora.uf == 'AL' %}selected{% endif %}>AL</option>
+                <option value="AP" {% if transportadora.uf == 'AP' %}selected{% endif %}>AP</option>
+                <option value="AM" {% if transportadora.uf == 'AM' %}selected{% endif %}>AM</option>
+                <option value="BA" {% if transportadora.uf == 'BA' %}selected{% endif %}>BA</option>
+                <option value="CE" {% if transportadora.uf == 'CE' %}selected{% endif %}>CE</option>
+                <option value="DF" {% if transportadora.uf == 'DF' %}selected{% endif %}>DF</option>
+                <option value="ES" {% if transportadora.uf == 'ES' %}selected{% endif %}>ES</option>
+                <option value="GO" {% if transportadora.uf == 'GO' %}selected{% endif %}>GO</option>
+                <option value="MA" {% if transportadora.uf == 'MA' %}selected{% endif %}>MA</option>
+                <option value="MT" {% if transportadora.uf == 'MT' %}selected{% endif %}>MT</option>
+                <option value="MS" {% if transportadora.uf == 'MS' %}selected{% endif %}>MS</option>
+                <option value="MG" {% if transportadora.uf == 'MG' %}selected{% endif %}>MG</option>
+                <option value="PA" {% if transportadora.uf == 'PA' %}selected{% endif %}>PA</option>
+                <option value="PB" {% if transportadora.uf == 'PB' %}selected{% endif %}>PB</option>
+                <option value="PR" {% if transportadora.uf == 'PR' %}selected{% endif %}>PR</option>
+                <option value="PE" {% if transportadora.uf == 'PE' %}selected{% endif %}>PE</option>
+                <option value="PI" {% if transportadora.uf == 'PI' %}selected{% endif %}>PI</option>
+                <option value="RJ" {% if transportadora.uf == 'RJ' %}selected{% endif %}>RJ</option>
+                <option value="RN" {% if transportadora.uf == 'RN' %}selected{% endif %}>RN</option>
+                <option value="RS" {% if transportadora.uf == 'RS' %}selected{% endif %}>RS</option>
+                <option value="RO" {% if transportadora.uf == 'RO' %}selected{% endif %}>RO</option>
+                <option value="RR" {% if transportadora.uf == 'RR' %}selected{% endif %}>RR</option>
+                <option value="SC" {% if transportadora.uf == 'SC' %}selected{% endif %}>SC</option>
+                <option value="SP" {% if transportadora.uf == 'SP' %}selected{% endif %}>SP</option>
+                <option value="SE" {% if transportadora.uf == 'SE' %}selected{% endif %}>SE</option>
+                <option value="TO" {% if transportadora.uf == 'TO' %}selected{% endif %}>TO</option>
+              </select>
+            </div>
+          </div>
+
+          <!-- Contato -->
+          <div>
+            <label for="contato" class="block text-sm font-semibold text-gray-700 mb-2">
+              Contato
+            </label>
+            <input type="text" id="contato" name="contato"
+              value="{{ transportadora.contato or '' }}"
+              class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors duration-200"
+              placeholder="Ex: (11) 99999-9999 ou email@email.com">
+          </div>
+        </div>
+
+        <!-- Botões -->
+        <div class="flex justify-end gap-4 mt-8 pt-6 border-t">
+          <a href="{{ url_for('feiras.gestao_transportadoras') }}" 
+            class="px-6 py-3 bg-gray-500 hover:bg-gray-600 text-white font-semibold rounded-lg transition-colors duration-200">
+            Cancelar
+          </a>
+          <button type="submit" 
+            class="px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-lg transition-colors duration-200 flex items-center gap-2">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+            </svg>
+            Salvar Alterações
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+{% endblock %}
