@@ -1,146 +1,91 @@
-\# 🚀 Sistema de Gestão Logística
+# 🚀 Sistema de Gestão Logística
 
+Sistema completo de gestão logística com múltiplos módulos operacionais, automação de processos, integração com APIs de transportadoras e suporte à análise de dados e indicadores (BI).
 
+---
 
-Sistema completo de gestão logística com múltiplos módulos operacionais, automação de processos, integração de dados e suporte à análise e indicadores (BI).
+## 📊 Sobre o Projeto
 
+Este sistema foi desenvolvido com foco na automação e controle de processos logísticos, centralizando informações operacionais e proporcionando maior visibilidade, rastreabilidade e eficiência na gestão.
 
+A aplicação simula um ambiente corporativo real, com diversos módulos integrados que atuam diretamente na operação logística e no suporte à tomada de decisão.
 
-\---
+---
 
-
-
-\## 📊 Sobre o Projeto
-
-
-
-Este sistema foi desenvolvido para otimizar e automatizar processos logísticos, centralizando informações operacionais e permitindo melhor controle, rastreabilidade e análise de dados.
-
-
-
-O projeto simula um ambiente corporativo, com diferentes módulos integrados que auxiliam na tomada de decisão e na eficiência operacional.
-
-
-
-\---
-
-
-
-\## ⚙️ Funcionalidades
-
-
+## ⚙️ Funcionalidades
 
 ✅ Controle de divergências de notas fiscais  
-
 ✅ Rastreamento de processos logísticos  
-
 ✅ Gestão de expedições  
-
 ✅ Controle de consumíveis  
-
 ✅ Acurácia de estoque  
-
 ✅ Lançamentos fiscais e CTe  
-
+✅ Integração com transportadoras via API  
+✅ Download automático de faturas em PDF  
+✅ Geração e leitura de QR Code para rastreabilidade  
 ✅ Gestão de feiras  
-
 ✅ Cadastro de usuários  
-
 ✅ Importação de dados via Excel  
+✅ Armazenamento em banco de dados SQLite  
+✅ Geração de indicadores operacionais  
 
-✅ Integração com banco de dados SQLite  
+---
 
+## 🧩 Módulos do Sistema
 
+- 📦 **Divergências de Notas**
+- 🚚 **Rastreamento Logístico**
+- 📍 **Cidades Atendidas**
+- 📤 **Expedições**
+- 🧪 **Consumíveis**
+- 📊 **Indicadores**
+- 📄 **Lançamentos Fiscais**
+- 🚛 **CT-e (Conhecimento de Transporte)**
+- 🎪 **Gestão de Feiras**
+- 👥 **Usuários**
 
-\---
+---
 
+## 🔗 Integrações
 
+O sistema possui integração com APIs de transportadoras, permitindo:
 
-\## 🧩 Módulos do Sistema
-
-
-
-\- 📦 \*\*Divergências de Notas\*\*
-
-\- 🚚 \*\*Rastreamento\*\*
-
-\- 📍 \*\*Cidades Atendidas\*\*
-
-\- 📤 \*\*Expedições\*\*
-
-\- 🧪 \*\*Consumíveis\*\*
-
-\- 📊 \*\*Indicadores\*\*
-
-\- 📄 \*\*Lançamentos Fiscais\*\*
-
-\- 🚛 \*\*CTe\*\*
-
-\- 🎪 \*\*Gestão de Feiras\*\*
-
-\- 👥 \*\*Usuários\*\*
+- Consulta de dados logísticos em tempo real  
+- Automação de rastreamento  
+- Manipulação de documentos fiscais (CT-e)  
+- Download automático de faturas em PDF  
 
 
+---
 
-\---
+## 🛠 Tecnologias Utilizadas
 
+- Python  
+- SQLite  
+- Pandas  
+- HTML  
+- CSS  
+- JavaScript  
+- Flask *(se estiver usando)*  
 
+---
 
-\## 🛠 Tecnologias Utilizadas
+## 📈 Objetivo
 
+Automatizar processos logísticos, reduzir erros operacionais e fornecer informações estratégicas através de indicadores e integração de dados.
 
+---
 
-\- Python  
+## 🖥️ Demonstração
 
-\- SQLite  
+### Tela do Sistema
 
-\- Pandas  
+![Dashboard](image/dashboard.png)
 
-\- HTML / CSS / JavaScript  
+---
 
-\- Flask (se estiver usando)  
-
-
-
-\---
-
-
-
-\## 📈 Objetivo
-
-
-
-Automatizar processos logísticos, reduzir erros operacionais e fornecer indicadores para apoio à tomada de decisão.
-
-
-
-\---
-
-
-
-\## 🖥️ Demonstração
-
-
-
-\### Tela de divergências
-
-
-
-!\[Sistema](image/seu\_print\_aqui.png)
-
-
-
-\---
-
-
-
-\## ▶️ Como executar o projeto
-
-
+## ▶️ Como executar o projeto
 
 ```bash
-
 pip install -r requirements.txt
-
 python run.py
-
