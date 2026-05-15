@@ -39,8 +39,24 @@ for table in tables:
 # ==========================================
 # INSERIR DADOS
 # ==========================================
+inseridos  = 0
+ignorados  = 0
+
 for _, row in df.iterrows():
     try:
+        cursor.execute("""
+            SELECT COUNT(*) FROM divergencias_nota
+            WHERE nota_fiscal = ? AND fornecedor = ? AND divergencia = ?
+        """, (
+            row.get('nota_fiscal'),
+            row.get('fornecedor'),
+            row.get('divergencia'),
+        ))
+        if cursor.fetchone()[0] > 0:
+            print(f"⚠️  Ignorado (já existe): NF {row.get('nota_fiscal')} | {row.get('fornecedor')}")
+            ignorados += 1
+            continue
+
         cursor.execute("""
             INSERT INTO divergencias_nota (
                 data,
@@ -67,6 +83,7 @@ for _, row in df.iterrows():
             row.get('email_provider'),
             datetime.now().strftime("%Y-%m-%d %H:%M:%S")
         ))
+        inseridos += 1
 
     except Exception as e:
         print(f"❌ Erro ao inserir linha {row.name}")
@@ -78,4 +95,4 @@ for _, row in df.iterrows():
 conn.commit()
 conn.close()
 
-print("✅ Importação finalizada com sucesso!")
+print(f"\n✅ Importação finalizada! Inseridos: {inseridos} | Ignorados (duplicados): {ignorados}")

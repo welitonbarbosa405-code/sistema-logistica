@@ -201,6 +201,16 @@
         </div>
       </div>
 
+      <div class="bg-white rounded-lg shadow p-4 lg:col-span-2">
+        <h3 class="text-sm font-semibold text-kuhn-navy mb-3 flex items-center gap-2">
+          <svg class="w-4 h-4 text-kuhn-red" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M3 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 4a1 1 0 011-1h6a1 1 0 110 2H4a1 1 0 01-1-1z" clip-rule="evenodd"></path></svg>
+          Quantidade de NF por Divergência
+        </h3>
+        <div class="relative" style="height: 320px;">
+          <canvas id="chartDivergenciaTipo"></canvas>
+        </div>
+      </div>
+
     </div>
   </div>
 
@@ -440,6 +450,8 @@ const dashboardData = {
   fornecedoresDados:  {{ dashboard_data.get('top_fornecedores_dados',  []) | tojson }},
   compradoresLabels:  {{ dashboard_data.get('top_compradores_labels',  []) | tojson }},
   compradoresDados:   {{ dashboard_data.get('top_compradores_dados',   []) | tojson }},
+  divergenciaTipoLabels: {{ dashboard_data.get('divergencias_tipo_labels', []) | tojson }},
+  divergenciaTipoDados:  {{ dashboard_data.get('divergencias_tipo_dados',  []) | tojson }},
 };
 
 // ---- Toggle de visualização ----
@@ -613,6 +625,36 @@ function carregarGraficos() {
       datasets: [{ label: 'Divergências', data: dashboardData.mesesDados, borderColor: CORES.red, backgroundColor: CORES_ALPHA, fill: true, tension: 0.4, pointBackgroundColor: CORES.red, pointBorderColor: '#fff', pointBorderWidth: 2, pointRadius: 5 }]
     },
     options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true, ticks: { stepSize: 1, color: CORES.darkGray }, grid: { color: '#f0f0f0' } }, x: { ticks: { color: CORES.darkGray } } } }
+  });
+
+  // 5 - Quantidade NF por Divergência (barras horizontais)
+  const ctxDivTipo = document.getElementById('chartDivergenciaTipo');
+  if (ctxDivTipo) new Chart(ctxDivTipo, {
+    type: 'bar',
+    data: {
+      labels: dashboardData.divergenciaTipoLabels,
+      datasets: [{
+        label: 'Qtd NF',
+        data: dashboardData.divergenciaTipoDados,
+        backgroundColor: CORES.red,
+        borderColor: CORES.redDark,
+        borderWidth: 1,
+        borderRadius: 4,
+      }]
+    },
+    options: {
+      indexAxis: 'y',
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: { display: false },
+        tooltip: { callbacks: { label: ctx => ` ${ctx.parsed.x} NF` } }
+      },
+      scales: {
+        x: { beginAtZero: true, ticks: { stepSize: 1, color: CORES.darkGray }, grid: { color: '#f0f0f0' } },
+        y: { ticks: { color: CORES.navy, font: { weight: '600', size: 11 } } }
+      }
+    }
   });
 }
 </script>

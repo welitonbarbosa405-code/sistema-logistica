@@ -72,6 +72,10 @@ def index():
         qtd_filtros    = sum([bool(busca), bool(filtro_fornecedor), bool(filtro_comprador),
                               bool(filtro_data_inicio), bool(filtro_data_fim)])
 
+        divergencias_tipo_count  = Counter(d.divergencia.strip().upper() for d in divergencias if d.divergencia)
+        top_divergencias_labels  = [k for k, v in divergencias_tipo_count.most_common(15)]
+        top_divergencias_dados   = [v for k, v in divergencias_tipo_count.most_common(15)]
+
         dashboard_data = {
             'total': total,
             'total_fornecedores': total_fornecedores,
@@ -82,6 +86,8 @@ def index():
             'top_compradores_dados':   top_compradores_dados,
             'meses_labels': meses_labels,
             'meses_dados':  meses_dados,
+            'divergencias_tipo_labels': top_divergencias_labels,
+            'divergencias_tipo_dados':  top_divergencias_dados,
         }
 
         return render_template('divergencias_index.html',
