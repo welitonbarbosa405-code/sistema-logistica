@@ -1,7 +1,7 @@
 import os
 from flask import Flask, redirect, url_for
 from config import DevConfig
-from .extensions import db, login_manager, bcrypt, csrf, limiter, talisman
+from .extensions import db, login_manager, bcrypt, csrf
 
 # registra modelos
 from . import models
@@ -24,7 +24,7 @@ def create_app(config_class=DevConfig):
     login_manager.init_app(app)
     bcrypt.init_app(app)
     csrf.init_app(app)              # ✅ reativado
-    limiter.init_app(app)
+    #limiter.init_app(app)
 
     # Segurança de headers (force_https=True em produção)
     csp = {
@@ -45,7 +45,7 @@ def create_app(config_class=DevConfig):
             "https://nominatim.openstreetmap.org",
         ],
     }
-    talisman.init_app(app, content_security_policy=csp, force_https=False)
+    #talisman.init_app(app, content_security_policy=csp, force_https=False)
 
     # Adicionar funções globais ao Jinja2
     app.jinja_env.globals.update(max=max, min=min)
