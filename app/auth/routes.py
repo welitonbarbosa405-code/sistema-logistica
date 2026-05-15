@@ -3,7 +3,7 @@ from flask import render_template, redirect, url_for, flash, request, jsonify
 from flask_login import login_user, logout_user, login_required, current_user
 from . import auth_bp
 from .forms import LoginForm, RegisterForm
-from app.extensions import db, limiter
+from app.extensions import db
 from app.models import User
 
 # configurações de bloqueio
@@ -11,7 +11,7 @@ LOCK_WINDOW = timedelta(minutes=15)
 MAX_FAILS = 5
 
 @auth_bp.route("/login", methods=["GET", "POST"])
-@limiter.limit("10/minute")
+#@limiter.limit("10/minute")
 def login():
     if current_user.is_authenticated:
         return redirect(url_for("cidades.index"))
